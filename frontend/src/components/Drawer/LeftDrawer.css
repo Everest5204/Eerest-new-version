@@ -1,0 +1,332 @@
+.drawerOverlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.42);
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    opacity 0.25s ease,
+    visibility 0.25s ease;
+
+  z-index: 999;
+}
+
+.drawerOverlayShow {
+  opacity: 1;
+  visibility: visible;
+}
+
+.leftDrawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: 380px;
+  max-width: 88vw;
+
+  height: 100vh;
+
+  background: #ffffff;
+
+  transform: translateX(-100%);
+
+  transition: transform 0.28s ease;
+
+  z-index: 1000;
+
+  overflow-y: auto;
+
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.06);
+
+  scrollbar-width: none;
+}
+
+.leftDrawer::-webkit-scrollbar {
+  display: none;
+}
+
+.leftDrawerOpen {
+  transform: translateX(0);
+}
+
+.drawerTop {
+  min-height: 96px;
+
+  padding: 18px 20px;
+
+  border-bottom: 1px solid #ececec;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: #ffffff;
+}
+
+.drawerProfile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-width: 0;
+}
+
+.drawerAvatar {
+  width: 58px;
+  height: 58px;
+
+  border-radius: 50%;
+
+  background:
+    radial-gradient(circle at center 35%, #ffffff 0 12px, transparent 13px),
+    radial-gradient(circle at center 92%, #dcefe9 0 24px, transparent 25px),
+    #00866b;
+
+  flex-shrink: 0;
+}
+
+.drawerAvatarInner {
+  display: none;
+}
+
+.drawerUser {
+  min-width: 0;
+}
+
+.drawerUser h2 {
+  margin: 0 0 4px;
+
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.2;
+
+  color: #111827;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.drawerUser p {
+  margin: 0;
+
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.3;
+
+  color: #667085;
+
+  white-space: nowrap;
+}
+
+.drawerClose {
+  width: 42px;
+  height: 42px;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: transparent;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #111827;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+
+  flex-shrink: 0;
+}
+
+.drawerClose:hover {
+  background: #f3f4f6;
+}
+
+.drawerClose:active {
+  transform: scale(0.96);
+}
+
+.drawerMenu {
+  padding: 10px 0 24px;
+}
+
+.drawerItem {
+  width: 100%;
+
+  min-height: 64px;
+
+  padding: 0 24px;
+
+  border: 0;
+  background: transparent;
+
+  display: flex;
+  align-items: center;
+  gap: 22px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+
+  text-align: left;
+
+  color: #111827;
+
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.drawerItem:hover {
+  background: #f6f7f9;
+}
+
+.drawerItem:active {
+  background: #eceff3;
+}
+
+.drawerIcon {
+  width: 24px;
+  min-width: 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #111827;
+
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .leftDrawer {
+    width: 340px;
+  }
+
+  .drawerTop {
+    min-height: 90px;
+
+    padding: 16px 18px;
+  }
+
+  .drawerAvatar {
+    width: 54px;
+    height: 54px;
+  }
+
+  .drawerUser h2 {
+    font-size: 20px;
+  }
+
+  .drawerUser p {
+    font-size: 14px;
+  }
+
+  .drawerItem {
+    min-height: 60px;
+
+    padding: 0 22px;
+
+    gap: 20px;
+
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 480px) {
+  .leftDrawer {
+    width: 320px;
+    max-width: 92vw;
+  }
+
+  .drawerItem {
+    font-size: 18px;
+  }
+}
+
+
+
+
+
+
+
+.drawerProfile {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.drawerAvatar {
+  overflow: hidden;
+}
+
+.drawerAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 50%;
+}
+
+.drawerAvatarFallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #078b78;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.drawerAvatarSkeleton,
+.drawerNameSkeleton,
+.drawerCountSkeleton {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f1f5f9, #e5e7eb, #f1f5f9);
+  background-size: 200% 100%;
+  animation: drawerSkeletonLoading 1s infinite linear;
+}
+
+.drawerAvatarSkeleton {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.drawerNameSkeleton {
+  width: 145px;
+  height: 18px;
+  margin-bottom: 8px;
+}
+
+.drawerCountSkeleton {
+  width: 170px;
+  height: 13px;
+}
+
+@keyframes drawerSkeletonLoading {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}

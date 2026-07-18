@@ -1,0 +1,288 @@
+.reel-actions {
+  --reel-action-size: 48px;
+  --reel-action-gap: 17px;
+  --reel-action-background: rgba(28, 28, 28, 0.64);
+  --reel-action-background-hover: rgba(36, 36, 36, 0.9);
+  --reel-action-border: rgba(255, 255, 255, 0.24);
+  --reel-love-color: #ff3158;
+
+  position: absolute;
+  right: max(
+    12px,
+    calc(env(safe-area-inset-right, 0px) + 9px)
+  );
+  bottom: max(
+    94px,
+    calc(env(safe-area-inset-bottom, 0px) + 84px)
+  );
+  z-index: 12;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--reel-action-gap);
+
+  color: #fff;
+
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+
+  contain: layout style;
+}
+
+.reel-actions__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+
+  min-width: var(--reel-action-size);
+
+  pointer-events: none;
+}
+
+.reel-actions__button {
+  position: relative;
+
+  display: grid;
+  place-items: center;
+
+  width: var(--reel-action-size);
+  height: var(--reel-action-size);
+  min-width: var(--reel-action-size);
+  min-height: var(--reel-action-size);
+  padding: 0;
+
+  color: #fff;
+  background: var(--reel-action-background);
+
+  border: 1px solid var(--reel-action-border);
+  border-radius: 50%;
+
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  cursor: pointer;
+  pointer-events: auto;
+
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+
+  transition:
+    color 150ms ease,
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.reel-actions__button svg {
+  display: block;
+
+  width: 25px;
+  height: 25px;
+
+  pointer-events: none;
+}
+
+.reel-actions__love-button svg {
+  width: 26px;
+  height: 26px;
+}
+
+.reel-actions__button:active {
+  transform: scale(0.88);
+}
+
+.reel-actions__button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+/* Loved state */
+
+.reel-actions__love-button--active {
+  color: var(--reel-love-color);
+
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(255, 255, 255, 0.96);
+
+  animation: reel-action-love-pop 320ms ease-out;
+}
+
+@keyframes reel-action-love-pop {
+  0% {
+    transform: scale(0.72);
+  }
+
+  55% {
+    transform: scale(1.16);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Database request pending */
+
+.reel-actions__button--pending {
+  cursor: wait;
+}
+
+.reel-actions__button--pending::after {
+  position: absolute;
+  inset: -4px;
+
+  content: "";
+
+  border: 2px solid transparent;
+  border-top-color: rgba(255, 255, 255, 0.94);
+  border-right-color: rgba(255, 255, 255, 0.45);
+  border-radius: 50%;
+
+  animation: reel-action-pending-spin 650ms linear infinite;
+
+  pointer-events: none;
+  will-change: transform;
+}
+
+.reel-actions__button:disabled {
+  opacity: 1;
+}
+
+@keyframes reel-action-pending-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Counts and labels */
+
+.reel-actions__count,
+.reel-actions__label {
+  display: block;
+
+  min-width: 42px;
+  max-width: 64px;
+
+  overflow: hidden;
+
+  color: rgba(255, 255, 255, 0.98);
+
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.95),
+    0 0 5px rgba(0, 0, 0, 0.55);
+
+  pointer-events: none;
+}
+
+.reel-actions__label {
+  font-size: 11px;
+  font-weight: 650;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .reel-actions__button:hover:not(:disabled) {
+    background: var(
+      --reel-action-background-hover
+    );
+
+    border-color: rgba(255, 255, 255, 0.44);
+    transform: scale(1.06);
+  }
+
+  .reel-actions__love-button--active:hover:not(
+      :disabled
+    ) {
+    background: #fff;
+    border-color: #fff;
+  }
+}
+
+@media (max-width: 480px) {
+  .reel-actions {
+    --reel-action-size: 46px;
+    --reel-action-gap: 15px;
+
+    right: max(
+      10px,
+      calc(env(safe-area-inset-right, 0px) + 8px)
+    );
+
+    bottom: max(
+      86px,
+      calc(env(safe-area-inset-bottom, 0px) + 78px)
+    );
+  }
+
+  .reel-actions__button svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .reel-actions__love-button svg {
+    width: 25px;
+    height: 25px;
+  }
+
+  .reel-actions__count,
+  .reel-actions__label {
+    font-size: 11px;
+  }
+}
+
+@media (max-height: 540px) and (orientation: landscape) {
+  .reel-actions {
+    --reel-action-size: 40px;
+    --reel-action-gap: 10px;
+
+    right: 10px;
+    bottom: 50px;
+  }
+
+  .reel-actions__button svg,
+  .reel-actions__love-button svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .reel-actions__count,
+  .reel-actions__label {
+    font-size: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel-actions__button {
+    transition: none;
+  }
+
+  .reel-actions__love-button--active {
+    animation: none;
+  }
+
+  .reel-actions__button--pending::after {
+    animation-duration: 1300ms;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .reel-actions__button {
+    background: rgba(0, 0, 0, 0.94);
+    border: 2px solid #fff;
+  }
+
+  .reel-actions__love-button--active {
+    color: #ff174d;
+    background: #fff;
+  }
+}

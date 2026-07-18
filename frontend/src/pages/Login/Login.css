@@ -1,0 +1,291 @@
+.loginPage {
+  width: 100%;
+  min-height: 100vh;
+  background: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.loginContainer {
+  width: 100%;
+  max-width: 430px;
+}
+
+.loginLogo {
+  margin-bottom: 16px;
+  text-align: center;
+  font-size: 58px;
+  font-weight: 800;
+  line-height: 1;
+  color: #050505;
+  letter-spacing: -3px;
+  font-family: "Inter", "Arial", sans-serif;
+}
+
+.loginContainer h1 {
+  margin-bottom: 30px;
+  text-align: center;
+  font-size: 21px;
+  font-weight: 800;
+  color: #4b5563;
+}
+
+.loginGoogleBtn {
+  width: 100%;
+  height: 60px;
+  border: 1px solid #d6d6d6;
+  border-radius: 12px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  cursor: pointer;
+}
+
+.loginGoogleBtn span {
+  font-size: 17px;
+  font-weight: 500;
+  color: #000000;
+}
+
+.loginGoogleIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.loginDivider {
+  margin: 30px 0;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.loginDivider span {
+  flex: 1;
+  height: 1px;
+  background: #d9d9d9;
+}
+
+.loginDivider p {
+  font-size: 15px;
+  color: #8a8a8a;
+}
+
+.loginForm {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.loginField {
+  width: 100%;
+  height: 60px;
+  padding: 0 18px;
+  border: 1px solid #d9d9d9;
+  border-radius: 12px;
+  outline: none;
+  background: #ffffff;
+  font-size: 18px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.loginField::placeholder {
+  color: #6b7280;
+}
+
+.loginField:focus {
+  border-color: #111111;
+}
+
+.loginPasswordBox {
+  position: relative;
+  width: 100%;
+}
+
+.loginPasswordField {
+  padding-right: 56px;
+}
+
+.loginEyeBtn {
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.loginEyeBtn:hover {
+  color: #4b5563;
+}
+
+.loginError {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #ffe5e5;
+  border: 1px solid #ffb8b8;
+  color: #d60000;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.loginSuccess {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #e8f9ef;
+  border: 1px solid #9be7b0;
+  color: #128a3a;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.loginOptions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.loginOptions label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.loginOptions input {
+  width: 17px;
+  height: 17px;
+}
+
+.loginOptions button {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.loginBtn {
+  width: 100%;
+  height: 50px;
+  border: 0;
+  border-radius: 5px;
+  background: #ff0000;
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.loginBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.loginSpinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #ffffff80;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: loginSpin 0.8s linear infinite;
+}
+
+@keyframes loginSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loginSignup {
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: #111827;
+}
+
+.loginSignup button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-left: 4px;
+  color: #2563eb;
+  font-size: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .loginPage {
+    padding: 16px;
+  }
+
+  .loginLogo {
+    font-size: 46px;
+  }
+
+  .loginContainer h1 {
+    font-size: 18px;
+    margin-bottom: 26px;
+  }
+
+  .loginGoogleBtn,
+  .loginField {
+    height: 54px;
+  }
+
+  .loginBtn {
+    height: 46px;
+    font-size: 17px;
+    border-radius: 4px;
+  }
+
+  .loginGoogleBtn span,
+  .loginField {
+    font-size: 15px;
+  }
+
+  .loginOptions {
+    align-items: flex-start;
+  }
+
+  .loginOptions label,
+  .loginOptions button {
+    font-size: 14px;
+  }
+
+  .loginSignup {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .loginBtn {
+    height: 44px;
+    font-size: 16px;
+    border-radius: 4px;
+  }
+}

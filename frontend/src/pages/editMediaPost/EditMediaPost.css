@@ -1,0 +1,947 @@
+.editMediaPage,
+.editMediaPage *,
+.postEditGlobalNotice,
+.postEditGlobalNotice * {
+  box-sizing: border-box;
+}
+
+.editMediaPage {
+  width: 100%;
+  max-width: 580px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding-bottom: max(
+    20px,
+    env(safe-area-inset-bottom)
+  );
+
+  background: #ffffff;
+  color: #111827;
+
+  display: flex;
+  flex-direction: column;
+
+  isolation: isolate;
+}
+
+/* =========================
+   Header
+========================= */
+
+.editMediaHeader {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  width: 100%;
+  min-height: 64px;
+  padding: 0 16px;
+
+  border-bottom: 1px solid #e5e7eb;
+  background: rgba(
+    255,
+    255,
+    255,
+    0.98
+  );
+
+  display: grid;
+  grid-template-columns:
+    80px minmax(0, 1fr) 80px;
+  align-items: center;
+}
+
+.editMediaHeader h1 {
+  min-width: 0;
+  margin: 0;
+
+  overflow: hidden;
+
+  color: #111827;
+
+  font-family: inherit;
+  font-size: 19px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.editMediaCloseButton,
+.editMediaSaveButton {
+  min-width: 44px;
+  min-height: 44px;
+
+  padding: 0;
+  border: 0;
+
+  background: transparent;
+  font-family: inherit;
+
+  display: inline-flex;
+  align-items: center;
+
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+
+.editMediaCloseButton {
+  width: 44px;
+  border-radius: 50%;
+
+  color: #111827;
+
+  justify-content: center;
+}
+
+.editMediaSaveButton {
+  justify-self: end;
+  justify-content: flex-end;
+
+  padding: 0 3px;
+
+  color: #22c55e;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.editMediaCloseButton:disabled,
+.editMediaSaveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.36;
+}
+
+.editMediaHeaderSpace {
+  width: 44px;
+  height: 44px;
+
+  justify-self: end;
+}
+
+/* =========================
+   Hidden file input
+========================= */
+
+.editMediaFileInput {
+  position: fixed;
+  width: 1px;
+  height: 1px;
+
+  overflow: hidden;
+
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* =========================
+   Post author
+========================= */
+
+.editMediaAuthor {
+  width: 100%;
+  padding: 16px 18px 10px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.editMediaAvatar {
+  width: 47px;
+  height: 47px;
+  min-width: 47px;
+
+  overflow: hidden;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+
+  background: #eef1f4;
+  color: #64748b;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editMediaAvatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  display: block;
+}
+
+.editMediaAuthor strong {
+  min-width: 0;
+
+  overflow: hidden;
+
+  color: #273449;
+
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+/* =========================
+   Caption
+========================= */
+
+.editMediaCaptionSection {
+  position: relative;
+  width: 100%;
+}
+
+.editMediaCaptionInput {
+  width: 100%;
+  min-height: 130px;
+
+  padding:
+    10px 18px 36px;
+
+  border: 0;
+  outline: 0;
+
+  background: #ffffff;
+  color: #111827;
+
+  resize: vertical;
+
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 450;
+  line-height: 1.55;
+
+  caret-color: #22c55e;
+}
+
+.editMediaCaptionInput::placeholder {
+  color: #9ca3af;
+}
+
+.editMediaCaptionInput:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.editMediaCaptionCounter {
+  position: absolute;
+  right: 18px;
+  bottom: 11px;
+
+  color: #64748b;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.editMediaCaptionCounter.visible {
+  opacity: 1;
+}
+
+/* =========================
+   Main media preview
+========================= */
+
+.editMediaPreviewSection {
+  position: relative;
+
+  width: calc(100% - 36px);
+  min-height: 300px;
+  margin: 0 18px;
+
+  overflow: hidden;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+
+  background: #eef1f3;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editMediaPreviewSection img,
+.editMediaPreviewSection video {
+  width: 100%;
+  max-height: 64dvh;
+
+  object-fit: contain;
+  display: block;
+
+  background: #eef1f3;
+}
+
+.editMediaRemoveButton,
+.editMediaPositionCounter {
+  position: absolute;
+  top: 12px;
+  z-index: 5;
+
+  color: #ffffff;
+  background: rgba(
+    20,
+    23,
+    28,
+    0.76
+  );
+
+  box-shadow:
+    0 5px 18px
+    rgba(0, 0, 0, 0.2);
+}
+
+.editMediaRemoveButton {
+  right: 12px;
+
+  width: 42px;
+  height: 42px;
+
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease,
+    opacity 150ms ease;
+}
+
+.editMediaRemoveButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.editMediaPositionCounter {
+  left: 12px;
+
+  min-height: 29px;
+  padding: 5px 11px;
+
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  display: flex;
+  align-items: center;
+}
+
+/* =========================
+   Image thumbnails
+========================= */
+
+.editMediaThumbnails {
+  width: 100%;
+  padding: 12px 18px 5px;
+
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  scroll-snap-type: x proximity;
+}
+
+.editMediaThumbnails::-webkit-scrollbar {
+  display: none;
+}
+
+.editMediaThumbnailButton {
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+
+  padding: 0;
+
+  overflow: hidden;
+
+  border: 2px solid transparent;
+  border-radius: 10px;
+
+  background: #eef1f3;
+
+  cursor: pointer;
+
+  scroll-snap-align: start;
+
+  transition:
+    border-color 150ms ease,
+    transform 150ms ease,
+    opacity 150ms ease;
+}
+
+.editMediaThumbnailButton.active {
+  border-color: #22c55e;
+}
+
+.editMediaThumbnailButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.editMediaThumbnailButton img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  display: block;
+}
+
+/* =========================
+   Empty media picker
+========================= */
+
+.editMediaEmptyPicker {
+  width: calc(100% - 36px);
+  min-height: 300px;
+  margin: 0 18px;
+  padding: 30px;
+
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+
+  background: #f8fafc;
+  color: #475569;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+
+  cursor: pointer;
+
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.editMediaPickerIcon,
+.editMediaAddMoreIcon {
+  border-radius: 50%;
+
+  background: #e9edf1;
+  color: #465166;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editMediaPickerIcon {
+  width: 58px;
+  height: 58px;
+  margin-bottom: 4px;
+}
+
+.editMediaEmptyPicker strong {
+  color: #273449;
+
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.editMediaEmptyPicker small {
+  color: #64748b;
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.editMediaEmptyPicker:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* =========================
+   Validation error
+========================= */
+
+.editMediaErrorMessage {
+  margin: 12px 18px 0;
+  padding: 11px 13px;
+
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+
+  background: #fef2f2;
+  color: #b91c1c;
+
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+/* =========================
+   Add more media
+========================= */
+
+.editMediaAddMoreButton {
+  width: 100%;
+  min-height: 116px;
+  margin-top: 4px;
+  padding: 14px;
+
+  border: 0;
+
+  background: #ffffff;
+  color: #374151;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  font-family: inherit;
+  cursor: pointer;
+
+  transition:
+    background-color 150ms ease,
+    opacity 150ms ease;
+}
+
+.editMediaAddMoreIcon {
+  width: 46px;
+  height: 46px;
+  margin-bottom: 2px;
+}
+
+.editMediaAddMoreButton strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.editMediaAddMoreButton small {
+  color: #6b7280;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.editMediaAddMoreButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* =========================
+   Loading/unavailable states
+========================= */
+
+.editMediaLoadingState,
+.editMediaUnavailableState {
+  width: 100%;
+  min-height: 390px;
+  padding: 44px 24px;
+
+  color: #64748b;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+
+  text-align: center;
+}
+
+.editMediaLoadingState strong {
+  color: #475569;
+
+  font-size: 15px;
+  font-weight: 750;
+}
+
+.editMediaLoadingIcon {
+  color: #22c55e;
+
+  animation:
+    editMediaSpin
+    850ms linear infinite;
+}
+
+.editMediaUnavailableState strong {
+  color: #273449;
+
+  font-size: 21px;
+  font-weight: 850;
+}
+
+.editMediaUnavailableState p {
+  max-width: 370px;
+  margin: 0;
+
+  color: #64748b;
+
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.editMediaUnavailableState button {
+  min-width: 110px;
+  min-height: 42px;
+  margin-top: 5px;
+  padding: 8px 18px;
+
+  border: 0;
+  border-radius: 999px;
+
+  background: #22c55e;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+/* =========================
+   Global optimistic notice
+========================= */
+
+.postEditGlobalNotice {
+  position: fixed;
+  left: 50%;
+  bottom: max(
+    20px,
+    calc(
+      env(safe-area-inset-bottom) +
+      12px
+    )
+  );
+  z-index: 6000;
+
+  width: max-content;
+  max-width: min(
+    92vw,
+    440px
+  );
+  min-height: 48px;
+
+  padding: 11px 16px;
+
+  border: 1px solid
+    rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+
+  background: #17191e;
+  color: #ffffff;
+
+  box-shadow:
+    0 18px 48px
+    rgba(0, 0, 0, 0.3);
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  transform:
+    translateX(-50%);
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.35;
+
+  pointer-events: none;
+}
+
+.postEditGlobalNotice.success {
+  border-color:
+    rgba(34, 197, 94, 0.48);
+}
+
+.postEditGlobalNotice.error {
+  border-color:
+    rgba(248, 113, 113, 0.5);
+}
+
+.postEditNoticeIcon {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+
+  border-radius: 50%;
+
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.postEditGlobalNotice.success
+.postEditNoticeIcon {
+  background: #22c55e;
+}
+
+.postEditGlobalNotice.error
+.postEditNoticeIcon {
+  background: #ef4444;
+}
+
+.postEditNoticeSpinner {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+
+  border: 2px solid
+    rgba(255, 255, 255, 0.3);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+
+  animation:
+    editMediaSpin
+    800ms linear infinite;
+}
+
+/* =========================
+   Focus and hover
+========================= */
+
+.editMediaCloseButton:focus-visible,
+.editMediaSaveButton:focus-visible,
+.editMediaRemoveButton:focus-visible,
+.editMediaThumbnailButton:focus-visible,
+.editMediaEmptyPicker:focus-visible,
+.editMediaAddMoreButton:focus-visible,
+.editMediaUnavailableState
+button:focus-visible {
+  outline: 3px solid
+    rgba(34, 197, 94, 0.32);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .editMediaCloseButton:hover:not(
+    :disabled
+  ) {
+    background: #f1f3f5;
+  }
+
+  .editMediaSaveButton:hover:not(
+    :disabled
+  ) {
+    color: #16a34a;
+  }
+
+  .editMediaRemoveButton:hover:not(
+    :disabled
+  ) {
+    background: rgba(
+      10,
+      12,
+      15,
+      0.9
+    );
+    transform: scale(1.04);
+  }
+
+  .editMediaThumbnailButton:hover:not(
+    :disabled
+  ) {
+    transform:
+      translateY(-1px);
+  }
+
+  .editMediaEmptyPicker:hover:not(
+    :disabled
+  ) {
+    border-color: #86efac;
+    background: #f0fdf4;
+  }
+
+  .editMediaAddMoreButton:hover:not(
+    :disabled
+  ) {
+    background: #f8fafc;
+  }
+}
+
+/* =========================
+   Desktop
+========================= */
+
+@media (min-width: 601px) {
+  .editMediaPage {
+    border-right:
+      1px solid #e5e7eb;
+    border-left:
+      1px solid #e5e7eb;
+
+    box-shadow:
+      0 0 36px
+      rgba(15, 23, 42, 0.05);
+  }
+}
+
+/* =========================
+   Mobile
+========================= */
+
+@media (max-width: 600px) {
+  .editMediaPage {
+    max-width: 100%;
+  }
+
+  .editMediaHeader {
+    min-height: 58px;
+    padding: 0 12px;
+
+    grid-template-columns:
+      68px minmax(0, 1fr) 68px;
+  }
+
+  .editMediaHeader h1 {
+    font-size: 18px;
+  }
+
+  .editMediaAuthor {
+    padding:
+      15px 16px 9px;
+  }
+
+  .editMediaCaptionInput {
+    min-height: 118px;
+    padding:
+      9px 16px 34px;
+
+    font-size: 17px;
+  }
+
+  .editMediaCaptionCounter {
+    right: 16px;
+  }
+
+  .editMediaPreviewSection,
+  .editMediaEmptyPicker {
+    width: calc(100% - 32px);
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+
+  .editMediaPreviewSection {
+    min-height: 260px;
+  }
+
+  .editMediaPreviewSection img,
+  .editMediaPreviewSection video {
+    max-height: 60dvh;
+  }
+
+  .editMediaThumbnails {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .editMediaErrorMessage {
+    margin-right: 16px;
+    margin-left: 16px;
+  }
+
+  .postEditGlobalNotice {
+    bottom: max(
+      13px,
+      calc(
+        env(safe-area-inset-bottom) +
+        9px
+      )
+    );
+
+    max-width:
+      calc(100vw - 24px);
+
+    padding: 10px 14px;
+
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 380px) {
+  .editMediaHeader {
+    grid-template-columns:
+      62px minmax(0, 1fr) 62px;
+  }
+
+  .editMediaHeader h1 {
+    font-size: 17px;
+  }
+
+  .editMediaSaveButton {
+    font-size: 16px;
+  }
+
+  .editMediaAuthor strong {
+    font-size: 16px;
+  }
+
+  .editMediaPreviewSection,
+  .editMediaEmptyPicker {
+    min-height: 230px;
+  }
+
+  .editMediaThumbnailButton {
+    width: 58px;
+    height: 58px;
+    min-width: 58px;
+  }
+}
+
+/* =========================
+   Reduced motion
+========================= */
+
+@media (
+  prefers-reduced-motion: reduce
+) {
+  .editMediaCloseButton,
+  .editMediaSaveButton,
+  .editMediaRemoveButton,
+  .editMediaThumbnailButton,
+  .editMediaEmptyPicker,
+  .editMediaAddMoreButton,
+  .editMediaCaptionCounter {
+    transition: none;
+  }
+
+  .editMediaLoadingIcon,
+  .postEditNoticeSpinner {
+    animation-duration: 1.8s;
+  }
+}
+
+@keyframes editMediaSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

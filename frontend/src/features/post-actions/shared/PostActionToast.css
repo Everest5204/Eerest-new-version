@@ -1,0 +1,153 @@
+.postActionToastViewport {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  z-index: 20050;
+
+  display: flex;
+  justify-content: center;
+
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.postActionToast {
+  --post-action-accent: #60a5fa;
+
+  position: relative;
+  width: min(100%, 440px);
+  min-height: 54px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 12px 12px 16px;
+
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-left: 4px solid var(--post-action-accent);
+  border-radius: 16px;
+
+  background: rgba(15, 23, 42, 0.96);
+  color: #ffffff;
+
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.28),
+    0 6px 18px rgba(15, 23, 42, 0.18);
+
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+
+  box-sizing: border-box;
+  pointer-events: auto;
+
+  animation: postActionToastEnter 220ms ease-out;
+}
+
+.postActionToast--info {
+  --post-action-accent: #60a5fa;
+}
+
+.postActionToast--success {
+  --post-action-accent: #34d399;
+}
+
+.postActionToast--error {
+  --post-action-accent: #fb7185;
+}
+
+.postActionToastIcon {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: var(--post-action-accent);
+}
+
+.postActionToastMessage {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+
+  color: #f8fafc;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.postActionToastClose {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: transparent;
+  color: #cbd5e1;
+
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease;
+}
+
+.postActionToastClose:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.postActionToastClose:focus-visible {
+  outline: 3px solid rgba(96, 165, 250, 0.4);
+  outline-offset: 2px;
+}
+
+@keyframes postActionToastEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  .postActionToastViewport {
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    padding: 0 12px;
+  }
+
+  .postActionToast {
+    width: 100%;
+    min-height: 56px;
+    border-radius: 14px;
+    padding: 12px 10px 12px 14px;
+  }
+
+  .postActionToastMessage {
+    font-size: 13.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .postActionToast {
+    animation: none;
+  }
+
+  .postActionToastClose {
+    transition: none;
+  }
+}

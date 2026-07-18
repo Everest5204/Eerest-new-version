@@ -1,0 +1,216 @@
+.reactionDetailsOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15, 23, 42, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+
+.reactionDetailsPanel {
+  width: min(560px, 100%);
+  max-height: min(720px, 92vh);
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+  display: flex;
+  flex-direction: column;
+}
+
+.reactionDetailsHeader {
+  min-height: 54px;
+  padding: 0 14px;
+  border-bottom: 1px solid #eef0f3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reactionDetailsHeader h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 850;
+  color: #111827;
+}
+
+.reactionDetailsClose {
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #111827;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reactionDetailsClose:hover {
+  background: #f1f5f9;
+}
+
+.reactionDetailsTabs {
+  min-height: 56px;
+  padding: 0 14px;
+  border-bottom: 1px solid #eef0f3;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.reactionDetailsTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.reactionDetailsTab {
+  height: 56px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.reactionDetailsTab.active {
+  color: #ff1028;
+  border-bottom-color: #ff1028;
+}
+
+.reactionDetailsTab span {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.reactionDetailsTab strong {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.reactionDetailsBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.reactionDetailsUser {
+  width: 100%;
+  min-height: 68px;
+  padding: 8px 16px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.reactionDetailsUser:hover {
+  background: #f8fafc;
+}
+
+.reactionDetailsAvatar {
+  width: 46px;
+  height: 46px;
+  position: relative;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.reactionDetailsAvatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.reactionDetailsUserEmoji {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 21px;
+  height: 21px;
+  border-radius: 999px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.reactionDetailsUserInfo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.reactionDetailsUserInfo strong {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+.reactionDetailsUserInfo span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.reactionDetailsState {
+  padding: 28px 16px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 650;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .reactionDetailsOverlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+
+  .reactionDetailsPanel {
+    width: 100%;
+    max-height: 86vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .reactionDetailsHeader {
+    min-height: 52px;
+  }
+
+  .reactionDetailsTabs {
+    min-height: 54px;
+    gap: 16px;
+  }
+
+  .reactionDetailsTab {
+    height: 54px;
+  }
+
+  .reactionDetailsUser {
+    min-height: 66px;
+    padding: 8px 14px;
+  }
+
+  .reactionDetailsUserInfo strong {
+    font-size: 15px;
+  }
+}

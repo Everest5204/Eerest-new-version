@@ -1,0 +1,339 @@
+.reel-player {
+  --reel-control-size: 44px;
+  --reel-control-background: rgba(20, 20, 20, 0.66);
+  --reel-control-background-hover: rgba(20, 20, 20, 0.84);
+  --reel-control-border: rgba(255, 255, 255, 0.24);
+
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  width: 100%;
+  height: 100%;
+
+  overflow: hidden;
+  overflow: clip;
+
+  color: #fff;
+  background: #000;
+
+  isolation: isolate;
+  contain: layout paint;
+
+  user-select: none;
+  touch-action: pan-y pinch-zoom;
+  overscroll-behavior: auto;
+
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reel-player__video {
+  position: absolute;
+  inset: 0;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  background: #000;
+  border: 0;
+  outline: none;
+
+  object-fit: contain;
+  object-position: center;
+
+  pointer-events: none;
+  touch-action: pan-y pinch-zoom;
+
+  -webkit-user-drag: none;
+}
+
+.reel-player__video:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.92);
+  outline-offset: -4px;
+}
+
+/* Loading state */
+
+.reel-player__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+
+  display: grid;
+  place-items: center;
+
+  pointer-events: none;
+}
+
+.reel-player__spinner {
+  width: 42px;
+  height: 42px;
+
+  border: 3px solid rgba(255, 255, 255, 0.28);
+  border-top-color: #fff;
+  border-radius: 50%;
+
+  animation: reel-player-spin 700ms linear infinite;
+  will-change: transform;
+}
+
+@keyframes reel-player-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Play button */
+
+.reel-player__play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 5;
+
+  display: grid;
+  place-items: center;
+
+  width: 66px;
+  height: 66px;
+  padding: 0;
+
+  color: #fff;
+  background: rgba(15, 15, 15, 0.54);
+
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 50%;
+
+  cursor: pointer;
+  touch-action: manipulation;
+
+  transform: translate(-50%, -50%);
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reel-player__play-button svg {
+  width: 31px;
+  height: 31px;
+  margin-left: 3px;
+}
+
+.reel-player__play-button:active {
+  transform: translate(-50%, -50%) scale(0.92);
+}
+
+.reel-player__play-button:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.94);
+  outline-offset: 3px;
+}
+
+/* Sound button */
+
+.reel-player__sound-button {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: 16px;
+  z-index: 6;
+
+  display: grid;
+  place-items: center;
+
+  width: var(--reel-control-size);
+  height: var(--reel-control-size);
+  padding: 0;
+
+  color: #fff;
+  background: var(--reel-control-background);
+
+  border: 1px solid var(--reel-control-border);
+  border-radius: 50%;
+
+  cursor: pointer;
+  touch-action: manipulation;
+
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    transform 160ms ease;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reel-player__sound-button svg {
+  width: 22px;
+  height: 22px;
+}
+
+.reel-player__sound-button:active {
+  transform: scale(0.9);
+}
+
+.reel-player__sound-button:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.94);
+  outline-offset: 3px;
+}
+
+/* Playback error */
+
+.reel-player__error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 7;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+
+  width: min(88%, 320px);
+  padding: 22px 20px;
+
+  text-align: center;
+
+  background: rgba(14, 14, 14, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+
+  touch-action: pan-y pinch-zoom;
+
+  transform: translate(-50%, -50%);
+}
+
+.reel-player__error-message {
+  margin: 0;
+
+  color: rgba(255, 255, 255, 0.92);
+
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.reel-player__retry-button {
+  min-height: 40px;
+  padding: 9px 18px;
+
+  color: #111;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  background: #fff;
+  border: 0;
+  border-radius: 999px;
+
+  cursor: pointer;
+  touch-action: manipulation;
+
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.reel-player__retry-button:active {
+  transform: scale(0.96);
+}
+
+.reel-player__retry-button:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .reel-player__play-button:hover {
+    background: rgba(15, 15, 15, 0.78);
+    border-color: rgba(255, 255, 255, 0.46);
+
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+
+  .reel-player__sound-button:hover {
+    background: var(--reel-control-background-hover);
+    border-color: rgba(255, 255, 255, 0.42);
+
+    transform: scale(1.05);
+  }
+
+  .reel-player__retry-button:hover {
+    background: rgba(255, 255, 255, 0.9);
+  }
+}
+
+@media (max-width: 480px) {
+  .reel-player {
+    --reel-control-size: 42px;
+  }
+
+  .reel-player__play-button {
+    width: 60px;
+    height: 60px;
+  }
+
+  .reel-player__play-button svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .reel-player__sound-button {
+    top: max(12px, env(safe-area-inset-top));
+    right: 12px;
+  }
+
+  .reel-player__spinner {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .reel-player {
+    --reel-control-size: 38px;
+  }
+
+  .reel-player__sound-button {
+    top: 10px;
+    right: 10px;
+  }
+
+  .reel-player__play-button {
+    width: 54px;
+    height: 54px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reel-player__play-button,
+  .reel-player__sound-button,
+  .reel-player__retry-button {
+    transition: none;
+  }
+
+  .reel-player__spinner {
+    animation-duration: 1400ms;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .reel-player__play-button,
+  .reel-player__sound-button {
+    background: rgba(0, 0, 0, 0.9);
+    border-color: #fff;
+  }
+
+  .reel-player__error {
+    background: #000;
+    border-color: #fff;
+  }
+}

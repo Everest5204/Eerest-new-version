@@ -1,0 +1,179 @@
+.deletePostBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(15, 23, 42, 0.38);
+
+  animation: deletePostBackdropShow 140ms ease;
+}
+
+.deletePostModal {
+  width: min(100%, 360px);
+  padding: 25px 24px 15px;
+
+  border: 0;
+  border-radius: 0px;
+
+  background: #ffffff;
+  color: #111827;
+
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.2),
+    0 4px 14px rgba(15, 23, 42, 0.1);
+
+  outline: none;
+
+  animation: deletePostModalShow 160ms ease-out;
+}
+
+.deletePostModalMessage {
+  margin: 0;
+
+  color: #111827;
+
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.deletePostActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 26px;
+
+  margin-top: 22px;
+}
+
+.deletePostCancelButton,
+.deletePostConfirmButton {
+  min-height: 40px;
+  padding: 7px 2px;
+
+  border: 0;
+
+  background: transparent;
+
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+  touch-action: manipulation;
+
+  transition:
+    color 120ms ease,
+    opacity 120ms ease,
+    transform 100ms ease;
+}
+
+.deletePostCancelButton {
+  color: #111827;
+}
+
+.deletePostConfirmButton {
+  color: #dc2626;
+}
+
+.deletePostCancelButton:hover:not(:disabled) {
+  color: #475569;
+}
+
+.deletePostConfirmButton:hover:not(:disabled) {
+  color: #b91c1c;
+}
+
+.deletePostCancelButton:active:not(:disabled),
+.deletePostConfirmButton:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.deletePostCancelButton:disabled,
+.deletePostConfirmButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.deletePostCancelButton:focus-visible,
+.deletePostConfirmButton:focus-visible {
+  outline: 2px solid #94a3b8;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.deletePostSrOnly {
+  position: absolute;
+
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes deletePostBackdropShow {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes deletePostModalShow {
+  from {
+    opacity: 0;
+    transform: translateY(5px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 480px) {
+  .deletePostBackdrop {
+    padding: 16px;
+  }
+
+  .deletePostModal {
+    width: min(100%, 340px);
+    padding: 23px 20px 13px;
+  }
+
+  .deletePostModalMessage {
+    font-size: 15px;
+  }
+
+  .deletePostActions {
+    gap: 24px;
+    margin-top: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deletePostBackdrop,
+  .deletePostModal {
+    animation: none;
+  }
+
+  .deletePostCancelButton,
+  .deletePostConfirmButton {
+    transition: none;
+  }
+}

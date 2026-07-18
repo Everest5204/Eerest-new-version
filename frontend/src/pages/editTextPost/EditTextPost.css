@@ -1,0 +1,629 @@
+.editTextPage {
+  --edit-text-green: #16a34a;
+  --edit-text-green-hover: #15803d;
+  --edit-text-border: #e5e7eb;
+  --edit-text-muted: #64748b;
+  --edit-text-dark: #111827;
+
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: #edf2f7;
+  color: var(--edit-text-dark);
+}
+
+.editTextPage,
+.editTextPage * {
+  box-sizing: border-box;
+}
+
+.editTextShell {
+  position: relative;
+  width: min(100%, 480px);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  overflow-x: hidden;
+}
+
+/* Header */
+
+.editTextHeader {
+  position: sticky;
+  z-index: 20;
+  top: 0;
+  width: 100%;
+  min-height: 66px;
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr) 76px;
+  align-items: center;
+  padding:
+    env(safe-area-inset-top, 0)
+    12px
+    0;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--edit-text-border);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.editTextTitle {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editTextCloseButton {
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  justify-self: start;
+  padding: 0;
+  color: #111827;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.editTextCloseButton:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.editTextCloseButton:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.editTextHeaderSpace {
+  width: 76px;
+}
+
+.editTextSaveButton {
+  min-width: 68px;
+  min-height: 42px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  justify-self: end;
+  gap: 6px;
+  padding: 8px 10px;
+  color: var(--edit-text-green);
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: lowercase;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    opacity 160ms ease;
+}
+
+.editTextSaveButton:hover:not(:disabled) {
+  color: var(--edit-text-green-hover);
+  background: #f0fdf4;
+}
+
+.editTextSaveButton:disabled {
+  color: #94a3b8;
+  background: transparent;
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+/* Error */
+
+.editTextError {
+  width: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 16px 0;
+  padding: 11px 12px;
+  color: #991b1b;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.editTextError span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.editTextError button {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  color: #991b1b;
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.editTextError button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* User */
+
+.editTextUser {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 16px 18px 12px;
+}
+
+.editTextAvatar {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: #ffffff;
+  background:
+    linear-gradient(135deg, #334155, #0f172a);
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.editTextAvatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.editTextUserName {
+  min-width: 0;
+  overflow: hidden;
+  color: #111827;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Text composer */
+
+.editTextComposer {
+  position: relative;
+  width: calc(100% - 32px);
+  min-height: 390px;
+  aspect-ratio: 1 / 1;
+  display: grid;
+  place-items: stretch;
+  margin: 0 16px 18px;
+  overflow: hidden;
+  border-radius: 18px;
+  isolation: isolate;
+  transition:
+    background 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.editTextComposer.plain {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
+}
+
+.editTextComposer.designed {
+  border: 0;
+  box-shadow:
+    0 18px 40px rgba(15, 23, 42, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.13);
+}
+
+.editTextInput {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+  padding: 28px 24px;
+  overflow-y: auto;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: inherit;
+  outline: 0;
+  resize: none;
+  font-family: inherit;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  caret-color: currentColor;
+  scrollbar-width: thin;
+  scrollbar-color:
+    rgba(148, 163, 184, 0.7)
+    transparent;
+  transition:
+    font-size 180ms ease,
+    opacity 180ms ease;
+}
+
+.editTextInput.large {
+  font-size: clamp(30px, 8vw, 43px);
+}
+
+.editTextInput.medium {
+  font-size: clamp(24px, 6.5vw, 34px);
+  line-height: 1.18;
+}
+
+.editTextInput.small {
+  font-size: clamp(18px, 4.6vw, 25px);
+  line-height: 1.3;
+}
+
+.editTextInput::placeholder {
+  color: inherit;
+  opacity: 0.5;
+}
+
+.editTextInput:disabled {
+  cursor: wait;
+  opacity: 0.78;
+}
+
+.editTextInput::-webkit-scrollbar {
+  width: 6px;
+}
+
+.editTextInput::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.editTextInput::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.65);
+  border-radius: 999px;
+}
+
+/* Background tools */
+
+.editTextTools {
+  position: sticky;
+  z-index: 15;
+  bottom: 0;
+  width: 100%;
+  margin-top: auto;
+  padding:
+    14px
+    16px
+    calc(16px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.97);
+  border-top: 1px solid var(--edit-text-border);
+  box-shadow: 0 -10px 28px rgba(15, 23, 42, 0.04);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.editTextToolsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.editTextToolsTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #111827;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.editTextCounter {
+  color: var(--edit-text-muted);
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  transition: color 160ms ease;
+}
+
+.editTextCounter.warning {
+  color: #dc2626;
+}
+
+.editTextBackgroundList {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 2px 1px 5px;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.editTextBackgroundList::-webkit-scrollbar {
+  display: none;
+}
+
+.editTextToolButton,
+.editTextBackgroundButton,
+.editTextMoreButton {
+  width: 47px;
+  height: 47px;
+  flex: 0 0 47px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  color: #334155;
+  background-color: #f1f5f9;
+  border: 2px solid transparent;
+  border-radius: 13px;
+  box-shadow: none;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition:
+    transform 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease,
+    opacity 150ms ease;
+}
+
+.editTextBackgroundButton {
+  color: #ffffff;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.09);
+}
+
+.editTextNoBackground {
+  color: #94a3b8;
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+.editTextToolButton:hover:not(:disabled),
+.editTextBackgroundButton:hover:not(:disabled),
+.editTextMoreButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.editTextToolButton:active:not(:disabled),
+.editTextBackgroundButton:active:not(:disabled),
+.editTextMoreButton:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.editTextBackgroundButton.active {
+  border-color: #22c55e;
+  box-shadow:
+    0 0 0 3px rgba(34, 197, 94, 0.16),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.editTextNoBackground.active {
+  color: #16a34a;
+}
+
+.editTextMoreButton.active {
+  color: #ffffff;
+  background: #334155;
+}
+
+.editTextToolButton:disabled,
+.editTextBackgroundButton:disabled,
+.editTextMoreButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* Loading and failure */
+
+.editTextLoading,
+.editTextFailed {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 32px;
+  color: #64748b;
+  text-align: center;
+}
+
+.editTextLoading span {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.editTextFailed p {
+  max-width: 320px;
+  margin: 0;
+  color: #475569;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.editTextRetryButton {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  color: #ffffff;
+  background: #111827;
+  border: 0;
+  border-radius: 11px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Common states */
+
+.editTextCloseButton:focus-visible,
+.editTextSaveButton:focus-visible,
+.editTextError button:focus-visible,
+.editTextRetryButton:focus-visible,
+.editTextToolButton:focus-visible,
+.editTextBackgroundButton:focus-visible,
+.editTextMoreButton:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.3);
+  outline-offset: 2px;
+}
+
+.editTextSpin {
+  animation: editTextSpin 800ms linear infinite;
+}
+
+@keyframes editTextSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Tablet and desktop */
+
+@media (min-width: 541px) {
+  .editTextPage {
+    padding: 24px;
+  }
+
+  .editTextShell {
+    min-height: calc(100dvh - 48px);
+    border: 1px solid rgba(148, 163, 184, 0.32);
+    border-radius: 20px;
+    box-shadow:
+      0 28px 70px rgba(15, 23, 42, 0.16),
+      0 4px 18px rgba(15, 23, 42, 0.07);
+    overflow: hidden;
+  }
+
+  .editTextHeader {
+    position: relative;
+  }
+
+  .editTextTools {
+    border-radius: 0 0 20px 20px;
+  }
+}
+
+/* Small mobile */
+
+@media (max-width: 400px) {
+  .editTextHeader {
+    grid-template-columns: 64px minmax(0, 1fr) 64px;
+    padding-inline: 8px;
+  }
+
+  .editTextHeaderSpace {
+    width: 64px;
+  }
+
+  .editTextSaveButton {
+    min-width: 60px;
+    font-size: 15px;
+  }
+
+  .editTextUser {
+    padding-inline: 14px;
+  }
+
+  .editTextComposer {
+    width: calc(100% - 24px);
+    min-height: 0;
+    margin-inline: 12px;
+    border-radius: 16px;
+  }
+
+  .editTextInput {
+    padding: 22px 18px;
+  }
+
+  .editTextInput.large {
+    font-size: clamp(28px, 9vw, 36px);
+  }
+
+  .editTextTools {
+    padding-inline: 12px;
+  }
+
+  .editTextToolButton,
+  .editTextBackgroundButton,
+  .editTextMoreButton {
+    width: 44px;
+    height: 44px;
+    flex-basis: 44px;
+    border-radius: 12px;
+  }
+}
+
+/* Short screens */
+
+@media (max-height: 720px) {
+  .editTextUser {
+    padding-block: 10px;
+  }
+
+  .editTextComposer {
+    min-height: 310px;
+  }
+
+  .editTextTools {
+    position: relative;
+  }
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+  .editTextCloseButton,
+  .editTextSaveButton,
+  .editTextInput,
+  .editTextToolButton,
+  .editTextBackgroundButton,
+  .editTextMoreButton {
+    transition: none;
+  }
+
+  .editTextSpin {
+    animation-duration: 1.8s;
+  }
+}

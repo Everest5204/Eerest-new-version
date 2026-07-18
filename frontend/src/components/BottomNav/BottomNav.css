@@ -1,0 +1,197 @@
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+
+  width: 100%;
+  height: 72px;
+  padding: 0 18px;
+
+  background: #ffffff;
+  border-top: 1px solid #f1f1f1;
+}
+
+.bottom-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 46px;
+  height: 46px;
+
+  color: #6b7280;
+  background: transparent;
+
+  border: none;
+  border-radius: 14px;
+  outline: none;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* সব navigation icon-এর base size ও color একই */
+
+.bottom-nav-item > svg {
+  display: block;
+  flex: 0 0 auto;
+
+  width: 27px;
+  height: 27px;
+
+  color: inherit;
+}
+
+/*
+ * Custom Reels SVG-এর ভেতরে তুলনামূলক বেশি ফাঁকা জায়গা আছে।
+ * তাই layout size না বদলে শুধু visual size সামান্য বড় করা হয়েছে।
+ */
+
+.bottom-nav-item[aria-label="Reels"] > svg {
+  transform: scale(1.1);
+  transform-origin: center;
+}
+
+.bottom-nav-create {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 52px;
+  height: 52px;
+
+  color: #374151;
+  background: #f3f4f6;
+
+  border: none;
+  border-radius: 50%;
+  outline: none;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.bottom-nav-item:hover {
+  color: #111827;
+  background: #fafafa;
+}
+
+.bottom-nav-create:hover {
+  color: #111827;
+  background: #e5e7eb;
+
+  transform: scale(1.05);
+}
+
+@media (max-width: 768px) {
+  .bottom-nav {
+    height: 68px;
+    padding: 0 12px;
+  }
+
+  .bottom-nav-item {
+    width: 42px;
+    height: 42px;
+  }
+
+  .bottom-nav-create {
+    width: 50px;
+    height: 50px;
+  }
+}
+
+@media (max-width: 420px) {
+  .bottom-nav {
+    height: 64px;
+    padding: 0 8px;
+  }
+
+  .bottom-nav-item {
+    width: 40px;
+    height: 40px;
+  }
+
+  .bottom-nav-create {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+/* Create dropdown */
+
+.create-dropdown {
+  position: absolute;
+  bottom: 70px;
+  left: 50%;
+  z-index: 2000;
+
+  width: 190px;
+  padding: 12px 0;
+  overflow: hidden;
+
+  background: #ffffff;
+  border: 1px solid #eef0f3;
+  border-radius: 14px;
+
+  box-shadow:
+    0 14px 34px
+    rgba(15, 23, 42, 0.22);
+
+  transform: translateX(-50%);
+}
+
+.create-dropdown::after {
+  position: absolute;
+  bottom: -7px;
+  left: 50%;
+
+  width: 14px;
+  height: 14px;
+
+  content: "";
+
+  background: #ffffff;
+
+  transform:
+    translateX(-50%)
+    rotate(45deg);
+}
+
+.create-dropdown button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: 100%;
+  height: 36px;
+  padding: 0 18px;
+
+  color: #2f3337;
+  background: transparent;
+
+  border: 0;
+
+  font-size: 16px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.create-dropdown button:hover {
+  background: #f3f4f6;
+}
+
+.create-dropdown svg {
+  color: #6b7280;
+}
+
+.bottom-nav-create.active {
+  background: #f3f4f6;
+}

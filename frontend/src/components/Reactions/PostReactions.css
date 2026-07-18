@@ -1,0 +1,483 @@
+/* ================================
+   Post Reactions
+   Facebook-style quick love + long press reaction box
+================================ */
+
+.postReactionRoot {
+  width: 100%;
+  height: 100%;
+  min-height: 54px;
+  position: relative;
+  overflow: visible;
+}
+
+
+/* ================================
+   Main Reaction Button
+================================ */
+
+.postReactionButton {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 54px;
+  border: 0;
+  background: transparent;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.postReactionButton:hover {
+  background: #f8fafc;
+}
+
+.postReactionButton:disabled {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+.postReactionButton.active {
+  color: #e11d48;
+}
+
+.postReactionButton.active svg {
+  fill: #e11d48;
+  stroke: #e11d48;
+}
+
+.postReactionButtonEmoji {
+  font-size: 23px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation-duration: 0.9s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.postReactionButtonEmoji.love {
+  animation-name: reactionLoveSoft;
+}
+
+.postReactionButtonEmoji.haha {
+  animation-name: reactionHahaSoft;
+}
+
+.postReactionButtonEmoji.wow {
+  animation-name: reactionWowSoft;
+}
+
+.postReactionButtonEmoji.sad {
+  animation-name: reactionSadSoft;
+}
+
+.postReactionButtonEmoji.angry {
+  animation-name: reactionAngrySoft;
+}
+
+
+/* ================================
+   Reaction Summary
+   This takes clean space inside action bar.
+   It does not float over the post image.
+================================ */
+
+.postReactionSummary {
+  position: absolute;
+  top: 7px;
+  left: 14px;
+  z-index: 25;
+  width: max-content;
+  max-width: calc(300% - 28px);
+  min-height: 22px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #475569;
+  padding: 0;
+  box-shadow: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.postReactionSummary:hover {
+  background: transparent;
+}
+
+.postReactionSummaryIcons {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.postReactionSummaryIcons span {
+  width: 20px;
+  height: 20px;
+  margin-left: -6px;
+  border-radius: 999px;
+  background: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
+  box-shadow:
+    0 0 0 2px #ffffff,
+    0 1px 3px rgba(15, 23, 42, 0.16);
+}
+
+.postReactionSummaryIcons span:first-child {
+  margin-left: 0;
+}
+
+.postReactionSummaryText {
+  min-width: 0;
+  max-width: min(360px, calc(300vw - 90px));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+/* ================================
+   Long Press Reaction Box
+================================ */
+
+.postReactionBox {
+  position: absolute;
+  left: 0;
+  bottom: 58px;
+  z-index: 1000;
+  min-height: 58px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow:
+    0 14px 36px rgba(15, 23, 42, 0.18),
+    0 4px 12px rgba(15, 23, 42, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  animation: reactionBoxFadeIn 0.14s ease-out;
+}
+
+.postReactionChoice {
+  width: 45px;
+  height: 45px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  opacity: 0;
+  animation: reactionChoiceFadeIn 0.18s ease-out forwards;
+  touch-action: none;
+}
+
+.postReactionChoice:nth-child(1) {
+  animation-delay: 0.01s;
+}
+
+.postReactionChoice:nth-child(2) {
+  animation-delay: 0.035s;
+}
+
+.postReactionChoice:nth-child(3) {
+  animation-delay: 0.06s;
+}
+
+.postReactionChoice:nth-child(4) {
+  animation-delay: 0.085s;
+}
+
+.postReactionChoice:nth-child(5) {
+  animation-delay: 0.11s;
+}
+
+.postReactionChoice span {
+  font-size: 33px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation-duration: 0.9s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  transform-origin: center;
+}
+
+.postReactionChoice.love span {
+  animation-name: reactionLoveSoft;
+}
+
+.postReactionChoice.haha span {
+  animation-name: reactionHahaSoft;
+}
+
+.postReactionChoice.wow span {
+  animation-name: reactionWowSoft;
+}
+
+.postReactionChoice.sad span {
+  animation-name: reactionSadSoft;
+}
+
+.postReactionChoice.angry span {
+  animation-name: reactionAngrySoft;
+}
+
+.postReactionChoice strong {
+  position: absolute;
+  left: 50%;
+  bottom: 49px;
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.94);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 5px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition: opacity 0.14s ease;
+}
+
+.postReactionChoice.selected,
+.postReactionChoice:hover,
+.postReactionChoice:focus-visible {
+  background: rgba(241, 245, 249, 0.95);
+}
+
+.postReactionChoice.selected strong,
+.postReactionChoice:hover strong,
+.postReactionChoice:focus-visible strong {
+  opacity: 1;
+}
+
+
+/* ================================
+   Animations
+================================ */
+
+@keyframes reactionBoxFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes reactionChoiceFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.94);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes reactionLoveSoft {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  45% {
+    transform: scale(1.12);
+  }
+
+  70% {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes reactionHahaSoft {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  20% {
+    transform: rotate(-7deg);
+  }
+
+  40% {
+    transform: rotate(7deg);
+  }
+
+  60% {
+    transform: rotate(-4deg);
+  }
+
+  80% {
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes reactionWowSoft {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  35% {
+    transform: scale(1.12);
+  }
+
+  60% {
+    transform: scale(0.97);
+  }
+}
+
+@keyframes reactionSadSoft {
+  0%,
+  100% {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+
+  45% {
+    opacity: 0.82;
+    transform: rotate(-4deg);
+  }
+
+  70% {
+    opacity: 0.92;
+    transform: rotate(2deg);
+  }
+}
+
+@keyframes reactionAngrySoft {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  18% {
+    transform: rotate(-5deg);
+  }
+
+  36% {
+    transform: rotate(5deg);
+  }
+
+  54% {
+    transform: rotate(-4deg);
+  }
+
+  72% {
+    transform: rotate(4deg);
+  }
+}
+
+
+/* ================================
+   Responsive
+================================ */
+
+@media (max-width: 480px) {
+  .postReactionButton {
+    font-size: 14px;
+    gap: 5px;
+  }
+
+  .postReactionButtonEmoji {
+    font-size: 22px;
+  }
+
+  .postReactionSummary {
+    top: 8px;
+    left: 10px;
+    max-width: calc(300% - 20px);
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .postReactionSummaryIcons span {
+    width: 19px;
+    height: 19px;
+    font-size: 13px;
+  }
+
+  .postReactionSummaryText {
+    max-width: min(240px, calc(100vw - 80px));
+  }
+
+  .postReactionBox {
+    left: 0;
+    bottom: 58px;
+    min-height: 56px;
+    padding: 6px 8px;
+    gap: 4px;
+  }
+
+  .postReactionChoice {
+    width: 42px;
+    height: 42px;
+  }
+
+  .postReactionChoice span {
+    font-size: 31px;
+  }
+
+  .postReactionChoice strong {
+    bottom: 48px;
+  }
+}
+
+@media (max-width: 360px) {
+  .postReactionButton span:not(.postReactionButtonEmoji) {
+    display: none;
+  }
+
+  .postReactionBox {
+    gap: 2px;
+    padding: 6px 7px;
+  }
+
+  .postReactionChoice {
+    width: 38px;
+    height: 38px;
+  }
+
+  .postReactionChoice span {
+    font-size: 29px;
+  }
+
+  .postReactionSummaryText {
+    max-width: 180px;
+  }
+}

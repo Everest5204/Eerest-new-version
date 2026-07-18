@@ -1,0 +1,561 @@
+.createTextPage {
+  width: 100%;
+  max-width: 520px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  font-family: "Inter", "Arial", sans-serif;
+}
+
+.createTextHeader {
+  height: 58px;
+  padding: 0 14px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.createTextHeader h1 {
+  margin: 0;
+  color: #020617;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.createTextClose {
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #020617;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.createTextClose:hover {
+  background: #f3f4f6;
+}
+
+.createTextClose:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.createTextPostBtn {
+  min-width: 84px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #ffffff;
+  padding: 0 20px;
+  font-size: 18px;
+  font-weight: 900;
+  text-transform: lowercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  cursor: pointer;
+}
+
+.createTextPostBtn:disabled {
+  background: #86efac;
+  cursor: not-allowed;
+}
+
+.createTextSpin {
+  animation: createTextSpin 0.8s linear infinite;
+}
+
+@keyframes createTextSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.createTextUser {
+  padding: 18px 20px 14px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.createTextAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #078b78;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.createTextAvatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.createTextAvatar span {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.createTextUser strong {
+  color: #020617;
+  font-size: 20px;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.createTextComposer {
+  width: calc(100% - 36px);
+  min-height: 490px;
+  margin: 0 18px;
+  border-radius: 22px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 24px 55px rgba(15, 23, 42, 0.12),
+    0 4px 18px rgba(15, 23, 42, 0.05);
+}
+
+.createTextComposer.plain {
+  min-height: 490px;
+  border: 1px solid #eef0f3;
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.08),
+    0 3px 12px rgba(15, 23, 42, 0.04);
+}
+
+.createTextComposer.designed::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.23), transparent 28%),
+    radial-gradient(circle at 84% 82%, rgba(255, 255, 255, 0.17), transparent 30%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.createTextInput {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: transparent;
+  position: relative;
+  z-index: 2;
+  font-family: inherit;
+}
+
+.createTextInput::placeholder {
+  color: currentColor;
+  opacity: 0.55;
+}
+
+.createTextInput:disabled {
+  cursor: not-allowed;
+}
+
+.createTextInput.plain {
+  padding: 38px 34px;
+  color: #020617;
+  font-size: 42px;
+  line-height: 1.18;
+  font-weight: 950;
+  text-align: center;
+  text-shadow: 0 9px 24px rgba(15, 23, 42, 0.16);
+}
+
+.createTextInput.designed {
+  padding: 34px;
+  color: inherit;
+  text-align: center;
+  font-weight: 950;
+  line-height: 1.13;
+  text-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.createTextInput.designed.large {
+  font-size: clamp(36px, 8vw, 52px);
+}
+
+.createTextInput.designed.medium {
+  font-size: clamp(28px, 6vw, 40px);
+  line-height: 1.2;
+}
+
+.createTextInput.designed.small {
+  font-size: clamp(20px, 4.8vw, 30px);
+  line-height: 1.32;
+  text-align: left;
+}
+
+.createTextTools {
+  margin-top: auto;
+  padding: 18px 18px 20px;
+  background: #ffffff;
+  border-top: 1px solid #eef0f3;
+}
+
+.createTextMeta {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.createTextMeta span {
+  color: #020617;
+  font-size: 16px;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.createTextMeta small {
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.createTextMeta small.warning {
+  color: #e11d48;
+}
+
+.createTextBackgrounds {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 0 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.createTextBackgrounds::-webkit-scrollbar {
+  display: none;
+}
+
+.createTextBackTool,
+.createTextBgOption,
+.createTextBgMore,
+.createTextEmoji {
+  width: 52px;
+  height: 52px;
+  min-width: 52px;
+  border: 0;
+  border-radius: 14px;
+  background: #f3f4f6;
+  color: #020617;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.createTextBackTool:hover,
+.createTextBgMore:hover,
+.createTextEmoji:hover,
+.createTextBgOption:hover {
+  transform: translateY(-1px);
+}
+
+.createTextBackTool:disabled,
+.createTextBgOption:disabled,
+.createTextBgMore:disabled,
+.createTextEmoji:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.createTextBackTool {
+  background: #f3f4f6;
+  color: #020617;
+}
+
+.createTextBgOption {
+  border: 2px solid transparent;
+  overflow: hidden;
+  color: #ffffff;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 2px 8px rgba(15, 23, 42, 0.12);
+}
+
+.createTextBgOption.active {
+  border-color: #16a34a;
+  box-shadow:
+    0 0 0 4px rgba(34, 197, 94, 0.2),
+    0 6px 16px rgba(15, 23, 42, 0.16);
+}
+
+.createTextBgOption.active svg {
+  color: currentColor;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.28));
+}
+
+.createTextBgMore {
+  background: #111827;
+  color: #ffffff;
+}
+
+.createTextEmoji {
+  background: #fff7ed;
+  color: #f97316;
+}
+
+/* Background preset classes */
+
+.createTextComposer.createTextBg-none,
+.createTextBgOption.createTextBg-none {
+  background: #ffffff;
+  color: #111827;
+}
+
+.createTextComposer.createTextBg-pink-purple,
+.createTextBgOption.createTextBg-pink-purple {
+  background: linear-gradient(135deg, #ec008c 0%, #7b2ff7 100%);
+  color: #ffffff;
+}
+
+.createTextComposer.createTextBg-blue-violet,
+.createTextBgOption.createTextBg-blue-violet {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+  color: #ffffff;
+}
+
+.createTextComposer.createTextBg-sunset,
+.createTextBgOption.createTextBg-sunset {
+  background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%);
+  color: #ffffff;
+}
+
+.createTextComposer.createTextBg-green,
+.createTextBgOption.createTextBg-green {
+  background: #059669;
+  color: #ffffff;
+}
+
+.createTextComposer.createTextBg-red,
+.createTextBgOption.createTextBg-red {
+  background: #e11d48;
+  color: #ffffff;
+}
+
+.createTextComposer.createTextBg-black,
+.createTextBgOption.createTextBg-black {
+  background: #020617;
+  color: #ffffff;
+}
+
+.createTextComposer.createTextBg-neon,
+.createTextBgOption.createTextBg-neon {
+  background:
+    radial-gradient(circle at 20% 20%, #22d3ee 0%, transparent 28%),
+    radial-gradient(circle at 80% 10%, #f472b6 0%, transparent 28%),
+    linear-gradient(135deg, #111827 0%, #4c1d95 100%);
+  color: #ffffff;
+}
+
+.createTextComposer.createTextBg-sky,
+.createTextBgOption.createTextBg-sky {
+  background: linear-gradient(135deg, #38bdf8 0%, #0f172a 100%);
+  color: #ffffff;
+}
+
+.createTextComposer.createTextBg-soft,
+.createTextBgOption.createTextBg-soft {
+  background: linear-gradient(135deg, #fef3c7 0%, #fecaca 50%, #ddd6fe 100%);
+  color: #111827;
+}
+
+.createTextBgOption.createTextBg-none {
+  border: 2px solid #e5e7eb;
+  color: #94a3b8;
+  box-shadow:
+    inset 0 0 0 1px rgba(15, 23, 42, 0.04),
+    0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+@media (min-width: 769px) {
+  .createTextPage {
+    border-left: 1px solid #eef0f3;
+    border-right: 1px solid #eef0f3;
+  }
+}
+
+@media (max-width: 768px) {
+  .createTextPage {
+    max-width: 100%;
+  }
+
+  .createTextComposer {
+    min-height: 470px;
+  }
+
+  .createTextComposer.plain {
+    min-height: 470px;
+  }
+}
+
+@media (max-width: 480px) {
+  .createTextHeader {
+    height: 56px;
+    padding: 0 12px;
+  }
+
+  .createTextHeader h1 {
+    font-size: 18px;
+  }
+
+  .createTextPostBtn {
+    min-width: 74px;
+    height: 40px;
+    padding: 0 16px;
+    font-size: 16px;
+  }
+
+  .createTextUser {
+    padding: 16px 18px 12px;
+  }
+
+  .createTextAvatar {
+    width: 46px;
+    height: 46px;
+  }
+
+  .createTextUser strong {
+    font-size: 18px;
+  }
+
+  .createTextComposer {
+    width: calc(100% - 36px);
+    min-height: 488px;
+    margin: 0 18px;
+    border-radius: 20px;
+  }
+
+  .createTextComposer.plain {
+    min-height: 488px;
+  }
+
+  .createTextInput.plain {
+    padding: 30px 24px;
+    font-size: clamp(35px, 9vw, 46px);
+  }
+
+  .createTextInput.designed {
+    padding: 28px 24px;
+  }
+
+  .createTextInput.designed.large {
+    font-size: clamp(34px, 9vw, 46px);
+  }
+
+  .createTextInput.designed.medium {
+    font-size: clamp(27px, 7vw, 36px);
+  }
+
+  .createTextInput.designed.small {
+    font-size: clamp(19px, 5.5vw, 26px);
+  }
+
+  .createTextTools {
+    padding: 16px 18px 18px;
+  }
+
+  .createTextMeta span {
+    font-size: 15px;
+  }
+
+  .createTextMeta small {
+    font-size: 14px;
+  }
+
+  .createTextBackTool,
+  .createTextBgOption,
+  .createTextBgMore,
+  .createTextEmoji {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    border-radius: 13px;
+  }
+}
+
+@media (max-width: 390px) {
+  .createTextComposer {
+    min-height: 430px;
+  }
+
+  .createTextComposer.plain {
+    min-height: 430px;
+  }
+
+  .createTextBackTool,
+  .createTextBgOption,
+  .createTextBgMore,
+  .createTextEmoji {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+  }
+}
+
+@media (max-width: 360px) {
+  .createTextComposer {
+    min-height: 390px;
+  }
+
+  .createTextComposer.plain {
+    min-height: 390px;
+  }
+
+  .createTextBackgrounds {
+    gap: 8px;
+  }
+
+  .createTextBackTool,
+  .createTextBgOption,
+  .createTextBgMore,
+  .createTextEmoji {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+  }
+}
