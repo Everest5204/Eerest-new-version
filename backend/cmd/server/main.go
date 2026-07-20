@@ -19,6 +19,7 @@ import (
 	"everest-backend/internal/reels"
 	"everest-backend/internal/textpost"
 	"everest-backend/internal/user"
+	"everest-backend/internal/search"
 )
 
 const (
@@ -67,6 +68,24 @@ func main() {
 			err,
 		)
 	}
+
+
+searchService := search.NewService(
+	db.Database,
+)
+
+searchHandler := search.NewHandler(
+	searchService,
+)
+
+if err := searchService.CreateIndexes(
+	startupCtx,
+); err != nil {
+	log.Println(
+		"User search indexes warning:",
+		err,
+	)
+}
 
 	postService, err := post.NewPostService(
 		db.Database,
@@ -219,6 +238,14 @@ func main() {
 		userHandler,
 		cfg.JWTSecret,
 	)
+
+
+search.RegisterRoutes(
+	mux,
+	searchHandler,
+	cfg.JWTSecret,
+)
+
 
 	profilemedia.RegisterProfileMediaRoutes(
 		mux,

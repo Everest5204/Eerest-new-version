@@ -14,7 +14,7 @@ import VerificationCode from "./pages/Login/VerificationCode";
 import ResetPassword from "./pages/Login/ResetPassword";
 
 import Reels from "./pages/Reels/Reels";
-
+import SearchPage from "./pages/Search/Search";
 import CreateMediaPost from "./components/Post/CreateMediaPost";
 import CreateTextPost from "./components/textpost/CreateTextPost";
 
@@ -38,6 +38,12 @@ function App() {
           <Route
             path="/reels"
             element={<Reels />}
+          />
+
+
+          <Route
+            path="/search"
+         element={<SearchPage />}
           />
 
           <Route

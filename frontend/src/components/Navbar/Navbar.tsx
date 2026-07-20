@@ -1,4 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+import {
+  useNavigate,
+} from "react-router-dom";
 
 import {
   Search,
@@ -12,28 +20,47 @@ import LeftDrawer from "../Drawer/LeftDrawer";
 import "./Navbar.css";
 
 const Navbar = () => {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const drawerHistoryRef = useRef(false);
+  const navigate = useNavigate();
+
+  const [drawerOpen, setDrawerOpen] =
+    useState(false);
+
+  const drawerHistoryRef =
+    useRef(false);
 
   const openDrawer = () => {
     if (drawerOpen) return;
 
-    window.history.pushState({ drawer: true }, "");
+    window.history.pushState(
+      {
+        drawer: true,
+      },
+      "",
+    );
+
     drawerHistoryRef.current = true;
+
     setDrawerOpen(true);
   };
 
-  const closeDrawer = (fromBackButton = false) => {
+  const closeDrawer = (
+    fromBackButton = false,
+  ) => {
     setDrawerOpen(false);
 
-    if (!fromBackButton && drawerHistoryRef.current) {
+    if (
+      !fromBackButton &&
+      drawerHistoryRef.current
+    ) {
       drawerHistoryRef.current = false;
+
       window.history.back();
     }
   };
 
   const closeDrawerAfterNavigate = () => {
     drawerHistoryRef.current = false;
+
     setDrawerOpen(false);
   };
 
@@ -41,45 +68,87 @@ const Navbar = () => {
     const handleBackButton = () => {
       if (drawerOpen) {
         drawerHistoryRef.current = false;
+
         closeDrawer(true);
       }
     };
 
-    window.addEventListener("popstate", handleBackButton);
+    window.addEventListener(
+      "popstate",
+      handleBackButton,
+    );
 
     return () => {
-      window.removeEventListener("popstate", handleBackButton);
+      window.removeEventListener(
+        "popstate",
+        handleBackButton,
+      );
     };
   }, [drawerOpen]);
 
   return (
     <>
       <nav className="navbar">
-        <div className="navbar-logo">Everest</div>
+        <div className="navbar-logo">
+          Everest
+        </div>
 
         <div className="navbar-actions">
-          <button className="nav-icon" type="button">
-            <Search size={24} strokeWidth={2.3} />
+          <button
+            className="nav-icon"
+            type="button"
+            aria-label="Search people"
+            onClick={() =>
+              navigate("/search")
+            }
+          >
+            <Search
+              size={24}
+              strokeWidth={2.3}
+            />
           </button>
 
-          <button className="nav-icon" type="button">
-            <Bell size={24} strokeWidth={2.3} />
+          <button
+            className="nav-icon"
+            type="button"
+          >
+            <Bell
+              size={24}
+              strokeWidth={2.3}
+            />
           </button>
 
-          <button className="nav-icon" type="button">
-            <MessageCircle size={24} strokeWidth={2.3} />
+          <button
+            className="nav-icon"
+            type="button"
+          >
+            <MessageCircle
+              size={24}
+              strokeWidth={2.3}
+            />
           </button>
 
-          <button className="nav-icon" type="button" onClick={openDrawer}>
-            <Menu size={28} strokeWidth={2.4} />
+          <button
+            className="nav-icon"
+            type="button"
+            onClick={openDrawer}
+          >
+            <Menu
+              size={28}
+              strokeWidth={2.4}
+            />
           </button>
         </div>
       </nav>
 
       <LeftDrawer
         isOpen={drawerOpen}
-        onClose={() => closeDrawer(false)}
-        onNavigateClose={closeDrawerAfterNavigate}
+        onClose={() =>
+          closeDrawer(false)
+        }
+        onNavigateClose={
+          closeDrawerAfterNavigate
+        }
       />
     </>
   );
