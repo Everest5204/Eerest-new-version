@@ -1,0 +1,231 @@
+{
+  "brand_terms": [
+    "mongosky",
+    "মঙ্গস্কি",
+    "e-text",
+    "e text",
+    "ই-টেক্সট",
+    "murad ahmed simanto",
+    "মুরাদ আহমেদ সীমান্ত",
+    "a.h. rohan",
+    "a h rohan",
+    "arafat hasan rohan",
+    "আরাফাত হাসান রোহান"
+  ],
+  "unknown_answer_bn": "Mongosky সম্পর্কে এই নির্দিষ্ট তথ্যটি এখনো অনুমোদিত knowledge file-এ যোগ করা হয়নি।",
+  "unknown_answer_en": "This specific information about Mongosky has not yet been added to the approved knowledge file.",
+  "entries": [
+    {
+      "id": "mongosky-official-name",
+      "keywords": [
+        "mongosky official name",
+        "mongosky full name",
+        "official name of mongosky",
+        "what is the full name of mongosky",
+        "mongosky er puro nam",
+        "mongosky er official nam",
+        "mongosky এর পুরো নাম",
+        "mongosky এর অফিসিয়াল নাম",
+        "মঙ্গস্কির পুরো নাম",
+        "মঙ্গস্কির অফিসিয়াল নাম"
+      ],
+      "answer_bn": "এই সামাজিক যোগাযোগমাধ্যমটির অফিসিয়াল নাম Mongosky।",
+      "answer_en": "The official name of the social media platform is Mongosky."
+    },
+    {
+      "id": "about-mongosky",
+      "keywords": [
+        "what is mongosky",
+        "tell me about mongosky",
+        "about mongosky",
+        "mongosky social media",
+        "mongosky platform",
+        "mongosky ki",
+        "mongosky somporke",
+        "mongosky সম্পর্কে",
+        "mongosky কী",
+        "mongosky কি",
+        "মঙ্গস্কি কী",
+        "মঙ্গস্কি কি",
+        "মঙ্গস্কি সম্পর্কে"
+      ],
+      "answer_bn": "Mongosky একটি সামাজিক যোগাযোগমাধ্যম। এখানে ব্যবহারকারীরা পোস্ট তৈরি ও শেয়ার করতে, পোস্টে লাইক ও মন্তব্য করতে, রিলস দেখতে এবং অন্য ব্যবহারকারীদের সঙ্গে চ্যাট করতে পারেন। Mongosky-এর চ্যাট সুবিধার নাম E-Text।",
+      "answer_en": "Mongosky is a social media platform where users can create and share posts, like and comment on posts, watch reels, and chat with other users. Mongosky's chat feature is called E-Text."
+    },
+    {
+      "id": "mongosky-features",
+      "keywords": [
+        "mongosky features",
+        "features of mongosky",
+        "what can i do on mongosky",
+        "what does mongosky offer",
+        "mongosky e ki ki kora jai",
+        "mongosky e ki kora jay",
+        "mongosky feature ki",
+        "mongosky এর ফিচার",
+        "mongosky এ কী করা যায়",
+        "mongosky এ কি কি করা যায়",
+        "mongosky এ কী কী করা যায়",
+        "মঙ্গস্কির ফিচার",
+        "মঙ্গস্কিতে কী করা যায়"
+      ],
+      "answer_bn": "Mongosky-এর প্রধান সুবিধাগুলো হলো পোস্ট তৈরি ও শেয়ার করা, পোস্টে লাইক ও মন্তব্য করা, রিলস দেখা এবং E-Text-এর মাধ্যমে চ্যাট করা।",
+      "answer_en": "Mongosky's main features include creating and sharing posts, liking and commenting on posts, watching reels, and chatting through E-Text."
+    },
+    {
+      "id": "mongosky-e-text",
+      "keywords": [
+        "what is e text",
+        "what is e-text",
+        "mongosky e text",
+        "mongosky e-text",
+        "mongosky chat feature",
+        "mongosky chat name",
+        "what is mongosky chat called",
+        "e text ki",
+        "e-text ki",
+        "mongosky chat er nam ki",
+        "e text কী",
+        "e-text কী",
+        "mongosky chat এর নাম কী",
+        "ই-টেক্সট কী",
+        "মঙ্গস্কির চ্যাটের নাম কী"
+      ],
+      "answer_bn": "E-Text হলো Mongosky-এর চ্যাট সুবিধা। এর মাধ্যমে Mongosky-এর ব্যবহারকারীরা একে অপরের সঙ্গে বার্তা আদান-প্রদান করতে পারেন।",
+      "answer_en": "E-Text is Mongosky's chat feature. It allows Mongosky users to exchange messages with one another."
+    },
+    {
+      "id": "mongosky-launch-date",
+      "keywords": [
+        "mongosky launch date",
+        "when was mongosky launched",
+        "when did mongosky launch",
+        "mongosky started when",
+        "mongosky kobe launch hoy",
+        "mongosky kokhon launch hoy",
+        "mongosky kobe shuru hoy",
+        "mongosky কবে চালু হয়",
+        "mongosky কবে লঞ্চ হয়",
+        "mongosky কবে launch হয়েছে",
+        "mongosky কখন launch হয়েছে",
+        "mongosky কখন শুরু হয়",
+        "মঙ্গস্কি কবে চালু হয়",
+        "মঙ্গস্কি কবে লঞ্চ হয়",
+        "মঙ্গস্কি কবে launch হয়েছে"
+      ],
+      "answer_bn": "Mongosky ২০২৫ সালের ২০ নভেম্বর চালু করা হয়।",
+      "answer_en": "Mongosky was launched on 20 November 2025."
+    },
+    {
+      "id": "mongosky-technology",
+      "keywords": [
+        "mongosky technology",
+        "mongosky technologies",
+        "mongosky tech stack",
+        "how was mongosky built",
+        "what is mongosky built with",
+        "react go mongodb",
+        "mongosky kon technology",
+        "mongosky ki diye toiri",
+        "mongosky কোন প্রযুক্তি",
+        "mongosky কী দিয়ে তৈরি",
+        "মঙ্গস্কি প্রযুক্তি",
+        "মঙ্গস্কি কী দিয়ে তৈরি"
+      ],
+      "answer_bn": "Mongosky-এর frontend React ও TypeScript দিয়ে, backend Go দিয়ে এবং database MongoDB ব্যবহার করে তৈরি করা হচ্ছে।",
+      "answer_en": "Mongosky is being built with React and TypeScript on the frontend, Go on the backend, and MongoDB as its database."
+    },
+    {
+      "id": "mongosky-founder",
+      "keywords": [
+        "mongosky founder",
+        "founder of mongosky",
+        "who founded mongosky",
+        "who is murad ahmed simanto",
+        "murad ahmed simanto",
+        "mongosky owner",
+        "mongosky developer",
+        "mongosky er founder ke",
+        "mongosky founder ke",
+        "mongosky er malik ke",
+        "mongosky ke toiri koreche",
+        "murad ahmed simanto ke",
+        "mongosky এর প্রতিষ্ঠাতা",
+        "mongosky এর founder কে",
+        "mongosky এর মালিক কে",
+        "mongosky কে তৈরি করেছে",
+        "mongosky কে তৈরি করেছেন",
+        "mongosky কে বানিয়েছে",
+        "মঙ্গস্কির founder কে",
+        "মঙ্গস্কির প্রতিষ্ঠাতা কে",
+        "মঙ্গস্কি কে তৈরি করেছে",
+        "মঙ্গস্কি কে তৈরি করেছেন",
+        "মঙ্গস্কি কে বানিয়েছে",
+        "মুরাদ আহমেদ সীমান্ত কে"
+      ],
+      "answer_bn": "Mongosky-এর প্রতিষ্ঠাতা Murad Ahmed Simanto (মুরাদ আহমেদ সীমান্ত)। তিনি Janata Bazar High School থেকে SSC সম্পন্ন করেছেন। তাঁর গ্রামের বাড়ি ভোলা জেলায়। বর্তমানে তিনি Daffodil Polytechnic Institute-এর Computer Science বিভাগে Diploma in Engineering অধ্যয়ন করছেন।",
+      "answer_en": "Murad Ahmed Simanto is the founder of Mongosky. He completed his SSC at Janata Bazar High School. His hometown is in Bhola District, and he is currently studying for a Diploma in Engineering in the Computer Science department at Daffodil Polytechnic Institute."
+    },
+    {
+      "id": "mongosky-co-founder",
+      "keywords": [
+        "mongosky co founder",
+        "mongosky co-founder",
+        "co founder of mongosky",
+        "co-founder of mongosky",
+        "who is the co founder of mongosky",
+        "who is a h rohan",
+        "who is arafat hasan rohan",
+        "a h rohan",
+        "a.h. rohan",
+        "arafat hasan rohan",
+        "mongosky er co founder ke",
+        "mongosky co founder ke",
+        "arafat hasan rohan ke",
+        "mongosky এর সহ প্রতিষ্ঠাতা",
+        "mongosky এর co founder কে",
+        "মঙ্গস্কির co founder কে",
+        "মঙ্গস্কির সহ-প্রতিষ্ঠাতা কে",
+        "আরাফাত হাসান রোহান কে"
+      ],
+      "answer_bn": "Mongosky-এর সহ-প্রতিষ্ঠাতা A.H. Rohan (Arafat Hasan Rohan)। তিনি Janata Bazar High School থেকে SSC সম্পন্ন করেছেন। বর্তমানে তিনি Lalmohan Hamim Residential School and College-এ উচ্চমাধ্যমিক দ্বিতীয় বর্ষে অধ্যয়ন করছেন। তিনি Mongosky website-এর management নিয়ে কাজ করেন।",
+      "answer_en": "A.H. Rohan (Arafat Hasan Rohan) is the co-founder of Mongosky. He completed his SSC at Janata Bazar High School and is currently a second-year higher secondary student at Lalmohan Hamim Residential School and College. He works on the management of the Mongosky website."
+    },
+    {
+      "id": "mongosky-management",
+      "keywords": [
+        "mongosky website management",
+        "mongosky management",
+        "who manages mongosky website",
+        "who handles mongosky website",
+        "mongosky website ke manage kore",
+        "mongosky management ke kore",
+        "mongosky website কে পরিচালনা করে",
+        "mongosky management কে করে",
+        "মঙ্গস্কি ওয়েবসাইট কে পরিচালনা করে",
+        "মঙ্গস্কির ব্যবস্থাপনা কে করে"
+      ],
+      "answer_bn": "Mongosky-এর সহ-প্রতিষ্ঠাতা A.H. Rohan (Arafat Hasan Rohan) website management নিয়ে কাজ করেন।",
+      "answer_en": "Mongosky co-founder A.H. Rohan (Arafat Hasan Rohan) works on website management."
+    },
+    {
+      "id": "mongosky-leadership",
+      "keywords": [
+        "mongosky leadership",
+        "mongosky team leaders",
+        "mongosky founder and co founder",
+        "mongosky founder and co-founder",
+        "who leads mongosky",
+        "who runs mongosky",
+        "mongosky founder co founder ke",
+        "mongosky ke chalai",
+        "mongosky এর founder এবং co founder",
+        "mongosky কে পরিচালনা করেন",
+        "মঙ্গস্কির প্রতিষ্ঠাতা ও সহ-প্রতিষ্ঠাতা",
+        "মঙ্গস্কি কে পরিচালনা করেন"
+      ],
+      "answer_bn": "Mongosky-এর প্রতিষ্ঠাতা Murad Ahmed Simanto এবং সহ-প্রতিষ্ঠাতা A.H. Rohan (Arafat Hasan Rohan)। Murad Ahmed Simanto Mongosky প্রতিষ্ঠা করেছেন এবং A.H. Rohan website management নিয়ে কাজ করেন।",
+      "answer_en": "Mongosky was founded by Murad Ahmed Simanto, with A.H. Rohan (Arafat Hasan Rohan) serving as co-founder. Murad Ahmed Simanto founded the platform, while A.H. Rohan works on website management."
+    }
+  ]
+}

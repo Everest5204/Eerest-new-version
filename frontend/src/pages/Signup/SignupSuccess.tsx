@@ -58,7 +58,7 @@ const SignupSuccess = () => {
         <h1>Congratulations!</h1>
         <p className="successSubtitle">Your account signup successful</p>
         <p className="successText">
-          Welcome to Everest! You are now part of our community. Let's explore and connect together.
+          Welcome to Mongosky! You are now part of our community. Let's explore and connect together.
         </p>
 
         <button className="successBtn" onClick={goToHome}>Go to Home</button>

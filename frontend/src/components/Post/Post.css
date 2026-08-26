@@ -714,3 +714,25 @@
     padding: 16px;
   }
 }
+
+
+
+
+
+
+.postProfileAvatarLink {
+  display: flex;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.postProfileNameLink {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.postProfileNameLink:hover h3 {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

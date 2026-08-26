@@ -151,7 +151,7 @@ const Login = () => {
   return (
     <div className="loginPage" onClick={closeLoginPage}>
       <div className="loginContainer" onClick={stopClose}>
-        <h2 className="loginLogo">Everest</h2>
+        <h2 className="loginLogo">Mongosky</h2>
 
         <h1>Sign In to your Account</h1>
 

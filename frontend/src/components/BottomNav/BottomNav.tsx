@@ -5,9 +5,7 @@ import {
   useState,
 } from "react";
 
-import type {
-  ChangeEvent,
-} from "react";
+import type { ChangeEvent } from "react";
 
 import {
   Home,
@@ -21,9 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 
-import {
-  useNavigate,
-} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import useBackDismiss from "../../hooks/useBackDismiss";
 
@@ -95,32 +91,23 @@ const BottomNav = () => {
     useRef<HTMLDivElement | null>(null);
 
   const createButtonRef =
-    useRef<HTMLButtonElement | null>(
-      null,
-    );
+    useRef<HTMLButtonElement | null>(null);
 
   const mediaInputRef =
-    useRef<HTMLInputElement | null>(
-      null,
-    );
+    useRef<HTMLInputElement | null>(null);
 
   const reelInputRef =
-    useRef<HTMLInputElement | null>(
-      null,
+    useRef<HTMLInputElement | null>(null);
+
+  const closeCreateMenu = useCallback(() => {
+    setOpenCreateMenu(false);
+  }, []);
+
+  const toggleCreateMenu = useCallback(() => {
+    setOpenCreateMenu(
+      (previousValue) => !previousValue,
     );
-
-  const closeCreateMenu =
-    useCallback(() => {
-      setOpenCreateMenu(false);
-    }, []);
-
-  const toggleCreateMenu =
-    useCallback(() => {
-      setOpenCreateMenu(
-        (previousValue) =>
-          !previousValue,
-      );
-    }, []);
+  }, []);
 
   /*
    * Mobile physical/browser Back button চাপলে
@@ -132,15 +119,13 @@ const BottomNav = () => {
     stateKey: "bottom-create-menu",
   });
 
-  const handleHomeClick =
-    useCallback(() => {
-      navigate("/");
-    }, [navigate]);
+  const handleHomeClick = useCallback(() => {
+    navigate("/");
+  }, [navigate]);
 
-  const handleReelsClick =
-    useCallback(() => {
-      navigate("/reels");
-    }, [navigate]);
+  const handleReelsClick = useCallback(() => {
+    navigate("/reels");
+  }, [navigate]);
 
   const handleProfileClick =
     useCallback(() => {
@@ -151,129 +136,105 @@ const BottomNav = () => {
         alert(
           "Please signup to your account",
         );
-
         return;
       }
 
       navigate("/profile");
     }, [navigate]);
 
-  const openMediaPicker =
-    useCallback(() => {
-      closeCreateMenu();
+  const openMediaPicker = useCallback(() => {
+    closeCreateMenu();
+    mediaInputRef.current?.click();
+  }, [closeCreateMenu]);
 
-      mediaInputRef.current?.click();
-    }, [closeCreateMenu]);
+  const openReelPicker = useCallback(() => {
+    closeCreateMenu();
+    reelInputRef.current?.click();
+  }, [closeCreateMenu]);
 
-  const openReelPicker =
-    useCallback(() => {
-      closeCreateMenu();
+  const handleMediaSelect = useCallback(
+    (
+      event: ChangeEvent<HTMLInputElement>,
+    ) => {
+      const selectedFiles = Array.from(
+        event.target.files ?? [],
+      );
 
-      reelInputRef.current?.click();
-    }, [closeCreateMenu]);
+      event.target.value = "";
 
-  const handleMediaSelect =
-    useCallback(
-      (
-        event: ChangeEvent<HTMLInputElement>,
-      ) => {
-        const selectedFiles =
-          Array.from(
-            event.target.files ?? [],
-          );
+      if (selectedFiles.length === 0) {
+        return;
+      }
 
-        event.target.value = "";
+      const firstFile = selectedFiles[0];
 
-        if (
-          selectedFiles.length === 0
-        ) {
-          return;
-        }
-
-        const firstFile =
-          selectedFiles[0];
-
-        /*
-         * Media picker থেকে video select হলেও সেটি
-         * existing upload page দিয়ে Reel হবে।
-         */
-        if (
-          firstFile.type.startsWith(
-            "video/",
-          )
-        ) {
-          navigate("/create/media", {
-            state: {
-              files: [firstFile],
-            },
-          });
-
-          return;
-        }
-
-        if (
-          firstFile.type.startsWith(
-            "image/",
-          )
-        ) {
-          const imageFiles =
-            selectedFiles
-              .filter((file) =>
-                file.type.startsWith(
-                  "image/",
-                ),
-              )
-              .slice(
-                0,
-                MAX_MEDIA_IMAGES,
-              );
-
-          navigate("/create/media", {
-            state: {
-              files: imageFiles,
-            },
-          });
-        }
-      },
-      [navigate],
-    );
-
-  const handleReelSelect =
-    useCallback(
-      (
-        event: ChangeEvent<HTMLInputElement>,
-      ) => {
-        const selectedFiles =
-          Array.from(
-            event.target.files ?? [],
-          );
-
-        event.target.value = "";
-
-        const selectedVideo =
-          selectedFiles.find((file) =>
-            file.type.startsWith(
-              "video/",
-            ),
-          );
-
-        if (!selectedVideo) {
-          return;
-        }
-
-        /*
-         * আলাদা Reel upload backend প্রয়োজন নেই।
-         * Existing video post create API type=video
-         * save করবে, Reels API সেটিই read করবে।
-         */
+      /*
+       * Media picker থেকে video select হলেও সেটি
+       * existing upload page দিয়ে Reel হবে।
+       */
+      if (
+        firstFile.type.startsWith("video/")
+      ) {
         navigate("/create/media", {
           state: {
-            files: [selectedVideo],
+            files: [firstFile],
           },
         });
-      },
-      [navigate],
-    );
+
+        return;
+      }
+
+      if (
+        firstFile.type.startsWith("image/")
+      ) {
+        const imageFiles = selectedFiles
+          .filter((file) =>
+            file.type.startsWith("image/"),
+          )
+          .slice(0, MAX_MEDIA_IMAGES);
+
+        navigate("/create/media", {
+          state: {
+            files: imageFiles,
+          },
+        });
+      }
+    },
+    [navigate],
+  );
+
+  const handleReelSelect = useCallback(
+    (
+      event: ChangeEvent<HTMLInputElement>,
+    ) => {
+      const selectedFiles = Array.from(
+        event.target.files ?? [],
+      );
+
+      event.target.value = "";
+
+      const selectedVideo =
+        selectedFiles.find((file) =>
+          file.type.startsWith("video/"),
+        );
+
+      if (!selectedVideo) {
+        return;
+      }
+
+      /*
+       * আলাদা Reel upload backend প্রয়োজন নেই।
+       * Existing video post create API type=video
+       * save করবে, Reels API সেটিই read করবে।
+       */
+      navigate("/create/media", {
+        state: {
+          files: [selectedVideo],
+        },
+      });
+    },
+    [navigate],
+  );
 
   const handleCreateMenuClick =
     useCallback(
@@ -320,8 +281,7 @@ const BottomNav = () => {
     const handleOutsideClick = (
       event: MouseEvent | TouchEvent,
     ) => {
-      const target =
-        event.target as Node;
+      const target = event.target as Node;
 
       if (
         dropdownRef.current?.contains(
@@ -399,9 +359,7 @@ const BottomNav = () => {
             type="button"
             role="menuitem"
             onClick={() =>
-              handleCreateMenuClick(
-                "text",
-              )
+              handleCreateMenuClick("text")
             }
           >
             <Edit3 size={20} />
@@ -412,9 +370,7 @@ const BottomNav = () => {
             type="button"
             role="menuitem"
             onClick={() =>
-              handleCreateMenuClick(
-                "media",
-              )
+              handleCreateMenuClick("media")
             }
           >
             <Image size={20} />
@@ -425,9 +381,7 @@ const BottomNav = () => {
             type="button"
             role="menuitem"
             onClick={() =>
-              handleCreateMenuClick(
-                "reels",
-              )
+              handleCreateMenuClick("reels")
             }
           >
             <Film size={20} />
@@ -438,9 +392,7 @@ const BottomNav = () => {
             type="button"
             role="menuitem"
             onClick={() =>
-              handleCreateMenuClick(
-                "story",
-              )
+              handleCreateMenuClick("story")
             }
           >
             <CirclePlus size={20} />
@@ -451,9 +403,7 @@ const BottomNav = () => {
             type="button"
             role="menuitem"
             onClick={() =>
-              handleCreateMenuClick(
-                "ai",
-              )
+              handleCreateMenuClick("ai")
             }
           >
             <Zap size={20} />
@@ -484,9 +434,7 @@ const BottomNav = () => {
         ref={createButtonRef}
         className={[
           "bottom-nav-create",
-          openCreateMenu
-            ? "active"
-            : "",
+          openCreateMenu ? "active" : "",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -496,9 +444,7 @@ const BottomNav = () => {
             ? "Close create menu"
             : "Open create menu"
         }
-        aria-expanded={
-          openCreateMenu
-        }
+        aria-expanded={openCreateMenu}
         onClick={toggleCreateMenu}
       >
         <Plus size={30} />

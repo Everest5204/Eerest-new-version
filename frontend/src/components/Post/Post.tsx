@@ -13,6 +13,7 @@ import type { FeedPost, MediaItem } from "../../services/postService";
 import PostOptionsMenu from "./PostOptionsMenu";
 import PostReactions from "../Reactions/PostReactions";
 import CommentSection from "../Comment/CommentSection";
+import { ProfileLink } from "../../profileView";
 
 import {useEditedPost,} from "../../pages/editMediaPost/PostEditContext";
 
@@ -335,6 +336,9 @@ const [localCommentsCount, setLocalCommentsCount] =
   const actionText = getPostActionText(post.type);
   const timeAgo = getTimeAgo(post.created_at);
   const profileImageURL = post.user?.profile_image_url?.trim() || "";
+  const authorUserID = String(
+    post.user_id || post.user?.id || ""
+  ).trim();
 
   const caption = post.caption?.trim() || "";
   const textPostContent = useMemo(() => getTextPostContent(post), [post]);
@@ -582,17 +586,37 @@ const [localCommentsCount, setLocalCommentsCount] =
     <article className="postCard">
       <header className="postHeader">
         <div className="postAuthor">
-          <div className="postAvatar">
-            {profileImageURL ? (
-              <img src={profileImageURL} alt={fullName} />
-            ) : (
-              <User size={22} strokeWidth={1.8} />
-            )}
-          </div>
+          <ProfileLink
+            userID={authorUserID}
+            ariaLabel={`Open ${fullName}'s profile`}
+            style={{
+              display: "flex",
+              flexShrink: 0,
+              borderRadius: "50%",
+            }}
+          >
+            <div className="postAvatar">
+              {profileImageURL ? (
+                <img src={profileImageURL} alt={fullName} />
+              ) : (
+                <User size={22} strokeWidth={1.8} />
+              )}
+            </div>
+          </ProfileLink>
 
           <div className="postAuthorText">
             <div className="postAuthorTop">
-              <h3>{fullName}</h3>
+              <ProfileLink
+                userID={authorUserID}
+                ariaLabel={`Open ${fullName}'s profile`}
+                style={{
+                  display: "block",
+                  minWidth: 0,
+                  overflow: "hidden",
+                }}
+              >
+                <h3>{fullName}</h3>
+              </ProfileLink>
 
               <button type="button" className="postFollowBtn">
                 Follow

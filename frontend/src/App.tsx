@@ -12,7 +12,7 @@ import Profile from "./pages/Profile/Profile";
 import ForgotPassword from "./pages/Login/ForgotPassword";
 import VerificationCode from "./pages/Login/VerificationCode";
 import ResetPassword from "./pages/Login/ResetPassword";
-
+import AI from "./pages/AI/AI";
 import Reels from "./pages/Reels/Reels";
 import SearchPage from "./pages/Search/Search";
 import CreateMediaPost from "./components/Post/CreateMediaPost";
@@ -20,6 +20,7 @@ import CreateTextPost from "./components/textpost/CreateTextPost";
 
 import EditMediaPost from "./pages/editMediaPost/EditMediaPost";
 import EditTextPost from "./pages/editTextPost/EditTextPost";
+import { ProfileViewPage } from "./profileView";
 
 import {
   PostEditProvider,
@@ -62,6 +63,11 @@ function App() {
           />
 
           <Route
+            path="/ai"
+            element={<AI />}
+         />
+
+          <Route
             path="/signup-success"
             element={<SignupSuccess />}
           />
@@ -99,6 +105,12 @@ function App() {
           <Route
             path="/posts/:postId/edit"
             element={<EditMediaPost />}
+          />
+
+
+          <Route
+            path="/profile/:userID"
+            element={<ProfileViewPage />}
           />
 
           <Route

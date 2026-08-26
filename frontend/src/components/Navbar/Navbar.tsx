@@ -90,7 +90,7 @@ const Navbar = () => {
     <>
       <nav className="navbar">
         <div className="navbar-logo">
-          Everest
+         Mongoksy
         </div>
 
         <div className="navbar-actions">

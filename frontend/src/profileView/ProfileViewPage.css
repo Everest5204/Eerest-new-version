@@ -1,0 +1,1006 @@
+.profileViewPage {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 0 16px 96px;
+  background: #eef1f5;
+  color: #0f172a;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+.profileViewPage *,
+.profileViewSheetBackdrop *,
+.profileViewNotice {
+  box-sizing: border-box;
+}
+
+.profileViewWrapper {
+  width: 100%;
+  max-width: 620px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  background: #ffffff;
+  box-shadow: 0 0 36px rgba(15, 23, 42, 0.08);
+}
+
+.profileViewHeader {
+  width: 100%;
+  background: #ffffff;
+}
+
+.profileViewCover {
+  position: relative;
+  width: 100%;
+  height: 270px;
+  overflow: hidden;
+  border-radius: 0 0 20px 20px;
+  background:
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.38),
+      transparent 35%
+    ),
+    linear-gradient(135deg, #cbd5e1, #94a3b8);
+}
+
+.profileViewCoverImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profileViewInfo {
+  position: relative;
+  padding: 0 20px;
+}
+
+.profileViewAvatar {
+  position: relative;
+  z-index: 2;
+  width: 148px;
+  height: 148px;
+  margin-top: -82px;
+  overflow: hidden;
+  border: 6px solid #ffffff;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.17);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileViewAvatarImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+
+.profileViewName {
+  max-width: 100%;
+  margin: 27px 0 0;
+  color: #05070a;
+  font-size: clamp(30px, 5.5vw, 38px);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -1.1px;
+  overflow-wrap: anywhere;
+}
+
+.profileViewTitle {
+  margin: 9px 0 0;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.profileViewStats {
+  margin-top: 23px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 11px;
+  color: #172033;
+  font-size: 16px;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.profileViewStats strong {
+  color: #05070a;
+  font-weight: 900;
+}
+
+.profileViewActions {
+  width: 100%;
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    72px;
+  gap: 9px;
+}
+
+.profileViewActions button {
+  min-width: 0;
+  height: 46px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 9px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 120ms ease,
+    opacity 160ms ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.profileViewActions button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.profileViewActions button:focus-visible,
+.profileViewTabs button:focus-visible,
+.profileViewPostsError button:focus-visible,
+.profileViewErrorState button:focus-visible,
+.profileViewSheetHeader button:focus-visible,
+.profileViewCopyLinkButton:focus-visible {
+  outline: 3px solid rgba(225, 29, 72, 0.24);
+  outline-offset: 2px;
+}
+
+.profileViewFollowButton {
+  background: #f0142f;
+  color: #ffffff;
+  box-shadow: 0 5px 14px rgba(240, 20, 47, 0.2);
+}
+
+.profileViewFollowButton.isFollowing {
+  background: #eef1f5;
+  color: #111827;
+  box-shadow: none;
+}
+
+.profileViewMessageButton,
+.profileViewMoreButton {
+  background: #eef1f5;
+  color: #111827;
+}
+
+.profileViewMoreButton {
+  padding: 0;
+}
+
+.profileViewActions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  box-shadow: none;
+}
+
+.profileViewActionError {
+  margin: 11px 2px 0;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.profileViewTabs {
+  width: 100%;
+  height: 68px;
+  margin-top: 34px;
+  border-bottom: 1px solid #d8dee8;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.profileViewTabs button {
+  position: relative;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease;
+}
+
+.profileViewTabs button::after {
+  content: "";
+  position: absolute;
+  right: 18%;
+  bottom: -1px;
+  left: 18%;
+  height: 3px;
+  border-radius: 999px 999px 0 0;
+  background: #ef1734;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 180ms ease;
+}
+
+.profileViewTabs button.active {
+  color: #e4112d;
+  font-weight: 800;
+}
+
+.profileViewTabs button.active::after {
+  transform: scaleX(1);
+}
+
+.profileViewPosts {
+  width: 100%;
+  min-height: 130px;
+  border-top: 1px solid #d8dee8;
+  background: #d8dee8;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.profileViewPosts .postCard {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  border-radius: 0;
+}
+
+.profileViewPosts .postMediaGrid,
+.profileViewPosts .postTextWrapper,
+.profileViewPosts .postActions {
+  width: 100%;
+}
+
+.profileViewFeedObserver {
+  width: 100%;
+  height: 1px;
+  flex: 0 0 1px;
+  pointer-events: none;
+}
+
+.profileViewLoadingMore {
+  width: 100%;
+  min-height: 62px;
+  background: #ffffff;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileViewSpinner {
+  flex: 0 0 auto;
+  animation: profileViewSpin 750ms linear infinite;
+}
+
+.profileViewPostsError {
+  width: 100%;
+  padding: 25px 18px;
+  background: #ffffff;
+  color: #b91c1c;
+  text-align: center;
+}
+
+.profileViewPostsError p {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.profileViewPostsError button {
+  min-height: 39px;
+  margin-top: 13px;
+  padding: 0 17px;
+  border: 1px solid #fecaca;
+  border-radius: 9px;
+  background: #fff1f2;
+  color: #be123c;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.profileViewEmptyState {
+  width: 100%;
+  min-height: 280px;
+  padding: 45px 22px;
+  background: #ffffff;
+  color: #94a3b8;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileViewEmptyState h2 {
+  margin: 17px 0 0;
+  color: #475569;
+  font-size: 22px;
+  font-weight: 850;
+  letter-spacing: -0.35px;
+}
+
+.profileViewEmptyState p {
+  margin: 8px 0 0;
+  color: #94a3b8;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.profileViewErrorState {
+  width: min(100%, 520px);
+  min-height: 70vh;
+  margin: 0 auto;
+  padding: 55px 24px;
+  color: #94a3b8;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileViewErrorState h1 {
+  margin: 19px 0 0;
+  color: #1e293b;
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -0.65px;
+}
+
+.profileViewErrorState p {
+  max-width: 390px;
+  margin: 10px 0 0;
+  color: #64748b;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.profileViewErrorState button {
+  min-height: 44px;
+  margin-top: 21px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 10px;
+  background: #ef1734;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 7px 17px rgba(239, 23, 52, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Header skeleton */
+
+.profileViewHeaderSkeleton {
+  width: 100%;
+  background: #ffffff;
+}
+
+.profileViewSkeletonCover,
+.profileViewSkeletonAvatar,
+.profileViewSkeletonLine,
+.profileViewSkeletonActions div,
+.profileViewPostSkeletonAvatar,
+.profileViewPostSkeletonLine,
+.profileViewPostSkeletonMedia {
+  background:
+    linear-gradient(
+      90deg,
+      #eef2f6 15%,
+      #dde4ec 38%,
+      #eef2f6 62%
+    );
+  background-size: 220% 100%;
+  animation: profileViewSkeleton 1.15s linear infinite;
+}
+
+.profileViewSkeletonCover {
+  width: 100%;
+  height: 270px;
+  border-radius: 0 0 20px 20px;
+}
+
+.profileViewSkeletonContent {
+  padding: 0 20px 34px;
+}
+
+.profileViewSkeletonAvatar {
+  width: 148px;
+  height: 148px;
+  margin-top: -82px;
+  border: 6px solid #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.09);
+}
+
+.profileViewSkeletonLine {
+  height: 18px;
+  border-radius: 999px;
+}
+
+.profileViewSkeletonName {
+  width: min(72%, 330px);
+  height: 31px;
+  margin-top: 27px;
+}
+
+.profileViewSkeletonStats {
+  width: min(84%, 410px);
+  margin-top: 24px;
+}
+
+.profileViewSkeletonActions {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    72px;
+  gap: 9px;
+}
+
+.profileViewSkeletonActions div {
+  height: 46px;
+  border-radius: 9px;
+}
+
+/* Feed skeleton */
+
+.profileViewFeedSkeleton {
+  width: 100%;
+  background: #d8dee8;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.profileViewPostSkeleton {
+  width: 100%;
+  padding: 14px;
+  background: #ffffff;
+}
+
+.profileViewPostSkeletonHeader {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 14px;
+}
+
+.profileViewPostSkeletonAvatar {
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  border-radius: 50%;
+}
+
+.profileViewPostSkeletonHeader > div:last-child {
+  width: min(60%, 260px);
+}
+
+.profileViewPostSkeletonLine {
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+}
+
+.profileViewPostSkeletonLine.short {
+  width: 58%;
+  margin-top: 9px;
+}
+
+.profileViewPostSkeletonMedia {
+  width: 100%;
+  height: 350px;
+  border-radius: 3px;
+}
+
+/* Bottom sheet */
+
+.profileViewSheetBackdrop {
+  position: fixed;
+  z-index: 3000;
+  inset: 0;
+  padding: 24px 18px 0;
+  background: rgba(15, 23, 42, 0.48);
+  backdrop-filter: blur(2px);
+  animation: profileViewBackdropIn 170ms ease both;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.profileViewBottomSheet {
+  width: min(100%, 620px);
+  padding: 9px 18px 26px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-bottom: 0;
+  border-radius: 22px 22px 0 0;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.18);
+  animation:
+    profileViewSheetUp 260ms
+    cubic-bezier(0.22, 1, 0.36, 1)
+    both;
+}
+
+.profileViewSheetHandle {
+  width: 42px;
+  height: 5px;
+  margin: 0 auto 9px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.profileViewSheetHeader {
+  min-height: 48px;
+  border-bottom: 1px solid #eef2f6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.profileViewSheetHeader h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 850;
+  letter-spacing: -0.3px;
+}
+
+.profileViewSheetHeader button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #334155;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileViewCopyLinkButton {
+  width: 100%;
+  min-height: 68px;
+  margin-top: 10px;
+  padding: 9px 5px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: #111827;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.profileViewSheetIcon {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #334155;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileViewCopyLinkButton > span:last-child {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.profileViewCopyLinkButton strong {
+  color: #111827;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.profileViewCopyLinkButton small {
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* Status notice */
+
+.profileViewNotice {
+  position: fixed;
+  z-index: 3100;
+  right: 50%;
+  bottom: 92px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  min-height: 42px;
+  padding: 11px 17px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.96);
+  color: #ffffff;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.24);
+  transform: translateX(50%);
+  animation: profileViewNoticeIn 190ms ease both;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .profileViewFollowButton:hover:not(:disabled) {
+    background: #d9112b;
+  }
+
+  .profileViewFollowButton.isFollowing:hover:not(:disabled),
+  .profileViewMessageButton:hover:not(:disabled),
+  .profileViewMoreButton:hover:not(:disabled) {
+    background: #e2e7ed;
+  }
+
+  .profileViewTabs button:hover {
+    color: #e4112d;
+    background: #fff8f9;
+  }
+
+  .profileViewPostsError button:hover {
+    background: #ffe4e6;
+  }
+
+  .profileViewCopyLinkButton:hover {
+    background: #f8fafc;
+  }
+
+  .profileViewSheetHeader button:hover {
+    background: #e2e8f0;
+  }
+}
+
+@keyframes profileViewSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes profileViewSkeleton {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes profileViewBackdropIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes profileViewSheetUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes profileViewNoticeIn {
+  from {
+    opacity: 0;
+    transform: translate(50%, 12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(50%, 0);
+  }
+}
+
+@media (min-width: 681px) {
+  .profileViewBottomSheet {
+    margin-bottom: 22px;
+    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 22px;
+  }
+
+  .profileViewNotice {
+    bottom: 38px;
+  }
+}
+
+@media (max-width: 680px) {
+  .profileViewPage {
+    padding-right: 0;
+    padding-left: 0;
+    background: #ffffff;
+  }
+
+  .profileViewWrapper {
+    max-width: none;
+    box-shadow: none;
+  }
+
+  .profileViewCover,
+  .profileViewSkeletonCover {
+    height: 235px;
+    border-radius: 0 0 17px 17px;
+  }
+
+  .profileViewInfo,
+  .profileViewSkeletonContent {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .profileViewAvatar,
+  .profileViewSkeletonAvatar {
+    width: 132px;
+    height: 132px;
+    margin-top: -74px;
+    border-width: 5px;
+  }
+
+  .profileViewAvatar svg {
+    width: 92px;
+    height: 92px;
+  }
+
+  .profileViewName {
+    margin-top: 24px;
+    font-size: 32px;
+  }
+
+  .profileViewStats {
+    margin-top: 20px;
+    font-size: 15px;
+  }
+
+  .profileViewActions {
+    margin-top: 21px;
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      58px;
+    gap: 7px;
+  }
+
+  .profileViewActions button {
+    height: 43px;
+    padding: 0 9px;
+    border-radius: 8px;
+    font-size: 13px;
+    gap: 6px;
+  }
+
+  .profileViewTabs {
+    height: 63px;
+    margin-top: 31px;
+  }
+
+  .profileViewTabs button {
+    font-size: 15px;
+  }
+
+  .profileViewSkeletonName {
+    margin-top: 24px;
+  }
+
+  .profileViewSkeletonActions {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      58px;
+    gap: 7px;
+  }
+
+  .profileViewPostSkeletonMedia {
+    height: 315px;
+  }
+
+  .profileViewSheetBackdrop {
+    padding-right: 0;
+    padding-left: 0;
+  }
+
+  .profileViewBottomSheet {
+    width: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .profileViewCover,
+  .profileViewSkeletonCover {
+    height: 210px;
+    border-radius: 0 0 15px 15px;
+  }
+
+  .profileViewInfo,
+  .profileViewSkeletonContent {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .profileViewAvatar,
+  .profileViewSkeletonAvatar {
+    width: 118px;
+    height: 118px;
+    margin-top: -65px;
+  }
+
+  .profileViewAvatar svg {
+    width: 82px;
+    height: 82px;
+  }
+
+  .profileViewName {
+    margin-top: 22px;
+    font-size: 29px;
+    letter-spacing: -0.8px;
+  }
+
+  .profileViewTitle {
+    font-size: 14px;
+  }
+
+  .profileViewStats {
+    gap: 7px;
+    font-size: 14px;
+  }
+
+  .profileViewActions {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      50px;
+    gap: 6px;
+  }
+
+  .profileViewActions button {
+    height: 41px;
+    padding: 0 7px;
+    font-size: 12px;
+    gap: 5px;
+  }
+
+  .profileViewActions button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .profileViewTabs {
+    height: 60px;
+    margin-top: 28px;
+  }
+
+  .profileViewTabs button {
+    font-size: 14px;
+  }
+
+  .profileViewSkeletonName {
+    height: 27px;
+    margin-top: 22px;
+  }
+
+  .profileViewSkeletonStats {
+    margin-top: 20px;
+  }
+
+  .profileViewSkeletonActions {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      50px;
+    gap: 6px;
+  }
+
+  .profileViewSkeletonActions div {
+    height: 41px;
+  }
+
+  .profileViewPostSkeleton {
+    padding: 12px;
+  }
+
+  .profileViewPostSkeletonAvatar {
+    width: 42px;
+    height: 42px;
+    flex-basis: 42px;
+  }
+
+  .profileViewPostSkeletonMedia {
+    height: 280px;
+  }
+
+  .profileViewBottomSheet {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .profileViewNotice {
+    bottom: 84px;
+    max-width: calc(100vw - 24px);
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profileViewPage *,
+  .profileViewSheetBackdrop *,
+  .profileViewNotice {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

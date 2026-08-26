@@ -97,7 +97,7 @@ const ForgotPassword = () => {
     <div className="forgotPage">
       <div className="forgotContainer">
         <h1 className="forgotLogo">
-          Everest
+          Mongosky
         </h1>
 
         <h2>

@@ -126,7 +126,7 @@ const ResetPassword = () => {
     <div className="resetPage">
       <div className="resetContainer">
         <h1 className="resetLogo">
-          Everest
+          Mongosky
         </h1>
 
         <h2>

@@ -3,6 +3,7 @@ import {
   useCallback,
   useEffect,
   useState,
+  type SyntheticEvent,
 } from "react";
 
 import {
@@ -86,6 +87,107 @@ const getNumberValue = (
   return 0;
 };
 
+const createCloudinaryPosterUrl = (
+  videoUrl: string,
+): string => {
+  const cleanUrl = videoUrl.trim();
+  const marker = "/video/upload/";
+  const markerIndex = cleanUrl.indexOf(marker);
+
+  if (markerIndex < 0) {
+    return "";
+  }
+
+  const prefixEnd = markerIndex + marker.length;
+  const prefix = cleanUrl.slice(0, prefixEnd);
+  const assetPath = cleanUrl
+    .slice(prefixEnd)
+    .split("?", 1)[0];
+
+  const lastSlashIndex = assetPath.lastIndexOf("/");
+  const lastDotIndex = assetPath.lastIndexOf(".");
+
+  if (lastDotIndex <= lastSlashIndex) {
+    return "";
+  }
+
+  return `${prefix}so_auto,c_fill,g_auto,w_480,h_854,f_auto,q_auto/${assetPath.slice(
+    0,
+    lastDotIndex,
+  )}.jpg`;
+};
+
+const isNearlyBlackPoster = (
+  image: HTMLImageElement,
+): boolean => {
+  try {
+    const canvas = document.createElement("canvas");
+    const width = 18;
+    const height = 32;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext("2d", {
+      willReadFrequently: true,
+    });
+
+    if (!context) {
+      return false;
+    }
+
+    context.drawImage(image, 0, 0, width, height);
+
+    const pixels = context.getImageData(
+      0,
+      0,
+      width,
+      height,
+    ).data;
+
+    let visiblePixels = 0;
+    let darkPixels = 0;
+    let totalLuminance = 0;
+
+    for (let index = 0; index < pixels.length; index += 4) {
+      const alpha = pixels[index + 3];
+
+      if (alpha < 24) {
+        continue;
+      }
+
+      const luminance =
+        pixels[index] * 0.2126 +
+        pixels[index + 1] * 0.7152 +
+        pixels[index + 2] * 0.0722;
+
+      visiblePixels += 1;
+      totalLuminance += luminance;
+
+      if (luminance < 30) {
+        darkPixels += 1;
+      }
+    }
+
+    if (visiblePixels === 0) {
+      return true;
+    }
+
+    const averageLuminance =
+      totalLuminance / visiblePixels;
+    const darkPixelRatio =
+      darkPixels / visiblePixels;
+
+    return (
+      averageLuminance < 24 &&
+      darkPixelRatio > 0.86
+    );
+  } catch {
+    // If browser security prevents pixel inspection, use the valid poster.
+    return false;
+  }
+};
+
 const ReelPreviewCard = memo(
   ({
     reel,
@@ -99,8 +201,8 @@ const ReelPreviewCard = memo(
     ] = useState(false);
 
     const [
-      videoFailed,
-      setVideoFailed,
+      posterLoaded,
+      setPosterLoaded,
     ] = useState(false);
 
     const reelRecord =
@@ -112,11 +214,15 @@ const ReelPreviewCard = memo(
     const media =
       getPrimaryReelMedia(reel);
 
-    const posterUrl =
-      media?.poster_url?.trim() || "";
-
     const videoUrl =
       media?.url?.trim() || "";
+
+    // Build the optimized poster on the client as well, so previews remain
+    // correct even while an older backend response still contains `so_0`.
+    const posterUrl =
+      createCloudinaryPosterUrl(videoUrl) ||
+      media?.poster_url?.trim() ||
+      "";
 
     const firstName =
       getStringValue(userRecord, [
@@ -154,11 +260,10 @@ const ReelPreviewCard = memo(
 
     useEffect(() => {
       setPosterFailed(false);
-      setVideoFailed(false);
+      setPosterLoaded(false);
     }, [
       reel.id,
       posterUrl,
-      videoUrl,
     ]);
 
     const handleOpen =
@@ -172,10 +277,19 @@ const ReelPreviewCard = memo(
       Boolean(posterUrl) &&
       !posterFailed;
 
-    const showVideoFallback =
-      !showPoster &&
-      Boolean(videoUrl) &&
-      !videoFailed;
+    const handlePosterLoad = useCallback(
+      (
+        event: SyntheticEvent<HTMLImageElement>,
+      ) => {
+        setPosterLoaded(
+          !isNearlyBlackPoster(event.currentTarget),
+        );
+      },
+      [],
+    );
+
+    const mediaReady =
+      showPoster && posterLoaded;
 
     const rootClassName = [
       "reel-preview-card",
@@ -193,9 +307,47 @@ const ReelPreviewCard = memo(
         onClick={handleOpen}
       >
         <span className="reel-preview-card__media">
+          <span
+            className={`reel-preview-card__placeholder ${
+              mediaReady ? "is-hidden" : ""
+            }`}
+            aria-hidden="true"
+          >
+            <span className="reel-preview-card__placeholder-icon">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <rect
+                  x="4"
+                  y="4.5"
+                  width="16"
+                  height="15"
+                  rx="3"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                />
+
+                <path
+                  d="M4.5 9h15M8 4.8 11.2 9M14 4.8 17.2 9"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                />
+
+                <path
+                  d="m10.5 12 4.2 2.5-4.2 2.5v-5Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </span>
+          </span>
+
           {showPoster ? (
             <img
-              className="reel-preview-card__poster"
+              className={`reel-preview-card__poster ${
+                posterLoaded ? "is-ready" : ""
+              }`}
               src={posterUrl}
               alt=""
               loading={
@@ -205,40 +357,19 @@ const ReelPreviewCard = memo(
               }
               decoding="async"
               draggable={false}
+              crossOrigin={
+                posterUrl.includes("cloudinary.com")
+                  ? "anonymous"
+                  : undefined
+              }
+              onLoad={handlePosterLoad}
               onError={() => {
+                setPosterLoaded(false);
                 setPosterFailed(true);
               }}
             />
-          ) : showVideoFallback ? (
-            <video
-              className="reel-preview-card__poster"
-              src={videoUrl}
-              muted
-              playsInline
-              controls={false}
-              preload="metadata"
-              tabIndex={-1}
-              aria-hidden="true"
-              disablePictureInPicture
-              onError={() => {
-                setVideoFailed(true);
-              }}
-            />
           ) : (
-            <span className="reel-preview-card__unavailable">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M3 3 21 21M10.6 6H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12M15 6h3a2 2 0 0 1 2 2v8c0 .4-.1.8-.3 1.1"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
+            null
           )}
 
           <span

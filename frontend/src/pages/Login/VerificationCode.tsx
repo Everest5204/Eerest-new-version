@@ -143,7 +143,7 @@ const VerificationCode = () => {
   return (
     <div className="verifyPage">
       <div className="verifyContainer">
-        <h1 className="verifyLogo">Everest</h1>
+        <h1 className="verifyLogo">Mongosky</h1>
 
         <h2>Verification Code</h2>
 

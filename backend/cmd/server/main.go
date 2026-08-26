@@ -20,6 +20,8 @@ import (
 	"everest-backend/internal/textpost"
 	"everest-backend/internal/user"
 	"everest-backend/internal/search"
+	"everest-backend/internal/ai"
+	"everest-backend/internal/profileview"
 )
 
 const (
@@ -86,6 +88,33 @@ if err := searchService.CreateIndexes(
 		err,
 	)
 }
+
+
+aiService, err := ai.NewAIService(
+	db.Database,
+	cfg.GeminiAPIKey,
+	cfg.GeminiModel,
+)
+if err != nil {
+	log.Fatal(
+		"AI service failed:",
+		err,
+	)
+}
+
+aiHandler := ai.NewAIHandler(
+	aiService,
+)
+
+if err := aiService.CreateIndexes(
+	startupCtx,
+); err != nil {
+	log.Println(
+		"AI indexes warning:",
+		err,
+	)
+}
+
 
 	postService, err := post.NewPostService(
 		db.Database,
@@ -228,6 +257,28 @@ if err := searchService.CreateIndexes(
 		profileMediaService,
 	)
 
+
+
+
+	profileViewService := profileview.NewService(
+	db.Database,
+)
+
+profileViewHandler := profileview.NewHandler(
+	profileViewService,
+)
+
+if err := profileViewService.CreateIndexes(
+	startupCtx,
+); err != nil {
+	log.Println(
+		"Profile view indexes warning:",
+		err,
+	)
+}
+
+
+
 	mux := http.NewServeMux()
 
 	registerHealthRoute(mux)
@@ -240,9 +291,23 @@ if err := searchService.CreateIndexes(
 	)
 
 
+
+	profileview.RegisterRoutes(
+	mux,
+	profileViewHandler,
+	cfg.JWTSecret,
+)
+
+
 search.RegisterRoutes(
 	mux,
 	searchHandler,
+	cfg.JWTSecret,
+)
+
+ai.RegisterAIRoutes(
+	mux,
+	aiHandler,
 	cfg.JWTSecret,
 )
 

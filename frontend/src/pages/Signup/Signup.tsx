@@ -289,7 +289,7 @@ const Signup = () => {
   return (
     <div className="signupPage" onClick={closeOrBackStep}>
       <div className="signupContainer" onClick={stopClose}>
-        <h2 className="signupLogo">Everest</h2>
+        <h2 className="signupLogo">Mongosky</h2>
         <h1>Create a new account</h1>
 
         {step === 1 && (

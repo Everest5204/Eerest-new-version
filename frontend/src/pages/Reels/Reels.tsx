@@ -620,6 +620,21 @@ const Reels = () => {
     });
   }, [navigate]);
 
+  const handleProfile = useCallback(
+    (userID: string) => {
+      const cleanUserID = userID.trim();
+
+      if (!cleanUserID) {
+        return;
+      }
+
+      navigate(
+        `/profile/${encodeURIComponent(cleanUserID)}`,
+      );
+    },
+    [navigate],
+  );
+
   const handleMutedChange =
     useCallback((nextMuted: boolean) => {
       setMuted(nextMuted);
@@ -836,6 +851,7 @@ const Reels = () => {
                       handleOpenComments
                     }
                     onShare={handleShare}
+                    onProfile={handleProfile}
                     onReelChange={
                       handleReelChange
                     }

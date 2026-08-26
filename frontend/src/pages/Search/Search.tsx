@@ -24,6 +24,7 @@ import {
 
 import Navbar from "../../components/Navbar/Navbar";
 import BottomNav from "../../components/BottomNav/BottomNav";
+import { ProfileLink } from "../../profileView";
 
 import {
   searchUsers,
@@ -304,9 +305,11 @@ const SearchPage = () => {
                       user.profile_title?.trim();
 
                     return (
-                      <article
-                        className="user-search-result"
+                      <ProfileLink
                         key={user.id}
+                        userID={user.id}
+                        className="user-search-result"
+                        ariaLabel={`Open ${fullName}'s profile`}
                       >
                         <UserAvatar user={user} />
 
@@ -317,7 +320,7 @@ const SearchPage = () => {
                             <p>{profileTitle}</p>
                           ) : null}
                         </div>
-                      </article>
+                      </ProfileLink>
                     );
                   })}
                 </div>

@@ -125,14 +125,14 @@ const LeftDrawer = ({
       return name;
     }
 
-    return "Welcome to Everest";
+    return "Welcome to Mongosky";
   }, [isAuthenticated, user]);
 
   const profileImageURL = user?.profile_image_url?.trim() || "";
   const firstLetter =
-    isAuthenticated && fullName !== "Welcome to Everest"
+    isAuthenticated && fullName !== "Welcome to Mongosky"
       ? fullName.charAt(0).toUpperCase()
-      : "E";
+      : "M";
 
   const loadDrawerUser = useCallback(async () => {
     try {

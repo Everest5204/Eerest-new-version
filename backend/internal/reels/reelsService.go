@@ -488,7 +488,7 @@ func normalizeReelMedia(
 	}
 }
 
-// createCloudinaryVideoPoster generates a lightweight first-frame image.
+// createCloudinaryVideoPoster generates a lightweight representative frame.
 //
 // No poster is stored in localStorage or application cache. Cloudinary serves
 // the generated image while MongoDB remains the Reel data source.
@@ -521,7 +521,7 @@ func createCloudinaryVideoPoster(videoURL string) string {
 	assetWithoutExtension := assetPath[:lastDotIndex]
 
 	return prefix +
-		"so_0,f_jpg,q_auto/" +
+		"so_auto,c_fill,g_auto,w_480,h_854,f_auto,q_auto/" +
 		assetWithoutExtension +
 		".jpg"
 }

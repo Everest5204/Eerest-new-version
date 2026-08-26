@@ -21,6 +21,7 @@ import {
   updateComment,
   type FeedComment,
 } from "../../services/commentService";
+import { ProfileLink } from "../../profileView";
 import CommentInput from "./CommentInput";
 
 type CommentItemProps = {
@@ -100,6 +101,9 @@ const CommentItem = ({
 
   const fullName = getFullName(item) || "Everest User";
   const profileImageURL = item.user?.profile_image_url?.trim() || "";
+  const commentUserID = String(
+    item.user_id || item.user?.id || ""
+  ).trim();
   const timeAgo = getTimeAgo(item.created_at);
 
   const isNestedReply = level > 0;
@@ -317,18 +321,37 @@ const handleDelete = async () => {
       className={`commentItem ${isNestedReply ? "reply" : "main"}`}
       style={itemStyle}
     >
-      <div className="commentAvatar">
-        {profileImageURL ? (
-          <img src={profileImageURL} alt={fullName} />
-        ) : (
-          <User size={19} strokeWidth={1.9} />
-        )}
-      </div>
+      <ProfileLink
+        userID={commentUserID}
+        ariaLabel={`Open ${fullName}'s profile`}
+        style={{
+          display: "flex",
+          flexShrink: 0,
+          borderRadius: "50%",
+        }}
+      >
+        <div className="commentAvatar">
+          {profileImageURL ? (
+            <img src={profileImageURL} alt={fullName} />
+          ) : (
+            <User size={19} strokeWidth={1.9} />
+          )}
+        </div>
+      </ProfileLink>
 
       <div className="commentBody">
         <div className="commentBubble">
           <div className="commentTopLine">
-            <strong>{fullName}</strong>
+            <ProfileLink
+              userID={commentUserID}
+              ariaLabel={`Open ${fullName}'s profile`}
+              style={{
+                display: "block",
+                minWidth: 0,
+              }}
+            >
+              <strong>{fullName}</strong>
+            </ProfileLink>
 
             {item.can_modify ? (
               <div className="commentMenuRoot" ref={menuRef}>

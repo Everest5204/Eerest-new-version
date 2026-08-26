@@ -6,6 +6,7 @@ import {
   type ReactionType,
   type ReactionUserItem,
 } from "../../services/reactionService";
+import { ProfileLink } from "../../profileView";
 import "./ReactionDetailsModal.css";
 
 type ReactionDetailsModalProps = {
@@ -160,7 +161,12 @@ const ReactionDetailsModal = ({
               const profileImageURL = item.user.profile_image_url?.trim() || "";
 
               return (
-                <article key={item.id} className="reactionDetailsUser">
+                <ProfileLink
+                  key={item.id}
+                  userID={item.user.id}
+                  className="reactionDetailsUser"
+                  ariaLabel={`Open ${fullName}'s profile`}
+                >
                   <div className="reactionDetailsAvatar">
                     {profileImageURL ? (
                       <img src={profileImageURL} alt={fullName} />
@@ -173,10 +179,10 @@ const ReactionDetailsModal = ({
                     </span>
                   </div>
 
-                 <div className="reactionDetailsUserInfo">
-                 <strong>{fullName}</strong>
-                </div>
-                </article>
+                  <div className="reactionDetailsUserInfo">
+                    <strong>{fullName}</strong>
+                  </div>
+                </ProfileLink>
               );
             })}
         </div>
