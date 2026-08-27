@@ -62,6 +62,14 @@ type TextFeedPost struct {
 
 	User TextPostUser `bson:"user" json:"user"`
 
+	/*
+	 * এগুলো posts collection-এ save হবে না।
+	 * Signed-in viewer অনুযায়ী user_follows
+	 * collection থেকে response-এর সময় আসবে।
+	 */
+	IsSelf      bool `bson:"-" json:"is_self"`
+	IsFollowing bool `bson:"-" json:"is_following"`
+
 	Type    string `bson:"type" json:"type"`
 	Caption string `bson:"caption" json:"caption"`
 	Text    string `bson:"text" json:"text"`

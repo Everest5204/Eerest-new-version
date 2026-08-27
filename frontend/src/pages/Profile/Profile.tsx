@@ -1,4 +1,4 @@
-import {
+   import {
   memo,
   useCallback,
   useEffect,
@@ -6,6 +6,12 @@ import {
   useState,
   type ChangeEvent,
 } from "react";
+
+
+import {
+  Link,
+} from "react-router-dom";
+
 import {
   Camera,
   CirclePlus,
@@ -480,19 +486,47 @@ const Profile = () => {
 
           <h1 className="profileName">{fullName}</h1>
 
-          <div className="profileStats">
-            <span>
-              <strong>{user?.followers_count ?? 0}</strong> followers
-            </span>
-            <span>•</span>
-            <span>
-              <strong>{user?.following_count ?? 0}</strong> following
-            </span>
-            <span>•</span>
-            <span>
-              <strong>{totalPosts}</strong> post
-            </span>
-          </div>
+<div className="profileStats">
+  <Link
+    to="/profile-connections/me/followers"
+    aria-label={`View ${
+      user?.followers_count ?? 0
+    } followers`}
+    style={{
+      color: "inherit",
+      textDecoration: "none",
+    }}
+  >
+    <strong>
+      {user?.followers_count ?? 0}
+    </strong>{" "}
+    followers
+  </Link>
+
+  <span>•</span>
+
+  <Link
+    to="/profile-connections/me/following"
+    aria-label={`View ${
+      user?.following_count ?? 0
+    } following`}
+    style={{
+      color: "inherit",
+      textDecoration: "none",
+    }}
+  >
+    <strong>
+      {user?.following_count ?? 0}
+    </strong>{" "}
+    following
+  </Link>
+
+  <span>•</span>
+
+  <span>
+    <strong>{totalPosts}</strong> post
+  </span>
+</div>
 
           <div className="profileActions">
             <button className="profileStoryBtn" type="button">

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import {
+  Link,
   useNavigate,
   useParams,
 } from "react-router-dom";
@@ -750,29 +751,51 @@ const ProfileViewPage = () => {
                 </p>
               ) : null}
 
-              <div
-                className="profileViewStats"
-                aria-label="Profile statistics"
-              >
-                <span>
-                  <strong>{profile.followers_count}</strong>{" "}
-                  followers
-                </span>
+             <div
+  className="profileViewStats"
+  aria-label="Profile statistics"
+>
+  <Link
+    to={`/profile-connections/${encodeURIComponent(
+      profile.id,
+    )}/followers`}
+    aria-label={`View ${profile.followers_count} followers`}
+    style={{
+      color: "inherit",
+      textDecoration: "none",
+    }}
+  >
+    <strong>
+      {profile.followers_count}
+    </strong>{" "}
+    followers
+  </Link>
 
-                <span aria-hidden="true">•</span>
+  <span aria-hidden="true">•</span>
 
-                <span>
-                  <strong>{profile.following_count}</strong>{" "}
-                  following
-                </span>
+  <Link
+    to={`/profile-connections/${encodeURIComponent(
+      profile.id,
+    )}/following`}
+    aria-label={`View ${profile.following_count} following`}
+    style={{
+      color: "inherit",
+      textDecoration: "none",
+    }}
+  >
+    <strong>
+      {profile.following_count}
+    </strong>{" "}
+    following
+  </Link>
 
-                <span aria-hidden="true">•</span>
+  <span aria-hidden="true">•</span>
 
-                <span>
-                  <strong>{totalPosts}</strong>{" "}
-                  {totalPosts === 1 ? "post" : "posts"}
-                </span>
-              </div>
+  <span>
+    <strong>{totalPosts}</strong>{" "}
+    {totalPosts === 1 ? "post" : "posts"}
+  </span>
+</div>
 
               <div className="profileViewActions">
                 <button

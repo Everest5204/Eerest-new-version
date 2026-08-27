@@ -17,10 +17,14 @@ import Reels from "./pages/Reels/Reels";
 import SearchPage from "./pages/Search/Search";
 import CreateMediaPost from "./components/Post/CreateMediaPost";
 import CreateTextPost from "./components/textpost/CreateTextPost";
-
 import EditMediaPost from "./pages/editMediaPost/EditMediaPost";
 import EditTextPost from "./pages/editTextPost/EditTextPost";
 import { ProfileViewPage } from "./profileView";
+import FollowPage from "./pages/Follow/FollowPage";
+
+import {
+  ProfileConnectionsPage,
+} from "./pages/ProfileConnections";
 
 import {
   PostEditProvider,
@@ -111,6 +115,17 @@ function App() {
           <Route
             path="/profile/:userID"
             element={<ProfileViewPage />}
+          />
+
+          <Route
+            path="/follow"
+            element={<FollowPage />}
+          />
+
+
+          <Route
+            path="/profile-connections/:userID/:tab"
+            element={<ProfileConnectionsPage />}
           />
 
           <Route

@@ -62,6 +62,14 @@ type FeedPost struct {
 
 	User PostUser `bson:"user" json:"user"`
 
+	/*
+	 * এই দুটি value posts collection-এ save হবে না।
+	 * Signed-in viewer অনুযায়ী database relation
+	 * থেকে response তৈরির সময় calculate হবে।
+	 */
+	IsSelf      bool `bson:"-" json:"is_self"`
+	IsFollowing bool `bson:"-" json:"is_following"`
+
 	Type    string `bson:"type" json:"type"`
 	Caption string `bson:"caption,omitempty" json:"caption,omitempty"`
 

@@ -22,6 +22,8 @@ import (
 	"everest-backend/internal/search"
 	"everest-backend/internal/ai"
 	"everest-backend/internal/profileview"
+	"everest-backend/internal/follow"
+	"everest-backend/internal/profileconnections"
 )
 
 const (
@@ -258,11 +260,22 @@ if err := aiService.CreateIndexes(
 	)
 
 
-
-
 	profileViewService := profileview.NewService(
 	db.Database,
 )
+
+
+profileConnectionsService :=
+	profileconnections.NewService(
+		db.Database,
+	)
+
+profileConnectionsHandler :=
+	profileconnections.NewHandler(
+		profileConnectionsService,
+	)
+
+
 
 profileViewHandler := profileview.NewHandler(
 	profileViewService,
@@ -279,6 +292,24 @@ if err := profileViewService.CreateIndexes(
 
 
 
+followService := follow.NewService(
+	db.Database,
+)
+
+followHandler := follow.NewHandler(
+	followService,
+)
+
+if err := followService.CreateIndexes(
+	startupCtx,
+); err != nil {
+	log.Println(
+		"Follow indexes warning:",
+		err,
+	)
+}
+
+
 	mux := http.NewServeMux()
 
 	registerHealthRoute(mux)
@@ -292,9 +323,22 @@ if err := profileViewService.CreateIndexes(
 
 
 
+	follow.RegisterRoutes(
+	mux,
+	followHandler,
+	cfg.JWTSecret,
+)
+
+
 	profileview.RegisterRoutes(
 	mux,
 	profileViewHandler,
+	cfg.JWTSecret,
+)
+
+profileconnections.RegisterRoutes(
+	mux,
+	profileConnectionsHandler,
 	cfg.JWTSecret,
 )
 

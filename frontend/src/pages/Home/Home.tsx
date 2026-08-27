@@ -41,7 +41,7 @@ const REELS_INSERT_INDEX = 4;
 const REELS_PREVIEW_LIMIT = 10;
 
 const isVideoPost = (
-  post: FeedPost,
+  post: FeedPost
 ): boolean => {
   const postType = (
     post.type || ""
@@ -62,19 +62,22 @@ const isVideoPost = (
     return true;
   }
 
-  return Array.isArray(post.media)
+  return Array.isArray(
+    post.media
+  )
     ? post.media.some(
         (mediaItem) =>
-          mediaItem.type === "video",
+          mediaItem.type ===
+          "video"
       )
     : false;
 };
 
 const getPostCreatedTime = (
-  post: FeedPost,
+  post: FeedPost
 ): number => {
   const time = new Date(
-    post.created_at,
+    post.created_at
   ).getTime();
 
   return Number.isFinite(time)
@@ -84,9 +87,12 @@ const getPostCreatedTime = (
 
 const mergePostData = (
   existingPost: FeedPost,
-  incomingPost: FeedPost,
+  incomingPost: FeedPost
 ): FeedPost => {
-  if (incomingPost.type === "text") {
+  if (
+    incomingPost.type ===
+    "text"
+  ) {
     return {
       ...existingPost,
       ...incomingPost,
@@ -117,46 +123,62 @@ const mergePostData = (
 };
 
 const mergeUniquePosts = (
-  orderedPosts: FeedPost[],
+  orderedPosts: FeedPost[]
 ): FeedPost[] => {
   const postMap =
-    new Map<string, FeedPost>();
+    new Map<
+      string,
+      FeedPost
+    >();
 
-  orderedPosts.forEach((post) => {
-    /*
-     * Backend Home feed video বাদ দিলেও frontend-এ
-     * দ্বিতীয় safety layer রাখা হয়েছে।
-     */
-    if (
-      !post.id ||
-      isVideoPost(post)
-    ) {
-      return;
+  orderedPosts.forEach(
+    (post) => {
+      /*
+       * Backend Home feed video বাদ দিলেও
+       * frontend-এ দ্বিতীয় safety layer রাখা হয়েছে।
+       */
+      if (
+        !post.id ||
+        isVideoPost(post)
+      ) {
+        return;
+      }
+
+      const existingPost =
+        postMap.get(post.id);
+
+      if (!existingPost) {
+        postMap.set(
+          post.id,
+          post
+        );
+
+        return;
+      }
+
+      postMap.set(
+        post.id,
+        mergePostData(
+          existingPost,
+          post
+        )
+      );
     }
-
-    const existingPost =
-      postMap.get(post.id);
-
-    if (!existingPost) {
-      postMap.set(post.id, post);
-      return;
-    }
-
-    postMap.set(
-      post.id,
-      mergePostData(
-        existingPost,
-        post,
-      ),
-    );
-  });
+  );
 
   return Array.from(
-    postMap.values(),
+    postMap.values()
   ).sort(
-    (firstPost, secondPost) =>
-      getPostCreatedTime(secondPost) -
-      getPostCreatedTime(firstPost),
+    (
+      firstPost,
+      secondPost
+    ) =>
+      getPostCreatedTime(
+        secondPost
+      ) -
+      getPostCreatedTime(
+        firstPost
+      )
   );
 };
 
@@ -165,42 +187,54 @@ const HomeFeedSkeleton = () => {
     <>
       {Array.from({
         length: 3,
-      }).map((_, index) => (
-        <article
-          className="homePostSkeleton"
-          key={index}
-        >
-          <div className="homeSkeletonHeader">
-            <div className="homeSkeletonAvatar" />
+      }).map(
+        (_, index) => (
+          <article
+            className="homePostSkeleton"
+            key={index}
+          >
+            <div className="homeSkeletonHeader">
+              <div className="homeSkeletonAvatar" />
 
-            <div className="homeSkeletonText">
-              <div className="homeSkeletonLine short" />
-              <div className="homeSkeletonLine tiny" />
+              <div className="homeSkeletonText">
+                <div className="homeSkeletonLine short" />
+                <div className="homeSkeletonLine tiny" />
+              </div>
             </div>
-          </div>
 
-          <div className="homeSkeletonMedia" />
-          <div className="homeSkeletonActions" />
-        </article>
-      ))}
+            <div className="homeSkeletonMedia" />
+            <div className="homeSkeletonActions" />
+          </article>
+        )
+      )}
     </>
   );
 };
 
 const Home = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location =
+    useLocation();
+
+  const navigate =
+    useNavigate();
 
   const observerRef =
-    useRef<HTMLDivElement | null>(null);
+    useRef<HTMLDivElement | null>(
+      null
+    );
 
   const initialLoadStartedRef =
     useRef(false);
 
-  const loadingRef = useRef(false);
+  const loadingRef =
+    useRef(false);
 
-  const [posts, setPosts] =
-    useState<FeedPost[]>([]);
+  const [
+    posts,
+    setPosts,
+  ] = useState<FeedPost[]>(
+    []
+  );
 
   const [
     mediaNextCursor,
@@ -259,10 +293,17 @@ const Home = () => {
   });
 
   const setLoadingState =
-    useCallback((value: boolean) => {
-      loadingRef.current = value;
-      setPostsLoading(value);
-    }, []);
+    useCallback(
+      (value: boolean) => {
+        loadingRef.current =
+          value;
+
+        setPostsLoading(
+          value
+        );
+      },
+      []
+    );
 
   const loadInitialPosts =
     useCallback(async () => {
@@ -281,52 +322,62 @@ const Home = () => {
         const [
           mediaResponse,
           textResponse,
-        ] = await Promise.all([
-          getFeedPosts(
-            "",
-            FEED_LIMIT,
-          ),
+        ] =
+          await Promise.all([
+            getFeedPosts(
+              "",
+              FEED_LIMIT
+            ),
 
-          getTextFeedPosts(
-            "",
-            FEED_LIMIT,
-          ),
-        ]);
+            getTextFeedPosts(
+              "",
+              FEED_LIMIT
+            ),
+          ]);
 
-        setPosts((previousPosts) =>
-          mergeUniquePosts([
-            ...previousPosts,
-            ...mediaResponse.posts,
-            ...textResponse.posts,
-          ]),
+        setPosts(
+          (
+            previousPosts
+          ) =>
+            mergeUniquePosts([
+              ...previousPosts,
+              ...mediaResponse.posts,
+              ...textResponse.posts,
+            ])
         );
 
         setMediaNextCursor(
-          mediaResponse.next_cursor,
+          mediaResponse.next_cursor
         );
 
         setTextNextCursor(
-          textResponse.next_cursor,
+          textResponse.next_cursor
         );
 
         setHasMoreMediaPosts(
-          mediaResponse.has_more,
+          mediaResponse.has_more
         );
 
         setHasMoreTextPosts(
-          textResponse.has_more,
+          textResponse.has_more
         );
 
-        setInitialLoaded(true);
+        setInitialLoaded(
+          true
+        );
       } catch (error) {
         console.error(
           "Home feed load failed:",
-          error,
+          error
         );
 
-        setInitialLoaded(true);
+        setInitialLoaded(
+          true
+        );
       } finally {
-        setLoadingState(false);
+        setLoadingState(
+          false
+        );
       }
     }, [setLoadingState]);
 
@@ -341,11 +392,15 @@ const Home = () => {
 
       const shouldLoadMedia =
         hasMoreMediaPosts &&
-        Boolean(mediaNextCursor);
+        Boolean(
+          mediaNextCursor
+        );
 
       const shouldLoadText =
         hasMoreTextPosts &&
-        Boolean(textNextCursor);
+        Boolean(
+          textNextCursor
+        );
 
       if (
         !shouldLoadMedia &&
@@ -360,62 +415,76 @@ const Home = () => {
         const [
           mediaResponse,
           textResponse,
-        ] = await Promise.all([
-          shouldLoadMedia
-            ? getFeedPosts(
-                mediaNextCursor,
-                FEED_LIMIT,
-              )
-            : Promise.resolve(null),
+        ] =
+          await Promise.all([
+            shouldLoadMedia
+              ? getFeedPosts(
+                  mediaNextCursor,
+                  FEED_LIMIT
+                )
+              : Promise.resolve(
+                  null
+                ),
 
-          shouldLoadText
-            ? getTextFeedPosts(
-                textNextCursor,
-                FEED_LIMIT,
-              )
-            : Promise.resolve(null),
-        ]);
+            shouldLoadText
+              ? getTextFeedPosts(
+                  textNextCursor,
+                  FEED_LIMIT
+                )
+              : Promise.resolve(
+                  null
+                ),
+          ]);
 
-        setPosts((previousPosts) =>
-          mergeUniquePosts([
-            ...previousPosts,
-            ...(
-              mediaResponse?.posts ??
-              []
-            ),
-            ...(
-              textResponse?.posts ??
-              []
-            ),
-          ]),
+        setPosts(
+          (
+            previousPosts
+          ) =>
+            mergeUniquePosts([
+              ...previousPosts,
+              ...(
+                mediaResponse
+                  ?.posts ?? []
+              ),
+              ...(
+                textResponse
+                  ?.posts ?? []
+              ),
+            ])
         );
 
-        if (mediaResponse) {
+        if (
+          mediaResponse
+        ) {
           setMediaNextCursor(
-            mediaResponse.next_cursor,
+            mediaResponse.next_cursor
           );
 
           setHasMoreMediaPosts(
-            mediaResponse.has_more,
+            mediaResponse.has_more
           );
         }
 
-        if (textResponse) {
+        if (
+          textResponse
+        ) {
           setTextNextCursor(
-            textResponse.next_cursor,
+            textResponse.next_cursor
           );
 
           setHasMoreTextPosts(
-            textResponse.has_more,
+            textResponse.has_more
           );
         }
       } catch (error) {
         console.error(
           "More feed posts load failed:",
-          error,
+          error
         );
       } finally {
-        setLoadingState(false);
+        setLoadingState(
+          false
+        );
       }
     }, [
       hasMorePosts,
@@ -432,16 +501,25 @@ const Home = () => {
    * database থেকে নতুন video আনবে।
    */
   useEffect(() => {
-    if (!instantPost?.id) {
+    if (
+      !instantPost?.id
+    ) {
       return;
     }
 
-    if (!isVideoPost(instantPost)) {
-      setPosts((previousPosts) =>
-        mergeUniquePosts([
-          instantPost,
-          ...previousPosts,
-        ]),
+    if (
+      !isVideoPost(
+        instantPost
+      )
+    ) {
+      setPosts(
+        (
+          previousPosts
+        ) =>
+          mergeUniquePosts([
+            instantPost,
+            ...previousPosts,
+          ])
       );
     }
 
@@ -449,7 +527,10 @@ const Home = () => {
       replace: true,
       state: null,
     });
-  }, [instantPost, navigate]);
+  }, [
+    instantPost,
+    navigate,
+  ]);
 
   useEffect(() => {
     void loadInitialPosts();
@@ -461,7 +542,7 @@ const Home = () => {
    */
   useEffect(() => {
     const handleNewPost = (
-      event: Event,
+      event: Event
     ) => {
       const customEvent =
         event as CustomEvent<FeedPost>;
@@ -473,32 +554,41 @@ const Home = () => {
         return;
       }
 
-      if (isVideoPost(newPost)) {
+      if (
+        isVideoPost(
+          newPost
+        )
+      ) {
         setReelsSectionVersion(
-          (currentVersion) =>
-            currentVersion + 1,
+          (
+            currentVersion
+          ) =>
+            currentVersion + 1
         );
 
         return;
       }
 
-      setPosts((previousPosts) =>
-        mergeUniquePosts([
-          newPost,
-          ...previousPosts,
-        ]),
+      setPosts(
+        (
+          previousPosts
+        ) =>
+          mergeUniquePosts([
+            newPost,
+            ...previousPosts,
+          ])
       );
     };
 
     window.addEventListener(
       "everest:new-post",
-      handleNewPost,
+      handleNewPost
     );
 
     return () => {
       window.removeEventListener(
         "everest:new-post",
-        handleNewPost,
+        handleNewPost
       );
     };
   }, []);
@@ -515,19 +605,23 @@ const Home = () => {
       new IntersectionObserver(
         (entries) => {
           if (
-            entries[0]?.isIntersecting
+            entries[0]
+              ?.isIntersecting
           ) {
             void loadMorePosts();
           }
         },
         {
           root: null,
-          rootMargin: "360px",
+          rootMargin:
+            "360px",
           threshold: 0.1,
-        },
+        }
       );
 
-    observer.observe(target);
+    observer.observe(
+      target
+    );
 
     return () => {
       observer.disconnect();
@@ -537,12 +631,12 @@ const Home = () => {
   const postsBeforeReels =
     posts.slice(
       0,
-      REELS_INSERT_INDEX,
+      REELS_INSERT_INDEX
     );
 
   const postsAfterReels =
     posts.slice(
-      REELS_INSERT_INDEX,
+      REELS_INSERT_INDEX
     );
 
   const shouldShowReelsSection =
@@ -560,26 +654,28 @@ const Home = () => {
               <Post
                 key={post.id}
                 post={post}
+                showFollowAction
               />
-            ),
+            )
           )}
 
-          {shouldShowReelsSection && (
+          {shouldShowReelsSection ? (
             <ReelsPreviewSection
               key={`home-reels-${reelsSectionVersion}`}
               limit={
                 REELS_PREVIEW_LIMIT
               }
             />
-          )}
+          ) : null}
 
           {postsAfterReels.map(
             (post) => (
               <Post
                 key={post.id}
                 post={post}
+                showFollowAction
               />
-            ),
+            )
           )}
 
           {postsLoading &&
@@ -605,10 +701,13 @@ const Home = () => {
           !postsLoading &&
           posts.length === 0 ? (
             <div className="homeFeedEmpty">
-              <h2>No posts yet</h2>
+              <h2>
+                No posts yet
+              </h2>
 
               <p>
-                New posts will appear here.
+                New posts will
+                appear here.
               </p>
             </div>
           ) : null}

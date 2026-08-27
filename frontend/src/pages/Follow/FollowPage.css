@@ -1,0 +1,608 @@
+.followPage {
+  width: 100%;
+  min-height: 100vh;
+  padding: 24px 16px 92px;
+
+  color: #111827;
+  background: #eef1f5;
+}
+
+.followPanel {
+  width: min(100%, 680px);
+  min-height: calc(100vh - 116px);
+  margin: 0 auto;
+  overflow: hidden;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 22px;
+  box-shadow:
+    0 18px 50px rgba(15, 23, 42, 0.08);
+}
+
+.followHeader {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 12px;
+
+  min-height: 78px;
+  padding: 12px 18px;
+
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid #eef0f3;
+  backdrop-filter: blur(14px);
+}
+
+.followHeader h1 {
+  margin: 0;
+
+  color: #111827;
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.followHeader p {
+  margin: 3px 0 0;
+
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.followBackButton,
+.followRefreshButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 42px;
+  height: 42px;
+  padding: 0;
+
+  color: #1f2937;
+  background: #f5f6f8;
+  border: 0;
+  border-radius: 13px;
+
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    transform 160ms ease;
+}
+
+.followBackButton:hover,
+.followRefreshButton:hover {
+  color: #e6003d;
+  background: #fff0f4;
+}
+
+.followBackButton:active,
+.followRefreshButton:active {
+  transform: scale(0.95);
+}
+
+.followRefreshButton:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.followTabs {
+  position: sticky;
+  top: 78px;
+  z-index: 15;
+
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  padding: 0 18px;
+
+  background: rgba(255, 255, 255, 0.97);
+  border-bottom: 1px solid #eef0f3;
+  backdrop-filter: blur(14px);
+}
+
+.followTabs button {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-height: 58px;
+  padding: 0 10px;
+
+  color: #6b7280;
+  background: transparent;
+  border: 0;
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.followTabs button::after {
+  position: absolute;
+  right: 10%;
+  bottom: 0;
+  left: 10%;
+
+  height: 3px;
+
+  content: "";
+
+  background: transparent;
+  border-radius: 999px 999px 0 0;
+}
+
+.followTabs button.active {
+  color: #e6003d;
+}
+
+.followTabs button.active::after {
+  background: #e6003d;
+}
+
+.followTabs strong {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 25px;
+  height: 22px;
+  padding: 0 7px;
+
+  color: inherit;
+  background: #f3f4f6;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.followTabs button.active strong {
+  background: #fff0f4;
+}
+
+.followContent {
+  min-height: 420px;
+}
+
+.followUserList {
+  display: flex;
+  flex-direction: column;
+}
+
+.followUserRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-height: 82px;
+  padding: 12px 18px;
+
+  background: #ffffff;
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.followUserRow:last-child {
+  border-bottom: 0;
+}
+
+.followUserIdentity {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  flex: 1 1 auto;
+
+  min-width: 0;
+  border-radius: 14px;
+}
+
+.followUserIdentity:focus-visible,
+.followActionButton:focus-visible,
+.followBackButton:focus-visible,
+.followRefreshButton:focus-visible,
+.followTabs button:focus-visible,
+.followErrorState button:focus-visible {
+  outline: 3px solid rgba(230, 0, 61, 0.2);
+  outline-offset: 2px;
+}
+
+.followUserAvatar {
+  position: relative;
+
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+
+  width: 54px;
+  height: 54px;
+  overflow: hidden;
+
+  color: #64748b;
+  background: #edf1f5;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+}
+
+.followUserAvatar img {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.followUserText {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.followUserText strong,
+.followUserText span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.followUserText strong {
+  color: #172033;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.followUserText span {
+  margin-top: 3px;
+
+  color: #7b8494;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.followActionButton {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-width: 112px;
+  min-height: 40px;
+  padding: 8px 14px;
+
+  color: #ffffff;
+  background: #e6003d;
+  border: 1px solid #e6003d;
+  border-radius: 12px;
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.followActionButton:hover {
+  background: #c90035;
+  border-color: #c90035;
+}
+
+.followActionButton:active {
+  transform: scale(0.97);
+}
+
+.followActionButton.isFollowing {
+  color: #253047;
+  background: #ffffff;
+  border-color: #d7dce4;
+}
+
+.followActionButton.isFollowing:hover {
+  color: #c0263d;
+  background: #fff5f6;
+  border-color: #ffc9d2;
+}
+
+.followActionButton:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
+}
+
+.followActionSpinner,
+.isSpinning {
+  animation: followSpin 750ms linear infinite;
+}
+
+.followEmptyState,
+.followErrorState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  min-height: 390px;
+  padding: 48px 24px;
+
+  text-align: center;
+}
+
+.followEmptyState > svg {
+  color: #c4cad4;
+  stroke-width: 1.35;
+}
+
+.followEmptyState h2 {
+  margin: 18px 0 6px;
+
+  color: #172033;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.followEmptyState p,
+.followErrorState p {
+  max-width: 340px;
+  margin: 0;
+
+  color: #7b8494;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.followErrorState {
+  min-height: 180px;
+
+  color: #b4233b;
+  background: #fff7f8;
+}
+
+.followErrorState button {
+  margin-top: 14px;
+  padding: 9px 16px;
+
+  color: #ffffff;
+  background: #e6003d;
+  border: 0;
+  border-radius: 10px;
+
+  font: inherit;
+  font-size: 13px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.followLoadMoreTrigger {
+  width: 100%;
+  height: 1px;
+}
+
+.followLoadingMore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  min-height: 58px;
+
+  color: #737d8c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.followSkeletonList {
+  display: flex;
+  flex-direction: column;
+}
+
+.followSkeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-height: 82px;
+  padding: 12px 18px;
+
+  border-bottom: 1px solid #f0f2f5;
+}
+
+.followSkeletonAvatar,
+.followSkeletonText span,
+.followSkeletonButton {
+  background:
+    linear-gradient(
+      100deg,
+      #edf0f4 20%,
+      #f8f9fb 38%,
+      #edf0f4 56%
+    );
+  background-size: 220% 100%;
+  animation: followShimmer 1.25s ease-in-out infinite;
+}
+
+.followSkeletonAvatar {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+}
+
+.followSkeletonText {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.followSkeletonText span {
+  width: min(55%, 190px);
+  height: 12px;
+  border-radius: 999px;
+}
+
+.followSkeletonText span:last-child {
+  width: min(38%, 130px);
+  height: 10px;
+}
+
+.followSkeletonButton {
+  flex: 0 0 auto;
+  width: 112px;
+  height: 40px;
+  border-radius: 12px;
+}
+
+@keyframes followSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes followShimmer {
+  to {
+    background-position-x: -220%;
+  }
+}
+
+@media (max-width: 768px) {
+  .followPage {
+    padding: 0 0 68px;
+    background: #ffffff;
+  }
+
+  .followPanel {
+    min-height: calc(100vh - 68px);
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .followHeader {
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    min-height: 72px;
+    padding: 10px 12px;
+  }
+
+  .followHeader h1 {
+    font-size: 19px;
+  }
+
+  .followBackButton,
+  .followRefreshButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .followTabs {
+    top: 72px;
+    padding: 0 8px;
+  }
+
+  .followTabs button {
+    min-height: 54px;
+    gap: 5px;
+    padding: 0 5px;
+    font-size: 13px;
+  }
+
+  .followTabs strong {
+    min-width: 22px;
+    height: 20px;
+    padding: 0 5px;
+    font-size: 11px;
+  }
+
+  .followUserRow,
+  .followSkeletonRow {
+    gap: 11px;
+    min-height: 76px;
+    padding: 10px 12px;
+  }
+
+  .followUserIdentity {
+    gap: 10px;
+  }
+
+  .followUserAvatar,
+  .followSkeletonAvatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .followActionButton,
+  .followSkeletonButton {
+    min-width: 98px;
+  }
+
+  .followActionButton {
+    min-height: 38px;
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .followActionButton {
+    min-width: 42px;
+    width: 42px;
+    padding: 0;
+  }
+
+  .followActionButton span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .followSkeletonButton {
+    width: 42px;
+    min-width: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .followActionSpinner,
+  .isSpinning,
+  .followSkeletonAvatar,
+  .followSkeletonText span,
+  .followSkeletonButton {
+    animation: none;
+  }
+
+  .followBackButton,
+  .followRefreshButton,
+  .followActionButton {
+    transition: none;
+  }
+}

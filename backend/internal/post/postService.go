@@ -26,24 +26,32 @@ const (
 )
 
 type PostService struct {
-	postsCollection *mongo.Collection
-	usersCollection *mongo.Collection
-	cloudinary      *profilemedia.CloudinaryService
+	postsCollection   *mongo.Collection
+	usersCollection   *mongo.Collection
+	followsCollection *mongo.Collection
+	cloudinary        *profilemedia.CloudinaryService
+}
+
+type feedFollowDocument struct {
+	FollowingID bson.ObjectID `bson:"following_id"`
 }
 
 func NewPostService(
 	db *mongo.Database,
 	cfg config.Config,
 ) (*PostService, error) {
-	cloudinaryService, err := profilemedia.NewCloudinaryService(cfg)
+	cloudinaryService, err :=
+		profilemedia.NewCloudinaryService(cfg)
+
 	if err != nil {
 		return nil, err
 	}
 
 	return &PostService{
-		postsCollection: db.Collection("posts"),
-		usersCollection: db.Collection("users"),
-		cloudinary:      cloudinaryService,
+		postsCollection:   db.Collection("posts"),
+		usersCollection:   db.Collection("users"),
+		followsCollection: db.Collection("user_follows"),
+		cloudinary:        cloudinaryService,
 	}, nil
 }
 
@@ -98,6 +106,7 @@ func (service *PostService) CreateMediaPost(
 	objectID, err := bson.ObjectIDFromHex(
 		strings.TrimSpace(userID),
 	)
+
 	if err != nil {
 		return nil, errors.New(
 			"invalid user id",
@@ -113,6 +122,7 @@ func (service *PostService) CreateMediaPost(
 	firstMediaType, _, err := getMediaType(
 		files[0],
 	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -143,7 +153,8 @@ func (service *PostService) CreateMediaPost(
 		len(files),
 	)
 
-	folder := "everest/posts/" + objectID.Hex()
+	folder :=
+		"everest/posts/" + objectID.Hex()
 
 	for index, fileHeader := range files {
 		mediaType, resourceType, mediaTypeErr :=
@@ -174,6 +185,7 @@ func (service *PostService) CreateMediaPost(
 		}
 
 		file, openErr := fileHeader.Open()
+
 		if openErr != nil {
 			return nil, openErr
 		}
@@ -242,12 +254,14 @@ func (service *PostService) CreateMediaPost(
 		ctx,
 		10*time.Second,
 	)
+
 	defer cancel()
 
 	_, err = service.postsCollection.InsertOne(
 		dbCtx,
 		postItem,
 	)
+
 	if err != nil {
 		return nil, err
 	}
@@ -267,10 +281,12 @@ func (service *PostService) CreateMediaPost(
 		},
 	)
 
-	postUser, err := service.getPostUserByID(
-		dbCtx,
-		objectID,
-	)
+	postUser, err :=
+		service.getPostUserByID(
+			dbCtx,
+			objectID,
+		)
+
 	if err != nil {
 		return nil, err
 	}
@@ -280,6 +296,9 @@ func (service *PostService) CreateMediaPost(
 		UserID: postItem.UserID,
 
 		User: postUser,
+
+		IsSelf:      true,
+		IsFollowing: false,
 
 		Type:    postItem.Type,
 		Caption: postItem.Caption,
@@ -308,9 +327,20 @@ func (service *PostService) CreateMediaPost(
 // continue to appear as normal posts on Profile Feed.
 func (service *PostService) GetFeedPosts(
 	ctx context.Context,
+	viewerUserID string,
 	limit int64,
 	cursor string,
 ) (*PostsResponse, error) {
+	viewerID, err := bson.ObjectIDFromHex(
+		strings.TrimSpace(viewerUserID),
+	)
+
+	if err != nil {
+		return nil, errors.New(
+			"invalid viewer user id",
+		)
+	}
+
 	filter := bson.M{
 		"is_deleted": bson.M{
 			"$ne": true,
@@ -325,6 +355,7 @@ func (service *PostService) GetFeedPosts(
 		filter,
 		limit,
 		cursor,
+		viewerID,
 	)
 }
 
@@ -337,6 +368,7 @@ func (service *PostService) GetUserPosts(
 	objectID, err := bson.ObjectIDFromHex(
 		strings.TrimSpace(userID),
 	)
+
 	if err != nil {
 		return nil, errors.New(
 			"invalid user id",
@@ -355,6 +387,7 @@ func (service *PostService) GetUserPosts(
 		filter,
 		limit,
 		cursor,
+		bson.NilObjectID,
 	)
 }
 
@@ -363,6 +396,7 @@ func (service *PostService) getPosts(
 	baseFilter bson.M,
 	limit int64,
 	cursor string,
+	viewerID bson.ObjectID,
 ) (*PostsResponse, error) {
 	if limit <= 0 || limit > maxFeedLimit {
 		limit = defaultFeedLimit
@@ -372,6 +406,7 @@ func (service *PostService) getPosts(
 		ctx,
 		5*time.Second,
 	)
+
 	defer cancel()
 
 	filter := bson.M{}
@@ -380,7 +415,8 @@ func (service *PostService) getPosts(
 		filter[key] = value
 	}
 
-	cleanCursor := strings.TrimSpace(cursor)
+	cleanCursor :=
+		strings.TrimSpace(cursor)
 
 	if cleanCursor != "" {
 		cursorTime, cursorID, err :=
@@ -418,9 +454,11 @@ func (service *PostService) getPosts(
 			filter,
 			findOptions,
 		)
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer cursorResult.Close(dbCtx)
 
 	posts := make(
@@ -436,7 +474,8 @@ func (service *PostService) getPosts(
 		return nil, err
 	}
 
-	hasMore := int64(len(posts)) > limit
+	hasMore :=
+		int64(len(posts)) > limit
 
 	if hasMore {
 		posts = posts[:limit]
@@ -457,7 +496,8 @@ func (service *PostService) getPosts(
 			continue
 		}
 
-		userIDsMap[item.UserID] = struct{}{}
+		userIDsMap[item.UserID] =
+			struct{}{}
 	}
 
 	userIDs := make(
@@ -473,19 +513,48 @@ func (service *PostService) getPosts(
 		)
 	}
 
-	usersMap, err := service.getUsersMap(
-		dbCtx,
-		userIDs,
-	)
+	usersMap, err :=
+		service.getUsersMap(
+			dbCtx,
+			userIDs,
+		)
+
+	if err != nil {
+		return nil, err
+	}
+
+	/*
+	 * পুরো page-এর follow state একটি indexed
+	 * batch query দিয়ে load করা হয়।
+	 */
+	followingUserIDs, err :=
+		service.getFollowingUserIDs(
+			dbCtx,
+			viewerID,
+			userIDs,
+		)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for _, item := range posts {
-		postUser := usersMap[item.UserID]
+		postUser :=
+			usersMap[item.UserID]
 
 		if postUser.ID.IsZero() {
 			postUser.ID = item.UserID
+		}
+
+		isSelf :=
+			!viewerID.IsZero() &&
+				item.UserID == viewerID
+
+		_, isFollowing :=
+			followingUserIDs[item.UserID]
+
+		if isSelf {
+			isFollowing = false
 		}
 
 		feedPosts = append(
@@ -495,6 +564,9 @@ func (service *PostService) getPosts(
 				UserID: item.UserID,
 
 				User: postUser,
+
+				IsSelf:      isSelf,
+				IsFollowing: isFollowing,
 
 				Type:    item.Type,
 				Caption: item.Caption,
@@ -520,7 +592,8 @@ func (service *PostService) getPosts(
 	nextCursor := ""
 
 	if hasMore && len(posts) > 0 {
-		lastPost := posts[len(posts)-1]
+		lastPost :=
+			posts[len(posts)-1]
 
 		nextCursor = encodeCursor(
 			lastPost.CreatedAt,
@@ -594,9 +667,11 @@ func (service *PostService) getUsersMap(
 					},
 				),
 		)
+
 	if err != nil {
 		return nil, err
 	}
+
 	defer cursorResult.Close(ctx)
 
 	users := make(
@@ -617,6 +692,65 @@ func (service *PostService) getUsersMap(
 	}
 
 	return usersMap, nil
+}
+
+func (service *PostService) getFollowingUserIDs(
+	ctx context.Context,
+	viewerID bson.ObjectID,
+	userIDs []bson.ObjectID,
+) (map[bson.ObjectID]struct{}, error) {
+	followingUserIDs := make(
+		map[bson.ObjectID]struct{},
+		len(userIDs),
+	)
+
+	if viewerID.IsZero() ||
+		len(userIDs) == 0 {
+		return followingUserIDs, nil
+	}
+
+	cursorResult, err :=
+		service.followsCollection.Find(
+			ctx,
+			bson.M{
+				"follower_id": viewerID,
+				"following_id": bson.M{
+					"$in": userIDs,
+				},
+			},
+			options.Find().
+				SetProjection(
+					bson.M{
+						"_id":          0,
+						"following_id": 1,
+					},
+				),
+		)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer cursorResult.Close(ctx)
+
+	relations := make(
+		[]feedFollowDocument,
+		0,
+		len(userIDs),
+	)
+
+	if err = cursorResult.All(
+		ctx,
+		&relations,
+	); err != nil {
+		return nil, err
+	}
+
+	for _, relation := range relations {
+	followingUserIDs[relation.FollowingID] = struct{}{}
+	}
+
+	return followingUserIDs, nil
 }
 
 func getMediaType(
@@ -664,20 +798,47 @@ func getMediaType(
 func hasImageExtension(
 	fileName string,
 ) bool {
-	return strings.HasSuffix(fileName, ".jpg") ||
-		strings.HasSuffix(fileName, ".jpeg") ||
-		strings.HasSuffix(fileName, ".png") ||
-		strings.HasSuffix(fileName, ".webp") ||
-		strings.HasSuffix(fileName, ".gif")
+	return strings.HasSuffix(
+		fileName,
+		".jpg",
+	) ||
+		strings.HasSuffix(
+			fileName,
+			".jpeg",
+		) ||
+		strings.HasSuffix(
+			fileName,
+			".png",
+		) ||
+		strings.HasSuffix(
+			fileName,
+			".webp",
+		) ||
+		strings.HasSuffix(
+			fileName,
+			".gif",
+		)
 }
 
 func hasVideoExtension(
 	fileName string,
 ) bool {
-	return strings.HasSuffix(fileName, ".mp4") ||
-		strings.HasSuffix(fileName, ".mov") ||
-		strings.HasSuffix(fileName, ".webm") ||
-		strings.HasSuffix(fileName, ".mkv")
+	return strings.HasSuffix(
+		fileName,
+		".mp4",
+	) ||
+		strings.HasSuffix(
+			fileName,
+			".mov",
+		) ||
+		strings.HasSuffix(
+			fileName,
+			".webm",
+		) ||
+		strings.HasSuffix(
+			fileName,
+			".mkv",
+		)
 }
 
 func encodeCursor(
@@ -702,8 +863,11 @@ func decodeCursor(
 	decodedBytes, err :=
 		base64.RawURLEncoding.
 			DecodeString(
-				strings.TrimSpace(cursor),
+				strings.TrimSpace(
+					cursor,
+				),
 			)
+
 	if err != nil {
 		return time.Time{},
 			bson.NilObjectID,
@@ -728,15 +892,18 @@ func decodeCursor(
 		time.RFC3339Nano,
 		parts[0],
 	)
+
 	if err != nil {
 		return time.Time{},
 			bson.NilObjectID,
 			err
 	}
 
-	objectID, err := bson.ObjectIDFromHex(
-		parts[1],
-	)
+	objectID, err :=
+		bson.ObjectIDFromHex(
+			parts[1],
+		)
+
 	if err != nil {
 		return time.Time{},
 			bson.NilObjectID,

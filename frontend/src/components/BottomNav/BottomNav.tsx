@@ -8,18 +8,21 @@ import {
 import type { ChangeEvent } from "react";
 
 import {
-  Home,
-  Plus,
-  Users,
-  User,
-  Edit3,
-  Image,
-  Film,
   CirclePlus,
+  Edit3,
+  Film,
+  Home,
+  Image,
+  Plus,
+  User,
+  Users,
   Zap,
 } from "lucide-react";
 
-import { useNavigate } from "react-router-dom";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
 import useBackDismiss from "../../hooks/useBackDismiss";
 
@@ -81,11 +84,10 @@ const ReelsIcon = ({
 
 const BottomNav = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const [
-    openCreateMenu,
-    setOpenCreateMenu,
-  ] = useState(false);
+  const [openCreateMenu, setOpenCreateMenu] =
+    useState(false);
 
   const dropdownRef =
     useRef<HTMLDivElement | null>(null);
@@ -119,28 +121,61 @@ const BottomNav = () => {
     stateKey: "bottom-create-menu",
   });
 
+  /*
+   * Home page-এ থাকা অবস্থায় Home icon চাপলে
+   * feed-এর একদম শুরুতে চলে যাবে।
+   *
+   * অন্য page থেকে Home icon চাপলে প্রথমে Home
+   * page খুলবে, তারপর feed-এর শুরুতে যাবে।
+   */
   const handleHomeClick = useCallback(() => {
+    if (location.pathname === "/") {
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      });
+
+      return;
+    }
+
     navigate("/");
-  }, [navigate]);
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: "auto",
+        });
+      });
+    });
+  }, [location.pathname, navigate]);
 
   const handleReelsClick = useCallback(() => {
     navigate("/reels");
   }, [navigate]);
 
-  const handleProfileClick =
-    useCallback(() => {
-      const token =
-        sessionStorage.getItem("token");
+  /*
+   * Friend icon Follow/Following section খুলবে।
+   * Normal navigation হওয়ায় mobile/browser Back
+   * button দিয়ে আগের page-এ ফেরা যাবে।
+   */
+  const handleFollowClick = useCallback(() => {
+    navigate("/follow");
+  }, [navigate]);
 
-      if (!token) {
-        alert(
-          "Please signup to your account",
-        );
-        return;
-      }
+  const handleProfileClick = useCallback(() => {
+    const token =
+      sessionStorage.getItem("token");
 
-      navigate("/profile");
-    }, [navigate]);
+    if (!token) {
+      alert("Please signup to your account");
+      return;
+    }
+
+    navigate("/profile");
+  }, [navigate]);
 
   const openMediaPicker = useCallback(() => {
     closeCreateMenu();
@@ -169,12 +204,10 @@ const BottomNav = () => {
       const firstFile = selectedFiles[0];
 
       /*
-       * Media picker থেকে video select হলেও সেটি
+       * Media picker থেকে video select হলেও
        * existing upload page দিয়ে Reel হবে।
        */
-      if (
-        firstFile.type.startsWith("video/")
-      ) {
+      if (firstFile.type.startsWith("video/")) {
         navigate("/create/media", {
           state: {
             files: [firstFile],
@@ -184,9 +217,7 @@ const BottomNav = () => {
         return;
       }
 
-      if (
-        firstFile.type.startsWith("image/")
-      ) {
+      if (firstFile.type.startsWith("image/")) {
         const imageFiles = selectedFiles
           .filter((file) =>
             file.type.startsWith("image/"),
@@ -224,8 +255,8 @@ const BottomNav = () => {
 
       /*
        * আলাদা Reel upload backend প্রয়োজন নেই।
-       * Existing video post create API type=video
-       * save করবে, Reels API সেটিই read করবে।
+       * Existing video post API type=video হিসেবে
+       * save করবে এবং Reels API সেটিই read করবে।
        */
       navigate("/create/media", {
         state: {
@@ -236,42 +267,41 @@ const BottomNav = () => {
     [navigate],
   );
 
-  const handleCreateMenuClick =
-    useCallback(
-      (type: CreateMenuType) => {
-        if (type === "media") {
-          openMediaPicker();
-          return;
-        }
+  const handleCreateMenuClick = useCallback(
+    (type: CreateMenuType) => {
+      if (type === "media") {
+        openMediaPicker();
+        return;
+      }
 
-        if (type === "reels") {
-          openReelPicker();
-          return;
-        }
+      if (type === "reels") {
+        openReelPicker();
+        return;
+      }
 
-        closeCreateMenu();
+      closeCreateMenu();
 
-        const routes: Record<
-          Exclude<
-            CreateMenuType,
-            "media" | "reels"
-          >,
-          string
-        > = {
-          text: "/create/text",
-          story: "/story/create",
-          ai: "/ai",
-        };
+      const routes: Record<
+        Exclude<
+          CreateMenuType,
+          "media" | "reels"
+        >,
+        string
+      > = {
+        text: "/create/text",
+        story: "/story/create",
+        ai: "/ai",
+      };
 
-        navigate(routes[type]);
-      },
-      [
-        closeCreateMenu,
-        navigate,
-        openMediaPicker,
-        openReelPicker,
-      ],
-    );
+      navigate(routes[type]);
+    },
+    [
+      closeCreateMenu,
+      navigate,
+      openMediaPicker,
+      openReelPicker,
+    ],
+  );
 
   useEffect(() => {
     if (!openCreateMenu) {
@@ -284,12 +314,8 @@ const BottomNav = () => {
       const target = event.target as Node;
 
       if (
-        dropdownRef.current?.contains(
-          target,
-        ) ||
-        createButtonRef.current?.contains(
-          target,
-        )
+        dropdownRef.current?.contains(target) ||
+        createButtonRef.current?.contains(target)
       ) {
         return;
       }
@@ -321,10 +347,7 @@ const BottomNav = () => {
         handleOutsideClick,
       );
     };
-  }, [
-    closeCreateMenu,
-    openCreateMenu,
-  ]);
+  }, [closeCreateMenu, openCreateMenu]);
 
   return (
     <nav
@@ -348,7 +371,7 @@ const BottomNav = () => {
         onChange={handleReelSelect}
       />
 
-      {openCreateMenu && (
+      {openCreateMenu ? (
         <div
           ref={dropdownRef}
           className="create-dropdown"
@@ -410,12 +433,24 @@ const BottomNav = () => {
             <span>AI</span>
           </button>
         </div>
-      )}
+      ) : null}
 
       <button
-        className="bottom-nav-item active"
+        className={[
+          "bottom-nav-item",
+          location.pathname === "/"
+            ? "active"
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         type="button"
         aria-label="Home"
+        aria-current={
+          location.pathname === "/"
+            ? "page"
+            : undefined
+        }
         onClick={handleHomeClick}
       >
         <Home size={27} />
@@ -451,9 +486,22 @@ const BottomNav = () => {
       </button>
 
       <button
-        className="bottom-nav-item"
+        className={[
+          "bottom-nav-item",
+          location.pathname === "/follow"
+            ? "active"
+            : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         type="button"
         aria-label="Friends"
+        aria-current={
+          location.pathname === "/follow"
+            ? "page"
+            : undefined
+        }
+        onClick={handleFollowClick}
       >
         <Users size={27} />
       </button>
