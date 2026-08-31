@@ -1,0 +1,146 @@
+.saved-items-page {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  overflow-x: hidden;
+
+  background: #f6f8f7;
+  color: #111827;
+
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.saved-items-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+
+  width: 100%;
+  min-height: 64px;
+
+  padding: 0 14px;
+
+  border-bottom: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.96);
+
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 10px;
+
+  box-shadow: 0 3px 14px rgba(17, 24, 39, 0.04);
+
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.saved-items-header h1 {
+  min-width: 0;
+  margin: 0;
+
+  overflow: hidden;
+
+  color: #111827;
+
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-items-back-button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #111827;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.saved-items-back-button:hover {
+  background: #eaf6f2;
+  color: #007a62;
+}
+
+.saved-items-back-button:active {
+  transform: scale(0.95);
+}
+
+.saved-items-back-button:focus-visible {
+  outline: 3px solid rgba(0, 134, 107, 0.28);
+  outline-offset: 2px;
+}
+
+.saved-items-message {
+  width: 100%;
+  min-height: calc(100vh - 64px);
+  min-height: calc(100dvh - 64px);
+
+  padding: 30px 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.saved-items-message p {
+  width: 100%;
+  max-width: 560px;
+
+  margin: 0;
+
+  color: #475467;
+
+  font-size: clamp(18px, 5vw, 24px);
+  font-weight: 700;
+  line-height: 1.55;
+  text-align: center;
+
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 768px) {
+  .saved-items-header {
+    min-height: 68px;
+    padding: 0 24px;
+
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+  }
+
+  .saved-items-header h1 {
+    font-size: 19px;
+  }
+
+  .saved-items-message {
+    min-height: calc(100vh - 68px);
+    min-height: calc(100dvh - 68px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saved-items-back-button {
+    transition: none;
+  }
+}

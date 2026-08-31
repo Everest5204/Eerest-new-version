@@ -185,20 +185,16 @@
 }
 
 .editTextAvatar {
+  display: grid;
+  flex: 0 0 42px;
+  place-items: center;
   width: 42px;
   height: 42px;
-  flex: 0 0 42px;
-  display: grid;
-  place-items: center;
   overflow: hidden;
-  color: #ffffff;
-  background:
-    linear-gradient(135deg, #334155, #0f172a);
-  border: 1px solid #e2e8f0;
+  color: #eafff7;
+  background: #07927c;
+  border: 1px solid #07927c;
   border-radius: 50%;
-  font-size: 14px;
-  font-weight: 800;
-  text-transform: uppercase;
 }
 
 .editTextAvatar img {

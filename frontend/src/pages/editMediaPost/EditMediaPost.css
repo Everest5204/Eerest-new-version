@@ -153,21 +153,17 @@
 }
 
 .editMediaAvatar {
-  width: 47px;
-  height: 47px;
-  min-width: 47px;
-
-  overflow: hidden;
-
-  border: 1px solid #e5e7eb;
-  border-radius: 50%;
-
-  background: #eef1f4;
-  color: #64748b;
-
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 47px;
+  min-width: 47px;
+  height: 47px;
+  overflow: hidden;
+  color: #eafff7;
+  background: #07927c;
+  border: 1px solid #07927c;
+  border-radius: 50%;
 }
 
 .editMediaAvatar img {

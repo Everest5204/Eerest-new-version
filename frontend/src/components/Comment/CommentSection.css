@@ -294,8 +294,8 @@
   place-items: center;
   overflow: hidden;
   border-radius: 999px;
-  background: #e5e7eb;
-  color: #64748b;
+  background: #07927c;
+  color: #eafff7;
 }
 
 .commentItem.reply .commentAvatar {

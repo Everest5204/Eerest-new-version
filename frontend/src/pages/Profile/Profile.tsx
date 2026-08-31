@@ -20,6 +20,7 @@ import {
   User,
 } from "lucide-react";
 import Post from "../../components/Post/Post";
+import { VerifiedName } from "../../components/VerifiedBadge";
 import { getCurrentUser } from "../../services/userService";
 import {
   uploadCoverImage,
@@ -469,7 +470,7 @@ const Profile = () => {
                   decoding="async"
                 />
               ) : (
-                <User size={108} strokeWidth={1.8} />
+                <User size={108} strokeWidth={3.5} />
               )}
             </div>
 
@@ -484,7 +485,13 @@ const Profile = () => {
             </label>
           </div>
 
-          <h1 className="profileName">{fullName}</h1>
+      <VerifiedName
+  as="h1"
+  className="profileName"
+  userID={user?.id ?? ""}
+  name={fullName}
+  badgeSize="lg"
+/>
 
 <div className="profileStats">
   <Link

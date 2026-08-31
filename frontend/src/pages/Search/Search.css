@@ -236,10 +236,10 @@
   height: 52px;
   overflow: hidden;
   place-items: center;
-  background: linear-gradient(145deg, #ffe4e8, #fecdd3);
-  border: 1px solid #fbc4cd;
+  background: #07927c;
+  border: 1px solid #07927c;
   border-radius: 50%;
-  color: #b0001b;
+  color: #eafff7;
   font-size: 16px;
   font-weight: 800;
 }

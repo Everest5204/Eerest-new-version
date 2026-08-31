@@ -21,14 +21,12 @@ import EditMediaPost from "./pages/editMediaPost/EditMediaPost";
 import EditTextPost from "./pages/editTextPost/EditTextPost";
 import { ProfileViewPage } from "./profileView";
 import FollowPage from "./pages/Follow/FollowPage";
-
-import {
-  ProfileConnectionsPage,
-} from "./pages/ProfileConnections";
-
-import {
-  PostEditProvider,
-} from "./pages/editMediaPost/PostEditContext";
+import { CommunityGuidelinesPage, } from "./pages/CommunityGuidelines";
+import { ProfileConnectionsPage, } from "./pages/ProfileConnections";
+import { PostEditProvider,} from "./pages/editMediaPost/PostEditContext";
+import { MobileAppPage, } from "./pages/MobileApp";
+import { MyActivityPage, } from "./pages/MyActivity";
+import { SavedItemsPage, } from "./pages/SavedItems";
 
 function App() {
   return (
@@ -127,6 +125,29 @@ function App() {
             path="/profile-connections/:userID/:tab"
             element={<ProfileConnectionsPage />}
           />
+
+          <Route
+           path="/community-guidelines"
+           element={<CommunityGuidelinesPage />}
+          />
+
+         <Route
+           path="/mobile-app"
+           element={<MobileAppPage />}
+         />
+
+
+         <Route
+           path="/my-activity"
+          element={<MyActivityPage />}
+         />
+
+
+        <Route
+         path="/saved-items"
+         element={<SavedItemsPage />}
+        />
+
 
           <Route
             path="/text-posts/:postId/edit"

@@ -136,18 +136,8 @@
 .reel-card__avatar--fallback {
   display: grid;
   place-items: center;
-
-  font-size: 17px;
-  font-weight: 800;
-  line-height: 1;
-  text-transform: uppercase;
-
-  background:
-    linear-gradient(
-      145deg,
-      #6d5dfc,
-      #d93a78
-    );
+  color: #eafff7;
+  background: #07927c;
 }
 
 .reel-card__identity {
