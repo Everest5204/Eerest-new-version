@@ -20,6 +20,7 @@ import type {
 } from "./profileConnections.types";
 
 import "./ProfileConnectionsPage.css";
+import { VerifiedName } from "../../components/VerifiedBadge";
 
 const countFormatter = new Intl.NumberFormat(
   "en",
@@ -330,10 +331,14 @@ const ProfileConnectionsPage = () => {
               </h1>
 
               {ownerFullName && (
-                <p className="profile-connections-heading__subtitle">
-                  {ownerFullName}
-                </p>
-              )}
+          <VerifiedName
+            as="p"
+            className="profile-connections-heading__subtitle"
+            userID={owner?.id ?? ""}
+            name={ownerFullName}
+           badgeSize="xs"
+          />
+          )}
             </div>
 
             <span

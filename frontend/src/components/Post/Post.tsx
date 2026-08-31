@@ -22,6 +22,7 @@ import type {
 import PostOptionsMenu from "./PostOptionsMenu";
 import PostReactions from "../Reactions/PostReactions";
 import CommentSection from "../Comment/CommentSection";
+import { VerifiedName } from "../VerifiedBadge";
 import {
   followProfile,
   ProfileLink,
@@ -1363,7 +1364,7 @@ const Post = ({
                 <User
                   size={22}
                   strokeWidth={
-                    1.8
+                    3.5
                   }
                 />
               )}
@@ -1385,9 +1386,12 @@ const Post = ({
                     "hidden",
                 }}
               >
-                <h3>
-                  {fullName}
-                </h3>
+            <VerifiedName
+             as="h3"
+             userID={authorUserID}
+             name={fullName}
+             badgeSize="sm"
+            />
               </ProfileLink>
 
               {shouldRenderFollowAction ? (

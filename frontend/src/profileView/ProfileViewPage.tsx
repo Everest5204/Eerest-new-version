@@ -27,6 +27,7 @@ import {
 } from "react-router-dom";
 
 import Post from "../components/Post/Post";
+import { VerifiedName } from "../components/VerifiedBadge";
 
 import {
   getUserPosts,
@@ -737,13 +738,17 @@ const ProfileViewPage = () => {
                     decoding="async"
                   />
                 ) : (
-                  <User size={104} strokeWidth={1.7} />
+                  <User size={104} strokeWidth={1.5} />
                 )}
               </div>
 
-              <h1 className="profileViewName">
-                {fullName}
-              </h1>
+              <VerifiedName
+               as="h1"
+               className="profileViewName"
+               userID={profile.id}
+               name={fullName}
+               badgeSize="lg"
+             />
 
               {profile.profile_title ? (
                 <p className="profileViewTitle">

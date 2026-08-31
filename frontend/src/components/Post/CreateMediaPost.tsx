@@ -8,9 +8,10 @@ import {
   type ChangeEvent,
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ImagePlus, X } from "lucide-react";
+import { ImagePlus, User, X } from "lucide-react";
 import { createMediaPost, type FeedPost } from "../../services/postService";
 import { getCurrentUser } from "../../services/userService";
+import { VerifiedName } from "../VerifiedBadge";
 import "./CreateMediaPost.css";
 
 type SelectedMedia = {
@@ -20,6 +21,7 @@ type SelectedMedia = {
 };
 
 type CurrentUser = {
+  id?: string;
   first_name: string;
   last_name: string;
   profile_image_url?: string;
@@ -95,6 +97,7 @@ const CreateMediaPost = () => {
     getCurrentUser()
       .then((data) => {
         setUser({
+          id: data.id,
           first_name: data.first_name,
           last_name: data.last_name,
           profile_image_url: data.profile_image_url,
@@ -289,11 +292,21 @@ const CreateMediaPost = () => {
           {user?.profile_image_url ? (
             <img src={user.profile_image_url} alt={fullName || "Everest User"} />
           ) : (
-            <span>{fullName.charAt(0) || "E"}</span>
+            <User
+              size={24}
+               strokeWidth={3.5}
+              aria-hidden="true"
+             />
           )}
         </div>
 
-        <strong>{fullName || "Everest User"}</strong>
+        <VerifiedName
+          as="strong"
+           userID={user?.id ?? ""}
+           name={fullName}
+           fallback="Mongosky User"
+           badgeSize="sm"
+            />
       </section>
 
       <textarea

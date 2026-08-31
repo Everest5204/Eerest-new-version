@@ -5,7 +5,8 @@ import {
 } from "react";
 
 import ProfileConnectionButton from "./ProfileConnectionButton";
-
+import { VerifiedName } from "../../components/VerifiedBadge";
+import { User } from "lucide-react";
 import type {
   ProfileConnectionUser,
 } from "./profileConnections.types";
@@ -37,22 +38,7 @@ const getFullName = (
   return fullName || "Everest User";
 };
 
-const getInitials = (
-  user: ProfileConnectionUser,
-): string => {
-  const firstInitial =
-    user.first_name.trim().charAt(0);
 
-  const lastInitial =
-    user.last_name.trim().charAt(0);
-
-  const initials =
-    `${firstInitial}${lastInitial}`
-      .trim()
-      .toUpperCase();
-
-  return initials || "U";
-};
 
 const ProfileConnectionRowComponent = ({
   user,
@@ -64,7 +50,7 @@ const ProfileConnectionRowComponent = ({
     useState(false);
 
   const fullName = getFullName(user);
-  const initials = getInitials(user);
+
 
   const profileImageURL =
     user.profile_image_url?.trim() ?? "";
@@ -109,21 +95,27 @@ const ProfileConnectionRowComponent = ({
               }
             />
           ) : (
-            <span
-              className={
-                "profile-connection-row__avatar-fallback"
-              }
-            >
-              {initials}
-            </span>
+         <span
+     className={
+         "profile-connection-row__avatar-fallback"
+         }
+        >
+       <User
+         size={27}
+         strokeWidth={3.5}
+      />
+        </span>
           )}
         </span>
 
         <span className="profile-connection-row__details">
           <span className="profile-connection-row__name-line">
-            <span className="profile-connection-row__name">
-              {fullName}
-            </span>
+            <VerifiedName
+             className="profile-connection-row__name"
+             userID={user.id}
+             name={fullName}
+             badgeSize="sm"
+            />
 
             {user.is_self && (
               <span className="profile-connection-row__self-badge">

@@ -14,6 +14,7 @@ import {
 import {
   useEditMediaPost,
 } from "./useEditMediaPost";
+import { VerifiedName } from "../../components/VerifiedBadge";
 
 import "./EditMediaPost.css";
 
@@ -229,16 +230,24 @@ const EditMediaPost = () => {
           ) : (
             <User
               size={24}
-              strokeWidth={1.8}
+              strokeWidth={3.5}
               aria-hidden="true"
             />
           )}
         </div>
 
-        <strong>
-          {fullName ||
-            "Everest User"}
-        </strong>
+      <VerifiedName
+        as="strong"
+         userID={
+        post.user_id ||
+        post.user?.id ||
+       ""
+      }
+
+  name={fullName}
+  fallback="Everest User"
+  badgeSize="sm"
+/>
       </section>
 
       <section className="editMediaCaptionSection">

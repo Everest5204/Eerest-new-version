@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { getCurrentUser } from "../../services/userService";
+import { VerifiedName } from "../VerifiedBadge";
 import "./LeftDrawer.css";
 
 type LeftDrawerProps = {
@@ -57,12 +58,12 @@ const drawerItems: DrawerItem[] = [
   {
     icon: History,
     label: "My Activity",
-    path: "",
+    path: "/my-activity",
   },
   {
     icon: Bookmark,
     label: "Saved Items",
-    path: "",
+    path: "/saved-items",
   },
   {
     icon: UserPlus,
@@ -77,7 +78,7 @@ const drawerItems: DrawerItem[] = [
   {
     icon: ShieldCheck,
     label: "Community Guidelines",
-    path: "",
+    path: "/community-guidelines",
   },
   {
     icon: Pencil,
@@ -87,7 +88,7 @@ const drawerItems: DrawerItem[] = [
   {
     icon: Smartphone,
     label: "Mobile App",
-    path: "",
+    path: "/mobile-app",
   },
   {
     icon: LogIn,
@@ -216,7 +217,12 @@ const LeftDrawer = ({
                 </>
               ) : (
                 <>
-                  <h2>{fullName}</h2>
+                  <VerifiedName
+                   as="h2"
+                   userID={user?.id ?? ""}
+                   name={fullName}
+                   badgeSize="md"
+               />
 
                   <p>
                     {isAuthenticated

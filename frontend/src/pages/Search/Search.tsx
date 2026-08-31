@@ -25,7 +25,7 @@ import {
 import Navbar from "../../components/Navbar/Navbar";
 import BottomNav from "../../components/BottomNav/BottomNav";
 import { ProfileLink } from "../../profileView";
-
+import { VerifiedName } from "../../components/VerifiedBadge";
 import {
   searchUsers,
 } from "../../services/searchService";
@@ -54,15 +54,6 @@ const getFullName = (user: SearchUser) =>
     .join(" ")
     .trim();
 
-const getInitials = (user: SearchUser) => {
-  const initials = [user.first_name, user.last_name]
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((name) => name.trim().charAt(0).toUpperCase())
-    .join("");
-
-  return initials || "U";
-};
 
 const UserAvatar = ({ user }: UserAvatarProps) => {
   const [imageFailed, setImageFailed] = useState(false);
@@ -73,7 +64,11 @@ const UserAvatar = ({ user }: UserAvatarProps) => {
       className="user-search-result__avatar"
       aria-hidden="true"
     >
-      <span>{getInitials(user)}</span>
+
+      <User
+        size={27}
+        strokeWidth={3.5}
+      />
 
       {user.profile_image_url && !imageFailed ? (
         <img
@@ -314,7 +309,12 @@ const SearchPage = () => {
                         <UserAvatar user={user} />
 
                         <div className="user-search-result__info">
-                          <h3>{fullName}</h3>
+                          <VerifiedName
+                               as="h3"
+                               userID={user.id}
+                               name={fullName}
+                               badgeSize="sm"
+                              />
 
                           {profileTitle ? (
                             <p>{profileTitle}</p>

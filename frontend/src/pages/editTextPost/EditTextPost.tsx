@@ -14,10 +14,12 @@ import {
   Loader2,
   Palette,
   RefreshCw,
+  User,
   X,
 } from "lucide-react";
 
 import type { TextPostBackground } from "../../components/textpost/textPostService";
+import { VerifiedName } from "../../components/VerifiedBadge";
 import useEditTextPost from "./useEditTextPost";
 import "./EditTextPost.css";
 
@@ -178,12 +180,7 @@ const EditTextPost = () => {
     }`.trim();
   }, [post?.user?.first_name, post?.user?.last_name]);
 
-  const initials = useMemo(() => {
-    const firstInitial = post?.user?.first_name?.charAt(0) ?? "";
-    const lastInitial = post?.user?.last_name?.charAt(0) ?? "";
 
-    return `${firstInitial}${lastInitial}`.toUpperCase() || "E";
-  }, [post?.user?.first_name, post?.user?.last_name]);
 
   const selectedBackgroundID = useMemo(() => {
     return (
@@ -390,13 +387,27 @@ const EditTextPost = () => {
                 alt={fullName || "Everest user"}
               />
             ) : (
-              <span>{initials}</span>
+              <User
+               size={23}
+                 strokeWidth={3.5}
+               aria-hidden="true"
+             />
             )}
           </div>
 
-          <strong className="editTextUserName">
-            {fullName || "Everest User"}
-          </strong>
+       <VerifiedName
+        as="strong"
+        className="editTextUserName"
+         userID={
+        post.user_id ||
+         post.user?.id ||
+        ""
+       }
+
+  name={fullName}
+  fallback="Everest User"
+  badgeSize="sm"
+/>
         </section>
 
         <section

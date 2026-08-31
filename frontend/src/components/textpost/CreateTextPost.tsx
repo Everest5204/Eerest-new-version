@@ -14,9 +14,11 @@ import {
   Loader2,
   Palette,
   Smile,
+  User,
   X,
 } from "lucide-react";
 import { getCurrentUser } from "../../services/userService";
+import { VerifiedName } from "../VerifiedBadge";
 import {
   createTextPost,
   type TextPostBackground,
@@ -25,6 +27,7 @@ import type { FeedPost } from "../../services/postService";
 import "./CreateTextPost.css";
 
 type CurrentUser = {
+  id?: string;
   first_name: string;
   last_name: string;
   profile_image_url?: string;
@@ -135,6 +138,7 @@ const BACKGROUND_PRESETS: BackgroundPreset[] = [
 
 const normalizeUser = (data: Partial<CurrentUser>): CurrentUser => {
   return {
+    id: data.id ?? "",
     first_name: data.first_name ?? "",
     last_name: data.last_name ?? "",
     profile_image_url: data.profile_image_url ?? "",
@@ -279,11 +283,21 @@ const CreateTextPost = () => {
           {user?.profile_image_url ? (
             <img src={user.profile_image_url} alt={fullName || "Everest User"} />
           ) : (
-            <span>{fullName.charAt(0) || "E"}</span>
+            <User
+              size={27}
+                strokeWidth={3.5}
+              aria-hidden="true"
+             />
           )}
         </div>
 
-        <strong>{fullName || "Everest User"}</strong>
+           <VerifiedName
+             as="strong"
+              userID={user?.id ?? ""}
+             name={fullName}
+             fallback="Mongosky User"
+            badgeSize="sm"
+           />
       </section>
 
       <section

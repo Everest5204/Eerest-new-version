@@ -2,6 +2,8 @@ import { memo, useCallback, useEffect, useState } from "react";
 
 import type { MouseEvent } from "react";
 
+import { User } from "lucide-react";
+
 import useReelLove from "../../hooks/useReelLove";
 
 import type { ReelLoveState } from "../../hooks/useReelLove";
@@ -13,6 +15,7 @@ import type { Reel } from "../../services/reelsService";
 import ReelActions from "./ReelActions";
 import ReelHeartAnimation from "./ReelHeartAnimation";
 import ReelPlayer from "./ReelPlayer";
+import { VerifiedName } from "../VerifiedBadge";
 
 import "./ReelCard.css";
 
@@ -243,12 +246,21 @@ const ReelCard = memo(
             className="reel-card__avatar reel-card__avatar--fallback"
             aria-hidden="true"
           >
-            {displayName.charAt(0).toUpperCase()}
+            <User
+              size={22}
+               strokeWidth={3.5}
+            />
           </span>
         )}
 
         <span className="reel-card__identity">
-          <strong className="reel-card__display-name">{displayName}</strong>
+          <strong className="reel-card__display-name">
+           <VerifiedName
+           userID={userID}
+           name={displayName}
+           badgeSize="sm"
+         />
+    </strong>
 
           {username && <span className="reel-card__username">@{username}</span>}
         </span>

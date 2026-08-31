@@ -24,6 +24,7 @@ import (
 	"everest-backend/internal/profileview"
 	"everest-backend/internal/follow"
 	"everest-backend/internal/profileconnections"
+	"everest-backend/internal/verifiedbadge"
 )
 
 const (
@@ -310,6 +311,27 @@ if err := followService.CreateIndexes(
 }
 
 
+
+verifiedBadgeService :=
+	verifiedbadge.NewService(
+		db.Database,
+	)
+
+verifiedBadgeHandler :=
+	verifiedbadge.NewHandler(
+		verifiedBadgeService,
+	)
+
+if err := verifiedBadgeService.CreateIndexes(
+	startupCtx,
+); err != nil {
+	log.Println(
+		"Verified badge indexes warning:",
+		err,
+	)
+}
+
+
 	mux := http.NewServeMux()
 
 	registerHealthRoute(mux)
@@ -321,7 +343,11 @@ if err := followService.CreateIndexes(
 		cfg.JWTSecret,
 	)
 
-
+verifiedbadge.RegisterRoutes(
+	mux,
+	verifiedBadgeHandler,
+	cfg.JWTSecret,
+)
 
 	follow.RegisterRoutes(
 	mux,

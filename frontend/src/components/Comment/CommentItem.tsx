@@ -22,6 +22,7 @@ import {
   type FeedComment,
 } from "../../services/commentService";
 import { ProfileLink } from "../../profileView";
+import { VerifiedName } from "../VerifiedBadge";
 import CommentInput from "./CommentInput";
 
 type CommentItemProps = {
@@ -334,7 +335,7 @@ const handleDelete = async () => {
           {profileImageURL ? (
             <img src={profileImageURL} alt={fullName} />
           ) : (
-            <User size={19} strokeWidth={1.9} />
+            <User size={19} strokeWidth={3.5} />
           )}
         </div>
       </ProfileLink>
@@ -350,7 +351,12 @@ const handleDelete = async () => {
                 minWidth: 0,
               }}
             >
-              <strong>{fullName}</strong>
+              <VerifiedName
+               as="strong"
+               userID={commentUserID}
+               name={fullName}
+               badgeSize="xs"
+              />
             </ProfileLink>
 
             {item.can_modify ? (

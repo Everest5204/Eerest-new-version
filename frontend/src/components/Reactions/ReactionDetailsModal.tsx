@@ -7,6 +7,7 @@ import {
   type ReactionUserItem,
 } from "../../services/reactionService";
 import { ProfileLink } from "../../profileView";
+import { VerifiedName } from "../VerifiedBadge";
 import "./ReactionDetailsModal.css";
 
 type ReactionDetailsModalProps = {
@@ -171,7 +172,7 @@ const ReactionDetailsModal = ({
                     {profileImageURL ? (
                       <img src={profileImageURL} alt={fullName} />
                     ) : (
-                      <User size={22} strokeWidth={1.8} />
+                      <User size={22} strokeWidth={3.5} />
                     )}
 
                     <span className="reactionDetailsUserEmoji">
@@ -180,7 +181,13 @@ const ReactionDetailsModal = ({
                   </div>
 
                   <div className="reactionDetailsUserInfo">
-                    <strong>{fullName}</strong>
+                    <VerifiedName
+                     as="strong"
+                     userID={item.user.id}
+                     name={fullName}
+                     badgeSize="sm"
+                    />
+
                   </div>
                 </ProfileLink>
               );

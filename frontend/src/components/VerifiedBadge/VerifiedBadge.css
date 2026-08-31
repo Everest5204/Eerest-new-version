@@ -1,0 +1,155 @@
+.verified-name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.24em;
+
+  min-width: 0;
+  max-width: 100%;
+
+  margin-bottom: 0;
+  padding: 0;
+
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  vertical-align: middle;
+}
+
+.verified-name > .verified-name__text {
+  display: block;
+  flex: 0 1 auto;
+
+  min-width: 0;
+  max-width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  overflow: hidden;
+
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  letter-spacing: inherit;
+  text-align: inherit;
+  text-overflow: ellipsis;
+  text-transform: inherit;
+  white-space: nowrap;
+}
+
+.verified-badge {
+  --verified-badge-size: 14px;
+
+  display: inline-block;
+  flex: 0 0 auto;
+
+  width: var(--verified-badge-size);
+  height: var(--verified-badge-size);
+
+  margin: 0;
+  padding: 0;
+
+  overflow: visible;
+
+  color: #ff3040;
+
+  pointer-events: none;
+  shape-rendering: geometricPrecision;
+  user-select: none;
+  vertical-align: middle;
+
+  filter:
+    drop-shadow(
+      0 1px 1px
+      rgba(0, 0, 0, 0.14)
+    );
+
+  transform-origin: center;
+
+  animation:
+    verifiedBadgeAppear
+    160ms
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    )
+    both;
+}
+
+.verified-badge--xs {
+  --verified-badge-size: 11px;
+}
+
+.verified-badge--sm {
+  --verified-badge-size: 14px;
+}
+
+.verified-badge--md {
+  --verified-badge-size: 17px;
+}
+
+.verified-badge--lg {
+  --verified-badge-size: 21px;
+}
+
+.verified-badge__seal {
+  fill: currentColor;
+  stroke: none;
+}
+
+.verified-badge__check {
+  fill: #ffffff;
+  stroke: none;
+}
+
+@keyframes verifiedBadgeAppear {
+  from {
+    opacity: 0;
+    transform:
+      scale(0.72)
+      rotate(-7deg);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      scale(1)
+      rotate(0deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .verified-badge--sm {
+    --verified-badge-size: 13px;
+  }
+
+  .verified-badge--md {
+    --verified-badge-size: 16px;
+  }
+
+  .verified-badge--lg {
+    --verified-badge-size: 19px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .verified-badge {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .verified-badge {
+    color: Highlight;
+    filter: none;
+  }
+
+  .verified-badge__check {
+    fill: Canvas;
+  }
+}
