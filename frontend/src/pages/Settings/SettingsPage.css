@@ -1,0 +1,352 @@
+.settings-page,
+.settings-page * {
+  box-sizing: border-box;
+}
+
+.settings-page {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+
+  overflow-x: hidden;
+
+  background: #f5f7f6;
+  color: #111827;
+
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.settings-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+
+  width: 100%;
+  min-height: 64px;
+
+  padding: 0 14px;
+
+  border-bottom: 1px solid #e5e7eb;
+  background: rgba(255, 255, 255, 0.96);
+
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 10px;
+
+  box-shadow: 0 3px 14px rgba(17, 24, 39, 0.04);
+
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+.settings-header h1 {
+  min-width: 0;
+  margin: 0;
+
+  overflow: hidden;
+
+  color: #111827;
+
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.settings-back-button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+
+  padding: 0;
+
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #111827;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.settings-back-button:hover {
+  background: #eaf6f2;
+  color: #007a62;
+}
+
+.settings-back-button:active {
+  transform: scale(0.95);
+}
+
+.settings-back-button:focus-visible {
+  outline: 3px solid rgba(0, 134, 107, 0.28);
+  outline-offset: 2px;
+}
+
+.settings-header-spacer {
+  width: 44px;
+  height: 44px;
+}
+
+.settings-content {
+  width: 100%;
+  max-width: 720px;
+
+  margin: 0 auto;
+  padding: 24px 18px 40px;
+}
+
+.settings-list {
+  width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  overflow: hidden;
+
+  list-style: none;
+
+  box-shadow:
+    0 12px 32px rgba(17, 24, 39, 0.06),
+    0 2px 8px rgba(17, 24, 39, 0.03);
+}
+
+.settings-item {
+  position: relative;
+
+  width: 100%;
+
+  background: #ffffff;
+}
+
+.settings-item:not(:last-child)::after {
+  content: "";
+
+  position: absolute;
+  right: 20px;
+  bottom: 0;
+  left: 64px;
+  z-index: 2;
+
+  height: 1px;
+
+  background: #edf0f2;
+
+  pointer-events: none;
+}
+
+.settings-item-button {
+  width: 100%;
+  min-height: 68px;
+
+  padding: 12px 20px;
+
+  border: 0;
+  background: transparent;
+
+  display: flex;
+  align-items: center;
+  gap: 17px;
+
+  color: #111827;
+
+  font: inherit;
+  text-align: left;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.settings-item-button:disabled {
+  opacity: 1;
+
+  color: inherit;
+
+  cursor: default;
+
+  -webkit-text-fill-color: currentColor;
+}
+
+.settings-item-button:not(:disabled) {
+  cursor: pointer;
+}
+
+.settings-item-button:not(:disabled):hover {
+  background: #f2f8f6;
+}
+
+.settings-item-button:not(:disabled):active {
+  background: #e5f3ef;
+
+  transform: scale(0.995);
+}
+
+.settings-item-button:not(:disabled):focus-visible {
+  position: relative;
+  z-index: 3;
+
+  outline: 3px solid rgba(0, 134, 107, 0.28);
+  outline-offset: -3px;
+}
+
+.settings-item-icon {
+  width: 27px;
+  min-width: 27px;
+  height: 27px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: inherit;
+}
+
+.settings-item-label {
+  min-width: 0;
+  flex: 1;
+
+  color: inherit;
+
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+
+  overflow-wrap: anywhere;
+}
+
+.settings-item-chevron {
+  width: 21px;
+  min-width: 21px;
+
+  color: #667085;
+
+  flex-shrink: 0;
+}
+
+.settings-item-button:not(:disabled):hover
+  .settings-item-chevron {
+  color: #00866b;
+}
+
+.settings-item-danger .settings-item-button {
+  color: #c62828;
+}
+
+@media (min-width: 768px) {
+  .settings-header {
+    min-height: 68px;
+
+    padding: 0 24px;
+
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+  }
+
+  .settings-header h1 {
+    font-size: 20px;
+  }
+
+  .settings-content {
+    padding: 32px 24px 48px;
+  }
+
+  .settings-item-button {
+    min-height: 72px;
+
+    padding: 14px 24px;
+
+    gap: 18px;
+  }
+
+  .settings-item:not(:last-child)::after {
+    right: 24px;
+    left: 69px;
+  }
+
+  .settings-item-label {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 600px) {
+  .settings-page {
+    background: #ffffff;
+  }
+
+  .settings-content {
+    max-width: none;
+
+    padding: 0 0 30px;
+  }
+
+  .settings-list {
+    border: 0;
+    border-radius: 0;
+
+    box-shadow: none;
+  }
+
+  .settings-item-button {
+    min-height: 64px;
+
+    padding: 11px 20px;
+
+    gap: 16px;
+  }
+
+  .settings-item:not(:last-child)::after {
+    right: 20px;
+    left: 63px;
+  }
+
+  .settings-item-label {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .settings-header {
+    padding: 0 10px;
+  }
+
+  .settings-item-button {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .settings-item:not(:last-child)::after {
+    right: 16px;
+    left: 59px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .settings-back-button,
+  .settings-item-button {
+    transition: none;
+  }
+}

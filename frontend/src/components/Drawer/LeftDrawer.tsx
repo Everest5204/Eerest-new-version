@@ -73,7 +73,7 @@ const drawerItems: DrawerItem[] = [
   {
     icon: Settings,
     label: "Settings",
-    path: "",
+    path: "/settings",
   },
   {
     icon: ShieldCheck,

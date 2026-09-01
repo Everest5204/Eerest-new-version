@@ -27,6 +27,9 @@ import { PostEditProvider,} from "./pages/editMediaPost/PostEditContext";
 import { MobileAppPage, } from "./pages/MobileApp";
 import { MyActivityPage, } from "./pages/MyActivity";
 import { SavedItemsPage, } from "./pages/SavedItems";
+import { SettingsPage, } from "./pages/Settings";
+import { PrivacyPolicyPage, } from "./pages/PrivacyPolicy";
+import { AboutPage, } from "./pages/About";
 
 function App() {
   return (
@@ -148,7 +151,20 @@ function App() {
          element={<SavedItemsPage />}
         />
 
+        <Route
+         path="/settings"
+         element={<SettingsPage />}
+        />
 
+        <Route
+          path="/privacy-policy"
+          element={<PrivacyPolicyPage />}
+        />
+
+        <Route
+         path="/about"
+         element={<AboutPage />}
+        />
           <Route
             path="/text-posts/:postId/edit"
             element={<EditTextPost />}
