@@ -6,24 +6,24 @@ import (
 	"net/http"
 	"time"
 
+	"everest-backend/internal/ai"
 	"everest-backend/internal/auth"
 	"everest-backend/internal/comment"
 	"everest-backend/internal/config"
 	"everest-backend/internal/database"
 	"everest-backend/internal/editmediapost"
 	"everest-backend/internal/edittextpost"
+	"everest-backend/internal/follow"
 	"everest-backend/internal/post"
 	"everest-backend/internal/postdelete"
+	"everest-backend/internal/profileconnections"
 	"everest-backend/internal/profilemedia"
+	"everest-backend/internal/profileview"
 	"everest-backend/internal/reaction"
 	"everest-backend/internal/reels"
+	"everest-backend/internal/search"
 	"everest-backend/internal/textpost"
 	"everest-backend/internal/user"
-	"everest-backend/internal/search"
-	"everest-backend/internal/ai"
-	"everest-backend/internal/profileview"
-	"everest-backend/internal/follow"
-	"everest-backend/internal/profileconnections"
 	"everest-backend/internal/verifiedbadge"
 )
 
@@ -50,16 +50,16 @@ func main() {
 	)
 	defer cancelStartup()
 
-     authService := auth.NewAuthService(
-	    db.Database,
-	   cfg.GoogleClientID,
-   )
+	authService := auth.NewAuthService(
+		db.Database,
+		cfg.GoogleClientID,
+	)
 
-      authHandler := auth.NewAuthHandler(
-    	authService,
-    	cfg.JWTSecret,
-    )
-	
+	authHandler := auth.NewAuthHandler(
+		authService,
+		cfg.JWTSecret,
+	)
+
 	userService := user.NewUserService(
 		db.Database,
 	)
@@ -75,50 +75,47 @@ func main() {
 		)
 	}
 
-
-searchService := search.NewService(
-	db.Database,
-)
-
-searchHandler := search.NewHandler(
-	searchService,
-)
-
-if err := searchService.CreateIndexes(
-	startupCtx,
-); err != nil {
-	log.Println(
-		"User search indexes warning:",
-		err,
+	searchService := search.NewService(
+		db.Database,
 	)
-}
 
-
-aiService, err := ai.NewAIService(
-	db.Database,
-	cfg.GeminiAPIKey,
-	cfg.GeminiModel,
-)
-if err != nil {
-	log.Fatal(
-		"AI service failed:",
-		err,
+	searchHandler := search.NewHandler(
+		searchService,
 	)
-}
 
-aiHandler := ai.NewAIHandler(
-	aiService,
-)
+	if err := searchService.CreateIndexes(
+		startupCtx,
+	); err != nil {
+		log.Println(
+			"User search indexes warning:",
+			err,
+		)
+	}
 
-if err := aiService.CreateIndexes(
-	startupCtx,
-); err != nil {
-	log.Println(
-		"AI indexes warning:",
-		err,
+	aiService, err := ai.NewAIService(
+		db.Database,
+		cfg.GeminiAPIKey,
+		cfg.GeminiModel,
 	)
-}
+	if err != nil {
+		log.Fatal(
+			"AI service failed:",
+			err,
+		)
+	}
 
+	aiHandler := ai.NewAIHandler(
+		aiService,
+	)
+
+	if err := aiService.CreateIndexes(
+		startupCtx,
+	); err != nil {
+		log.Println(
+			"AI indexes warning:",
+			err,
+		)
+	}
 
 	postService, err := post.NewPostService(
 		db.Database,
@@ -261,77 +258,68 @@ if err := aiService.CreateIndexes(
 		profileMediaService,
 	)
 
-
 	profileViewService := profileview.NewService(
-	db.Database,
-)
-
-
-profileConnectionsService :=
-	profileconnections.NewService(
 		db.Database,
 	)
 
-profileConnectionsHandler :=
-	profileconnections.NewHandler(
-		profileConnectionsService,
+	profileConnectionsService :=
+		profileconnections.NewService(
+			db.Database,
+		)
+
+	profileConnectionsHandler :=
+		profileconnections.NewHandler(
+			profileConnectionsService,
+		)
+
+	profileViewHandler := profileview.NewHandler(
+		profileViewService,
 	)
 
+	if err := profileViewService.CreateIndexes(
+		startupCtx,
+	); err != nil {
+		log.Println(
+			"Profile view indexes warning:",
+			err,
+		)
+	}
 
-
-profileViewHandler := profileview.NewHandler(
-	profileViewService,
-)
-
-if err := profileViewService.CreateIndexes(
-	startupCtx,
-); err != nil {
-	log.Println(
-		"Profile view indexes warning:",
-		err,
-	)
-}
-
-
-
-followService := follow.NewService(
-	db.Database,
-)
-
-followHandler := follow.NewHandler(
-	followService,
-)
-
-if err := followService.CreateIndexes(
-	startupCtx,
-); err != nil {
-	log.Println(
-		"Follow indexes warning:",
-		err,
-	)
-}
-
-
-
-verifiedBadgeService :=
-	verifiedbadge.NewService(
+	followService := follow.NewService(
 		db.Database,
 	)
 
-verifiedBadgeHandler :=
-	verifiedbadge.NewHandler(
-		verifiedBadgeService,
+	followHandler := follow.NewHandler(
+		followService,
 	)
 
-if err := verifiedBadgeService.CreateIndexes(
-	startupCtx,
-); err != nil {
-	log.Println(
-		"Verified badge indexes warning:",
-		err,
-	)
-}
+	if err := followService.CreateIndexes(
+		startupCtx,
+	); err != nil {
+		log.Println(
+			"Follow indexes warning:",
+			err,
+		)
+	}
 
+	verifiedBadgeService :=
+		verifiedbadge.NewService(
+			db.Database,
+		)
+
+	verifiedBadgeHandler :=
+		verifiedbadge.NewHandler(
+			verifiedBadgeService,
+		)
+
+	if err := verifiedBadgeService.CreateIndexes(
+		startupCtx,
+	); err != nil {
+		log.Println(
+			"Verified badge indexes warning:",
+			err,
+		)
+	}
 
 	mux := http.NewServeMux()
 
@@ -344,44 +332,41 @@ if err := verifiedBadgeService.CreateIndexes(
 		cfg.JWTSecret,
 	)
 
-verifiedbadge.RegisterRoutes(
-	mux,
-	verifiedBadgeHandler,
-	cfg.JWTSecret,
-)
+	verifiedbadge.RegisterRoutes(
+		mux,
+		verifiedBadgeHandler,
+		cfg.JWTSecret,
+	)
 
 	follow.RegisterRoutes(
-	mux,
-	followHandler,
-	cfg.JWTSecret,
-)
-
+		mux,
+		followHandler,
+		cfg.JWTSecret,
+	)
 
 	profileview.RegisterRoutes(
-	mux,
-	profileViewHandler,
-	cfg.JWTSecret,
-)
+		mux,
+		profileViewHandler,
+		cfg.JWTSecret,
+	)
 
-profileconnections.RegisterRoutes(
-	mux,
-	profileConnectionsHandler,
-	cfg.JWTSecret,
-)
+	profileconnections.RegisterRoutes(
+		mux,
+		profileConnectionsHandler,
+		cfg.JWTSecret,
+	)
 
+	search.RegisterRoutes(
+		mux,
+		searchHandler,
+		cfg.JWTSecret,
+	)
 
-search.RegisterRoutes(
-	mux,
-	searchHandler,
-	cfg.JWTSecret,
-)
-
-ai.RegisterAIRoutes(
-	mux,
-	aiHandler,
-	cfg.JWTSecret,
-)
-
+	ai.RegisterAIRoutes(
+		mux,
+		aiHandler,
+		cfg.JWTSecret,
+	)
 
 	profilemedia.RegisterProfileMediaRoutes(
 		mux,
