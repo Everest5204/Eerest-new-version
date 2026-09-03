@@ -4,59 +4,41 @@ import {
   Routes,
 } from "react-router-dom";
 
-import Home from "./pages/Home/Home";
-import Signup from "./pages/Signup/Signup";
-import Login from "./pages/Login/Login";
-import SignupSuccess from "./pages/Signup/SignupSuccess";
-import Profile from "./pages/Profile/Profile";
-import ForgotPassword from "./pages/Login/ForgotPassword";
-import VerificationCode from "./pages/Login/VerificationCode";
-import ResetPassword from "./pages/Login/ResetPassword";
-import AI from "./pages/AI/AI";
-import Reels from "./pages/Reels/Reels";
-import SearchPage from "./pages/Search/Search";
 import CreateMediaPost from "./components/Post/CreateMediaPost";
 import CreateTextPost from "./components/textpost/CreateTextPost";
-import EditMediaPost from "./pages/editMediaPost/EditMediaPost";
-import EditTextPost from "./pages/editTextPost/EditTextPost";
 import { ProfileViewPage } from "./profileView";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import { AboutPage } from "./pages/About";
+import AI from "./pages/AI/AI";
+import { CommunityGuidelinesPage } from "./pages/CommunityGuidelines";
+import EditMediaPost from "./pages/editMediaPost/EditMediaPost";
+import {
+  PostEditProvider,
+} from "./pages/editMediaPost/PostEditContext";
+import EditTextPost from "./pages/editTextPost/EditTextPost";
 import FollowPage from "./pages/Follow/FollowPage";
-import { CommunityGuidelinesPage, } from "./pages/CommunityGuidelines";
-import { ProfileConnectionsPage, } from "./pages/ProfileConnections";
-import { PostEditProvider,} from "./pages/editMediaPost/PostEditContext";
-import { MobileAppPage, } from "./pages/MobileApp";
-import { MyActivityPage, } from "./pages/MyActivity";
-import { SavedItemsPage, } from "./pages/SavedItems";
-import { SettingsPage, } from "./pages/Settings";
-import { PrivacyPolicyPage, } from "./pages/PrivacyPolicy";
-import { AboutPage, } from "./pages/About";
+import Home from "./pages/Home/Home";
+import ForgotPassword from "./pages/Login/ForgotPassword";
+import Login from "./pages/Login/Login";
+import ResetPassword from "./pages/Login/ResetPassword";
+import VerificationCode from "./pages/Login/VerificationCode";
+import { MobileAppPage } from "./pages/MobileApp";
+import { MyActivityPage } from "./pages/MyActivity";
+import { PrivacyPolicyPage } from "./pages/PrivacyPolicy";
+import Profile from "./pages/Profile/Profile";
+import { ProfileConnectionsPage } from "./pages/ProfileConnections";
+import Reels from "./pages/Reels/Reels";
+import { SavedItemsPage } from "./pages/SavedItems";
+import SearchPage from "./pages/Search/Search";
+import { SettingsPage } from "./pages/Settings";
+import Signup from "./pages/Signup/Signup";
+import SignupSuccess from "./pages/Signup/SignupSuccess";
 
 function App() {
   return (
     <BrowserRouter>
       <PostEditProvider>
         <Routes>
-          <Route
-            path="/"
-            element={<Home />}
-          />
-
-          <Route
-            path="/reels"
-            element={<Reels />}
-          />
-
-
-          <Route
-            path="/search"
-         element={<SearchPage />}
-          />
-
-          <Route
-            path="/reels/:reelID"
-            element={<Reels />}
-          />
-
           <Route
             path="/signup"
             element={<Signup />}
@@ -65,21 +47,6 @@ function App() {
           <Route
             path="/login"
             element={<Login />}
-          />
-
-          <Route
-            path="/ai"
-            element={<AI />}
-         />
-
-          <Route
-            path="/signup-success"
-            element={<SignupSuccess />}
-          />
-
-          <Route
-            path="/profile"
-            element={<Profile />}
           />
 
           <Route
@@ -98,77 +65,111 @@ function App() {
           />
 
           <Route
-            path="/create/media"
-            element={<CreateMediaPost />}
+            path="/privacy-policy"
+            element={<PrivacyPolicyPage />}
           />
 
           <Route
-            path="/create/text"
-            element={<CreateTextPost />}
+            path="/about"
+            element={<AboutPage />}
           />
 
-          <Route
-            path="/posts/:postId/edit"
-            element={<EditMediaPost />}
-          />
+          <Route element={<ProtectedRoute />}>
+            <Route
+              path="/"
+              element={<Home />}
+            />
 
+            <Route
+              path="/reels"
+              element={<Reels />}
+            />
 
-          <Route
-            path="/profile/:userID"
-            element={<ProfileViewPage />}
-          />
+            <Route
+              path="/reels/:reelID"
+              element={<Reels />}
+            />
 
-          <Route
-            path="/follow"
-            element={<FollowPage />}
-          />
+            <Route
+              path="/search"
+              element={<SearchPage />}
+            />
 
+            <Route
+              path="/ai"
+              element={<AI />}
+            />
 
-          <Route
-            path="/profile-connections/:userID/:tab"
-            element={<ProfileConnectionsPage />}
-          />
+            <Route
+              path="/signup-success"
+              element={<SignupSuccess />}
+            />
 
-          <Route
-           path="/community-guidelines"
-           element={<CommunityGuidelinesPage />}
-          />
+            <Route
+              path="/profile"
+              element={<Profile />}
+            />
 
-         <Route
-           path="/mobile-app"
-           element={<MobileAppPage />}
-         />
+            <Route
+              path="/profile/:userID"
+              element={<ProfileViewPage />}
+            />
 
+            <Route
+              path="/profile-connections/:userID/:tab"
+              element={<ProfileConnectionsPage />}
+            />
 
-         <Route
-           path="/my-activity"
-          element={<MyActivityPage />}
-         />
+            <Route
+              path="/follow"
+              element={<FollowPage />}
+            />
 
+            <Route
+              path="/create/media"
+              element={<CreateMediaPost />}
+            />
 
-        <Route
-         path="/saved-items"
-         element={<SavedItemsPage />}
-        />
+            <Route
+              path="/create/text"
+              element={<CreateTextPost />}
+            />
 
-        <Route
-         path="/settings"
-         element={<SettingsPage />}
-        />
+            <Route
+              path="/posts/:postId/edit"
+              element={<EditMediaPost />}
+            />
 
-        <Route
-          path="/privacy-policy"
-          element={<PrivacyPolicyPage />}
-        />
+            <Route
+              path="/text-posts/:postId/edit"
+              element={<EditTextPost />}
+            />
 
-        <Route
-         path="/about"
-         element={<AboutPage />}
-        />
-          <Route
-            path="/text-posts/:postId/edit"
-            element={<EditTextPost />}
-          />
+            <Route
+              path="/community-guidelines"
+              element={<CommunityGuidelinesPage />}
+            />
+
+            <Route
+              path="/mobile-app"
+              element={<MobileAppPage />}
+            />
+
+            <Route
+              path="/my-activity"
+              element={<MyActivityPage />}
+            />
+
+            <Route
+              path="/saved-items"
+              element={<SavedItemsPage />}
+            />
+
+            <Route
+              path="/settings"
+              element={<SettingsPage />}
+            />
+          </Route>
         </Routes>
       </PostEditProvider>
     </BrowserRouter>

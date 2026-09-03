@@ -1,25 +1,70 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import {
+  GoogleLogin,
+  type CredentialResponse,
+} from "@react-oauth/google";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import { googleAuthUser, signupUser } from "../../services/authService";
+
+import {
+  googleAuthUser,
+  googleSignupUser,
+  signupUser,
+} from "../../services/authService";
+
 import "./Signup.css";
 
-declare global {
-  interface Window {
-    google: any;
-  }
+type SignupMethod = "manual" | "google";
+
+interface GoogleSignupNavigationState {
+  googleSignup?: boolean;
+  googleCredential?: string;
+  email?: string;
+  firstName?: string;
+  lastName?: string;
 }
+
+const MONTHS = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 const Signup = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [step, setStep] = useState<1 | 2>(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const stepRef = useRef<1 | 2>(1);
+  const googleNavigationHandledRef = useRef(false);
+
+  const [signupMethod, setSignupMethod] =
+    useState<SignupMethod>("manual");
 
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [stepOneError, setStepOneError] = useState("");
+  const [policyAccepted, setPolicyAccepted] = useState(false);
+
+  const [googleCredential, setGoogleCredential] = useState("");
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -27,34 +72,41 @@ const Signup = () => {
   const [month, setMonth] = useState("");
   const [day, setDay] = useState("");
   const [year, setYear] = useState("");
+
+  const [stepOneError, setStepOneError] = useState("");
   const [stepTwoError, setStepTwoError] = useState("");
+
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isSignupLoading, setIsSignupLoading] = useState(false);
 
-  const stepRef = useRef<1 | 2>(1);
+  const years = useMemo(() => {
+    const currentYear = new Date().getFullYear();
 
-  const months = useMemo(
-    () => Array.from({ length: 12 }, (_, index) => index + 1),
-    []
-  );
-
-  const years = useMemo(
-    () => Array.from({ length: 36 }, (_, index) => 1980 + index),
-    []
-  );
+    return Array.from(
+      { length: currentYear - 1899 },
+      (_, index) => currentYear - index
+    );
+  }, []);
 
   const days = useMemo(() => {
     if (!month || !year) {
-      return Array.from({ length: 31 }, (_, index) => index + 1);
+      return Array.from(
+        { length: 31 },
+        (_, index) => index + 1
+      );
     }
 
-    const totalDays = new Date(Number(year), Number(month), 0).getDate();
+    const totalDays = new Date(
+      Number(year),
+      Number(month),
+      0
+    ).getDate();
 
-    return Array.from({ length: totalDays }, (_, index) => index + 1);
+    return Array.from(
+      { length: totalDays },
+      (_, index) => index + 1
+    );
   }, [month, year]);
-
-  useEffect(() => {
-    stepRef.current = step;
-  }, [step]);
 
   useEffect(() => {
     if (day && Number(day) > days.length) {
@@ -63,24 +115,130 @@ const Signup = () => {
   }, [day, days.length]);
 
   useEffect(() => {
-    const handleBackButton = () => {
+    const handleMobileBack = () => {
       if (stepRef.current === 2) {
+        stepRef.current = 1;
         setStep(1);
-        return;
+        setStepTwoError("");
       }
-
-      navigate(-1);
     };
 
-    window.addEventListener("popstate", handleBackButton);
+    window.addEventListener("popstate", handleMobileBack);
 
     return () => {
-      window.removeEventListener("popstate", handleBackButton);
+      window.removeEventListener(
+        "popstate",
+        handleMobileBack
+      );
     };
-  }, [navigate]);
+  }, []);
 
-  const hasSequentialPattern = (value: string): boolean => {
-    const text = value.toLowerCase();
+  useEffect(() => {
+    if (googleNavigationHandledRef.current) {
+      return;
+    }
+
+    const navigationState =
+      location.state as GoogleSignupNavigationState | null;
+
+    if (!navigationState?.googleSignup) {
+      return;
+    }
+
+    googleNavigationHandledRef.current = true;
+
+    const credential =
+      typeof navigationState.googleCredential === "string"
+        ? navigationState.googleCredential.trim()
+        : "";
+
+    const verifiedEmail =
+      typeof navigationState.email === "string"
+        ? navigationState.email.trim()
+        : "";
+
+    const googleFirstName =
+      typeof navigationState.firstName === "string"
+        ? navigationState.firstName
+        : "";
+
+    const googleLastName =
+      typeof navigationState.lastName === "string"
+        ? navigationState.lastName
+        : "";
+
+    if (!credential || !verifiedEmail) {
+      setStepOneError(
+        "Your Google signup session is invalid. Please try again."
+      );
+      return;
+    }
+
+    setSignupMethod("google");
+    setGoogleCredential(credential);
+    setEmailOrPhone(verifiedEmail);
+    setFirstName(googleFirstName);
+    setLastName(googleLastName);
+    setPassword("");
+    setPolicyAccepted(false);
+    setStepOneError("");
+    setStepTwoError("");
+
+    const currentHistoryState: Record<string, unknown> =
+      typeof window.history.state === "object" &&
+      window.history.state !== null
+        ? { ...window.history.state }
+        : {};
+
+    if (currentHistoryState.signupStep !== 2) {
+      window.history.pushState(
+        {
+          ...currentHistoryState,
+          signupStep: 2,
+        },
+        "",
+        window.location.href
+      );
+    }
+
+    stepRef.current = 2;
+    setStep(2);
+  }, [location.state]);
+
+  const openDetailsStep = () => {
+    const currentHistoryState =
+      typeof window.history.state === "object" &&
+      window.history.state !== null
+        ? window.history.state
+        : {};
+
+    window.history.pushState(
+      {
+        ...currentHistoryState,
+        signupStep: 2,
+      },
+      "",
+      window.location.href
+    );
+
+    stepRef.current = 2;
+    setStep(2);
+  };
+
+  const returnToFirstStep = () => {
+    if (stepRef.current === 2) {
+      window.history.back();
+    }
+  };
+
+  const goToLoginPage = () => {
+    navigate("/login", { replace: true });
+  };
+
+  const hasSequentialPattern = (
+    value: string
+  ): boolean => {
+    const normalizedValue = value.toLowerCase();
 
     const sequences = [
       "0123456789",
@@ -102,8 +260,16 @@ const Signup = () => {
     ];
 
     return sequences.some((sequence) => {
-      for (let index = 0; index <= sequence.length - 4; index += 1) {
-        if (text.includes(sequence.slice(index, index + 4))) {
+      for (
+        let index = 0;
+        index <= sequence.length - 4;
+        index += 1
+      ) {
+        if (
+          normalizedValue.includes(
+            sequence.slice(index, index + 4)
+          )
+        ) {
           return true;
         }
       }
@@ -112,174 +278,281 @@ const Signup = () => {
     });
   };
 
-  const isValidEmailOrPhone = (value: string): boolean => {
-    const cleanValue = value.trim();
+  const isValidEmailOrPhone = (
+    value: string
+  ): boolean => {
+    const normalizedValue = value.trim();
 
-    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanValue);
-    const isBangladeshPhone = /^(?:\+8801|01)[3-9]\d{8}$/.test(cleanValue);
+    const isEmail =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        normalizedValue
+      );
+
+    const isBangladeshPhone =
+      /^(?:\+8801|01)[3-9]\d{8}$/.test(
+        normalizedValue
+      );
 
     return isEmail || isBangladeshPhone;
   };
 
-  const closeOrBackStep = () => {
-    if (step === 2) {
-      setStep(1);
-      return;
+  const isValidBirthdate = (): boolean => {
+    if (!month || !day || !year) {
+      return false;
     }
 
-    navigate(-1);
+    const selectedYear = Number(year);
+    const selectedMonth = Number(month);
+    const selectedDay = Number(day);
+
+    const birthdate = new Date(
+      selectedYear,
+      selectedMonth - 1,
+      selectedDay
+    );
+
+    const isRealDate =
+      birthdate.getFullYear() === selectedYear &&
+      birthdate.getMonth() === selectedMonth - 1 &&
+      birthdate.getDate() === selectedDay;
+
+    return isRealDate && birthdate <= new Date();
   };
 
-  const stopClose = (event: React.MouseEvent<HTMLDivElement>) => {
-    event.stopPropagation();
-  };
-
-  const goToLoginPage = () => {
-    navigate("/login", { replace: true });
-  };
-
-  const handleGoogleSignup = () => {
+  const handleGoogleSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
     setStepOneError("");
 
-    if (!window.google) {
-      setStepOneError("Google service is still loading. Please try again.");
+    const credential =
+      credentialResponse.credential?.trim();
+
+    if (!credential) {
+      setStepOneError(
+        "Google did not provide a valid authentication credential."
+      );
       return;
     }
 
-    const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      scope: "email profile openid",
+    try {
+      setIsGoogleLoading(true);
 
-      callback: async (response: any) => {
-        try {
-          setIsLoading(true);
+      const authResponse = await googleAuthUser({
+        credential,
+      });
 
-          const userResponse = await fetch(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            {
-              headers: {
-                Authorization: `Bearer ${response.access_token}`,
-              },
-            }
+      if (!authResponse.needs_signup) {
+        if (!authResponse.token) {
+          throw new Error(
+            "Authentication token was not returned."
           );
-
-          const googleUser = await userResponse.json();
-
-          if (!googleUser?.email) {
-            setStepOneError("Google signup failed");
-            return;
-          }
-
-          const authResponse = await googleAuthUser({
-            email: googleUser.email,
-            first_name: googleUser.given_name || "",
-            last_name: googleUser.family_name || "",
-          });
-
-          if (!authResponse.needs_signup) {
-            sessionStorage.setItem("token", authResponse.token);
-
-            navigate("/", {
-              replace: true,
-            });
-
-            return;
-          }
-
-          setEmailOrPhone(googleUser.email);
-          setFirstName(googleUser.given_name || "");
-          setLastName(googleUser.family_name || "");
-          setPassword("google-auth-user");
-
-          setStep(2);
-
-          window.history.pushState({ signupStep: 2 }, "");
-        } catch {
-          setStepOneError("Google signup failed");
-        } finally {
-          setIsLoading(false);
         }
-      },
-    });
 
-    client.requestAccessToken();
+        sessionStorage.setItem(
+          "token",
+          authResponse.token
+        );
+
+        navigate("/", { replace: true });
+        return;
+      }
+
+      if (!authResponse.profile?.email) {
+        throw new Error(
+          "Verified Google profile information was not returned."
+        );
+      }
+
+      setSignupMethod("google");
+      setGoogleCredential(credential);
+
+      setEmailOrPhone(authResponse.profile.email);
+      setFirstName(
+        authResponse.profile.first_name || ""
+      );
+      setLastName(
+        authResponse.profile.last_name || ""
+      );
+
+      setPassword("");
+      setPolicyAccepted(false);
+      setStepTwoError("");
+
+      openDetailsStep();
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Google authentication failed.";
+
+      setStepOneError(message);
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
-  const handleGetStarted = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleGoogleError = () => {
+    setStepOneError(
+      "Google authentication was cancelled or failed. Please try again."
+    );
+  };
+
+  const handleGetStarted = (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     setStepOneError("");
 
-    if (!isValidEmailOrPhone(emailOrPhone)) {
-      setStepOneError("Enter a valid email or Bangladesh phone number");
+    const normalizedEmailOrPhone =
+      emailOrPhone.trim();
+
+    if (
+      !isValidEmailOrPhone(normalizedEmailOrPhone)
+    ) {
+      setStepOneError(
+        "Enter a valid email or Bangladesh phone number."
+      );
       return;
     }
 
     if (password.length < 6) {
-      setStepOneError("Password must be at least 6 characters");
+      setStepOneError(
+        "Password must be at least 6 characters."
+      );
       return;
     }
 
     if (hasSequentialPattern(password)) {
-      setStepOneError("Password cannot contain sequential letters or digits");
+      setStepOneError(
+        "Password cannot contain sequential letters or digits."
+      );
       return;
     }
 
-    setIsLoading(true);
+    if (!policyAccepted) {
+      setStepOneError(
+        "Please agree to the Privacy Policy before continuing."
+      );
+      return;
+    }
 
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep(2);
-      window.history.pushState({ signupStep: 2 }, "");
-    }, 800);
+    setSignupMethod("manual");
+    setGoogleCredential("");
+    setEmailOrPhone(normalizedEmailOrPhone);
+    setStepTwoError("");
+
+    openDetailsStep();
   };
 
-  const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSignup = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     setStepTwoError("");
 
-    const totalNameLength = `${firstName}${lastName}`.replace(/\s/g, "").length;
+    const normalizedFirstName = firstName.trim();
+    const normalizedLastName = lastName.trim();
 
-    if (!firstName.trim() || !lastName.trim()) {
-      setStepTwoError("First name and last name are required");
+    const totalNameLength =
+      `${normalizedFirstName}${normalizedLastName}`.replace(
+        /\s/g,
+        ""
+      ).length;
+
+    if (
+      !normalizedFirstName ||
+      !normalizedLastName
+    ) {
+      setStepTwoError(
+        "First name and last name are required."
+      );
       return;
     }
 
     if (totalNameLength > 30) {
       setStepTwoError(
-        "First name and last name together cannot be more than 30 characters"
+        "First name and last name together cannot exceed 30 characters."
       );
       return;
     }
 
     if (!gender) {
-      setStepTwoError("Please select your gender");
+      setStepTwoError("Please select your gender.");
       return;
     }
 
-    if (!month || !day || !year) {
-      setStepTwoError("Please select your full birthdate");
+    if (!isValidBirthdate()) {
+      setStepTwoError(
+        "Please select a valid birthdate."
+      );
+      return;
+    }
+
+    if (
+      signupMethod === "google" &&
+      !googleCredential
+    ) {
+      setStepTwoError(
+        "Your Google authentication session is missing. Please go back and try again."
+      );
+      return;
+    }
+
+    if (
+      signupMethod === "google" &&
+      !policyAccepted
+    ) {
+      setStepTwoError(
+        "Please agree to the Privacy Policy before creating your account."
+      );
       return;
     }
 
     try {
       setIsSignupLoading(true);
 
-      const response = await signupUser({
-        first_name: firstName.trim(),
-        last_name: lastName.trim(),
-        email_or_phone: emailOrPhone.trim(),
-        password,
+      const commonProfileData = {
+        first_name: normalizedFirstName,
+        last_name: normalizedLastName,
         gender,
         birth_month: Number(month),
         birth_day: Number(day),
         birth_year: Number(year),
+      };
+
+      const response =
+        signupMethod === "google"
+          ? await googleSignupUser({
+              credential: googleCredential,
+              ...commonProfileData,
+            })
+          : await signupUser({
+              email_or_phone:
+                emailOrPhone.trim(),
+              password,
+              ...commonProfileData,
+            });
+
+      if (!response.token) {
+        throw new Error(
+          "Authentication token was not returned."
+        );
+      }
+
+      sessionStorage.setItem(
+        "token",
+        response.token
+      );
+
+      navigate("/signup-success", {
+        replace: true,
       });
-
-      sessionStorage.setItem("token", response.token);
-
-      navigate("/signup-success", { replace: true });
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Signup failed";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Account creation failed.";
+
       setStepTwoError(message);
     } finally {
       setIsSignupLoading(false);
@@ -287,77 +560,199 @@ const Signup = () => {
   };
 
   return (
-    <div className="signupPage" onClick={closeOrBackStep}>
-      <div className="signupContainer" onClick={stopClose}>
+    <main className="signupPage">
+      <div className="signupContainer">
+        {step === 2 && (
+          <button
+            className="signupBackBtn"
+            type="button"
+            onClick={returnToFirstStep}
+            aria-label="Go back to the previous step"
+          >
+            ‹
+          </button>
+        )}
+
         <h2 className="signupLogo">Mongosky</h2>
-        <h1>Create a new account</h1>
+
+        <h1>
+          {step === 1
+            ? "Create a new account"
+            : "Complete your profile"}
+        </h1>
 
         {step === 1 && (
           <>
-            <button
-              className="googleBtn"
-              type="button"
-              onClick={handleGoogleSignup}
-              disabled={isLoading}
+            <div
+              className="googleButtonShell"
+              aria-busy={isGoogleLoading}
             >
-              <img
-                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-                alt="Google"
-                className="googleIcon"
-              />
-
-              <span>Continue with Google</span>
-            </button>
-
-            <div className="signupDivider">
-              <span></span>
-              <p>or</p>
-              <span></span>
+              {isGoogleLoading ? (
+                <button
+                  className="googleBtn"
+                  type="button"
+                  disabled
+                >
+                  <span className="signupSpinner" />
+                  <span>Connecting to Google</span>
+                </button>
+              ) : (
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  theme="outline"
+                  size="large"
+                  shape="rectangular"
+                  text="continue_with"
+                  logo_alignment="left"
+                  width={String(
+                    Math.max(
+                      200,
+                      Math.min(
+                        window.innerWidth - 34,
+                        350
+                      )
+                    )
+                  )}
+                />
+              )}
             </div>
 
-            <form className="signupForm" onSubmit={handleGetStarted}>
+            <div
+              className="signupDivider"
+              aria-hidden="true"
+            >
+              <span />
+              <p>or</p>
+              <span />
+            </div>
+
+            <form
+              className="signupForm"
+              onSubmit={handleGetStarted}
+              noValidate
+            >
               <input
                 className="signupField"
                 type="text"
+                inputMode="email"
+                autoComplete="username"
                 placeholder="Email or Phone"
+                aria-label="Email or phone"
                 value={emailOrPhone}
-                onChange={(event) => setEmailOrPhone(event.target.value)}
+                onChange={(event) =>
+                  setEmailOrPhone(
+                    event.target.value
+                  )
+                }
+                disabled={isGoogleLoading}
               />
 
               <div className="signupPasswordBox">
                 <input
                   className="signupField signupPasswordField"
-                  type={showPassword ? "text" : "password"}
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  autoComplete="new-password"
                   placeholder="Password"
+                  aria-label="Password"
                   value={password}
-                  onChange={(event) => setPassword(event.target.value)}
+                  onChange={(event) =>
+                    setPassword(
+                      event.target.value
+                    )
+                  }
+                  disabled={isGoogleLoading}
                 />
 
                 <button
                   type="button"
                   className="signupEyeBtn"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() =>
+                    setShowPassword(
+                      (current) => !current
+                    )
+                  }
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
+                  disabled={isGoogleLoading}
                 >
-                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                  {showPassword ? (
+                    <FiEyeOff />
+                  ) : (
+                    <FiEye />
+                  )}
                 </button>
               </div>
 
-              {stepOneError && <p className="signupError">{stepOneError}</p>}
+              {stepOneError && (
+                <p
+                  className="signupError"
+                  role="alert"
+                  aria-live="polite"
+                >
+                  {stepOneError}
+                </p>
+              )}
 
-              <label className="signupCheck">
-                <input type="checkbox" required />
-                <span>I agree to Terms and Conditions</span>
-              </label>
+              <div className="signupCheck">
+                <input
+                  id="signup-policy-agreement"
+                  type="checkbox"
+                  checked={policyAccepted}
+                  onChange={(event) =>
+                    setPolicyAccepted(
+                      event.target.checked
+                    )
+                  }
+                  disabled={isGoogleLoading}
+                />
 
-              <button className="signupBtn" type="submit" disabled={isLoading}>
-                {isLoading ? <span className="signupSpinner"></span> : "Get started"}
+                <p id="signup-policy-text">
+                  <label htmlFor="signup-policy-agreement">
+                    I agree to the{" "}
+                  </label>
+
+                  <Link
+                    className="signupLegalLink"
+                    to="/privacy-policy"
+                  >
+                    Privacy Policy
+                  </Link>
+
+                  <span> and have read </span>
+
+                  <Link
+                    className="signupLegalLink"
+                    to="/about"
+                  >
+                    About Us
+                  </Link>
+
+                  <span>.</span>
+                </p>
+              </div>
+
+              <button
+                className="signupBtn"
+                type="submit"
+                disabled={isGoogleLoading}
+              >
+                Get started
               </button>
 
               <p className="signupLogin">
                 Already have an account?{" "}
-
-                <button type="button" onClick={goToLoginPage}>
+                <button
+                  type="button"
+                  onClick={goToLoginPage}
+                >
                   Sign In
                 </button>
               </p>
@@ -366,27 +761,60 @@ const Signup = () => {
         )}
 
         {step === 2 && (
-          <form className="signupForm" onSubmit={handleSignup}>
+          <form
+            className="signupForm"
+            onSubmit={handleSignup}
+            noValidate
+          >
+            {signupMethod === "google" && (
+              <>
+                <input
+                  className="signupField signupVerifiedEmail"
+                  type="email"
+                  value={emailOrPhone}
+                  aria-label="Verified Google email"
+                  readOnly
+                />
+
+                <p className="signupVerifiedText">
+                  Email verified securely by Google
+                </p>
+              </>
+            )}
+
             <input
               className="signupField"
               type="text"
+              autoComplete="given-name"
               placeholder="First name"
+              aria-label="First name"
               value={firstName}
-              onChange={(event) => setFirstName(event.target.value)}
+              onChange={(event) =>
+                setFirstName(event.target.value)
+              }
+              maxLength={30}
             />
 
             <input
               className="signupField"
               type="text"
+              autoComplete="family-name"
               placeholder="Last name"
+              aria-label="Last name"
               value={lastName}
-              onChange={(event) => setLastName(event.target.value)}
+              onChange={(event) =>
+                setLastName(event.target.value)
+              }
+              maxLength={30}
             />
 
             <select
               className="signupField"
+              aria-label="Gender"
               value={gender}
-              onChange={(event) => setGender(event.target.value)}
+              onChange={(event) =>
+                setGender(event.target.value)
+              }
             >
               <option value="">Gender</option>
               <option value="male">Male</option>
@@ -394,32 +822,48 @@ const Signup = () => {
               <option value="other">Other</option>
             </select>
 
-            <div className="signupBirthTitle">Birthdate</div>
+            <div className="signupBirthTitle">
+              Birthdate
+            </div>
 
             <div className="signupBirthFields">
               <select
                 className="signupField"
+                aria-label="Birth month"
                 value={month}
-                onChange={(event) => setMonth(event.target.value)}
+                onChange={(event) =>
+                  setMonth(event.target.value)
+                }
               >
                 <option value="">Month</option>
 
-                {months.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
+                {MONTHS.map(
+                  (monthName, index) => (
+                    <option
+                      key={monthName}
+                      value={index + 1}
+                    >
+                      {monthName}
+                    </option>
+                  )
+                )}
               </select>
 
               <select
                 className="signupField"
+                aria-label="Birth day"
                 value={day}
-                onChange={(event) => setDay(event.target.value)}
+                onChange={(event) =>
+                  setDay(event.target.value)
+                }
               >
                 <option value="">Day</option>
 
                 {days.map((item) => (
-                  <option key={item} value={item}>
+                  <option
+                    key={item}
+                    value={item}
+                  >
                     {item}
                   </option>
                 ))}
@@ -427,36 +871,100 @@ const Signup = () => {
 
               <select
                 className="signupField"
+                aria-label="Birth year"
                 value={year}
-                onChange={(event) => setYear(event.target.value)}
+                onChange={(event) =>
+                  setYear(event.target.value)
+                }
               >
                 <option value="">Year</option>
 
                 {years.map((item) => (
-                  <option key={item} value={item}>
+                  <option
+                    key={item}
+                    value={item}
+                  >
                     {item}
                   </option>
                 ))}
               </select>
             </div>
 
-            {stepTwoError && <p className="signupError">{stepTwoError}</p>}
+            {signupMethod === "google" && (
+              <div className="signupCheck">
+                <input
+                  id="google-signup-policy-agreement"
+                  type="checkbox"
+                  checked={policyAccepted}
+                  onChange={(event) =>
+                    setPolicyAccepted(
+                      event.target.checked
+                    )
+                  }
+                />
 
-            <button className="signupBtn" type="submit" disabled={isSignupLoading}>
-              {isSignupLoading ? <span className="signupSpinner"></span> : "Sign Up"}
+                <p>
+                  <label htmlFor="google-signup-policy-agreement">
+                    I agree to the{" "}
+                  </label>
+
+                  <Link
+                    className="signupLegalLink"
+                    to="/privacy-policy"
+                  >
+                    Privacy Policy
+                  </Link>
+
+                  <span> and have read </span>
+
+                  <Link
+                    className="signupLegalLink"
+                    to="/about"
+                  >
+                    About Us
+                  </Link>
+
+                  <span>.</span>
+                </p>
+              </div>
+            )}
+
+            {stepTwoError && (
+              <p
+                className="signupError"
+                role="alert"
+                aria-live="polite"
+              >
+                {stepTwoError}
+              </p>
+            )}
+
+            <button
+              className="signupBtn"
+              type="submit"
+              disabled={isSignupLoading}
+            >
+              {isSignupLoading ? (
+                <span className="signupSpinner" />
+              ) : (
+                "Sign Up"
+              )}
             </button>
 
             <p className="signupLogin">
               Already have an account?{" "}
-
-              <button type="button" onClick={goToLoginPage}>
+              <button
+                type="button"
+                onClick={goToLoginPage}
+                disabled={isSignupLoading}
+              >
                 Sign In
               </button>
             </p>
           </form>
         )}
       </div>
-    </div>
+    </main>
   );
 };
 

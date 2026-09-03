@@ -1,63 +1,131 @@
+.loginPage,
+.loginPage * {
+  box-sizing: border-box;
+}
+
 .loginPage {
   width: 100%;
   min-height: 100vh;
-  background: #ffffff;
+  min-height: 100dvh;
+  padding: 32px 18px;
+
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 20px;
+  justify-content: center;
+
+  overflow-y: auto;
+  background: #ffffff;
+  color: #111111;
+
+  font-family: Inter, Arial, sans-serif;
 }
 
 .loginContainer {
   width: 100%;
-  max-width: 430px;
+  max-width: 350px;
+  margin: 0 auto;
 }
 
 .loginLogo {
-  margin-bottom: 16px;
+  margin: 0 0 10px;
   text-align: center;
-  font-size: 58px;
+
+  color: #050505;
+  font-size: 44px;
   font-weight: 800;
   line-height: 1;
-  color: #050505;
-  letter-spacing: -3px;
-  font-family: "Inter", "Arial", sans-serif;
+  letter-spacing: -2.5px;
 }
 
 .loginContainer h1 {
-  margin-bottom: 30px;
+  margin: 0 0 28px;
   text-align: center;
-  font-size: 21px;
-  font-weight: 800;
+
   color: #4b5563;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.3;
 }
 
-.loginGoogleBtn {
+/* Google button */
+.loginGoogleShell {
   width: 100%;
-  height: 60px;
-  border: 1px solid #d6d6d6;
-  border-radius: 12px;
-  background: #ffffff;
+  min-width: 0;
+  min-height: 44px;
+
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+
+  overflow: hidden;
+}
+
+.loginGoogleShell > div {
+  width: 100% !important;
+  min-width: 0 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.loginGoogleShell > div > div {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+}
+
+.loginGoogleShell iframe {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-inline: auto !important;
+}
+
+/* Google loading button */
+.loginGoogleBtn {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #202124;
+
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+
   cursor: pointer;
 }
 
-.loginGoogleBtn span {
-  font-size: 17px;
-  font-weight: 500;
-  color: #000000;
+.loginGoogleBtn:hover:not(:disabled) {
+  border-color: #c5c7ca;
+  background: #fafafa;
+}
+
+.loginGoogleBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
 }
 
 .loginGoogleIcon {
-  width: 24px;
-  height: 24px;
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .loginDivider {
-  margin: 30px 0;
+  width: 100%;
+  margin: 28px 0;
+
   display: flex;
   align-items: center;
   gap: 14px;
@@ -66,39 +134,64 @@
 .loginDivider span {
   flex: 1;
   height: 1px;
-  background: #d9d9d9;
+  background: #dddddd;
 }
 
 .loginDivider p {
+  margin: 0;
+
+  color: #858585;
   font-size: 15px;
-  color: #8a8a8a;
+  line-height: 1;
 }
 
 .loginForm {
+  width: 100%;
+
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .loginField {
   width: 100%;
-  height: 60px;
-  padding: 0 18px;
-  border: 1px solid #d9d9d9;
-  border-radius: 12px;
+  height: 54px;
+  padding: 0 16px;
+
+  border: 1px solid #d8d8d8;
+  border-radius: 11px;
   outline: none;
+
   background: #ffffff;
-  font-size: 18px;
-  font-weight: 500;
   color: #111827;
+
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .loginField::placeholder {
   color: #6b7280;
+  opacity: 1;
+}
+
+.loginField:hover {
+  border-color: #c5c5c5;
 }
 
 .loginField:focus {
-  border-color: #111111;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.loginField:disabled {
+  cursor: not-allowed;
+  background: #f3f4f6;
+  color: #6b7280;
 }
 
 .loginPasswordBox {
@@ -107,55 +200,74 @@
 }
 
 .loginPasswordField {
-  padding-right: 56px;
+  padding-right: 52px;
 }
 
 .loginEyeBtn {
   position: absolute;
   top: 50%;
-  right: 18px;
+  right: 15px;
   transform: translateY(-50%);
-  border: none;
-  background: transparent;
-  color: #9ca3af;
-  font-size: 22px;
+
+  width: 34px;
+  height: 34px;
+  padding: 0;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #9ca3af;
+
+  font-size: 21px;
   cursor: pointer;
-  transition: 0.2s;
+
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
-.loginEyeBtn:hover {
+.loginEyeBtn:hover:not(:disabled) {
+  background: #f3f4f6;
   color: #4b5563;
 }
 
-.loginError {
+.loginEyeBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.loginError,
+.loginSuccess {
   width: 100%;
+  margin: 0;
   padding: 12px 14px;
-  border-radius: 8px;
-  background: #ffe5e5;
-  border: 1px solid #ffb8b8;
-  color: #d60000;
+
+  border-radius: 9px;
   font-size: 14px;
   font-weight: 700;
   line-height: 1.4;
 }
 
+.loginError {
+  border: 1px solid #ffb5b5;
+  background: #ffe7e7;
+  color: #d60000;
+}
+
 .loginSuccess {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 8px;
-  background: #e8f9ef;
-  border: 1px solid #9be7b0;
-  color: #128a3a;
-  font-size: 14px;
-  font-weight: 800;
-  line-height: 1.4;
+  border: 1px solid #a7e7bb;
+  background: #e9fbed;
+  color: #087a2d;
   text-align: center;
 }
 
 .loginOptions {
+  width: 100%;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -166,50 +278,100 @@
   display: flex;
   align-items: center;
   gap: 8px;
+
   color: #111827;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
+
+  cursor: pointer;
 }
 
 .loginOptions input {
   width: 17px;
   height: 17px;
+  margin: 0;
+
+  flex-shrink: 0;
+  accent-color: #ff0000;
+  cursor: pointer;
 }
 
 .loginOptions button {
+  padding: 0;
+
   border: 0;
   background: transparent;
   color: #2563eb;
-  font-size: 15px;
+
+  font-family: inherit;
+  font-size: 14px;
   font-weight: 500;
+
+  white-space: nowrap;
   cursor: pointer;
+}
+
+.loginOptions button:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.loginOptions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 .loginBtn {
   width: 100%;
-  height: 50px;
+  height: 48px;
+  padding: 0 16px;
+
   border: 0;
   border-radius: 5px;
   background: #ff0000;
   color: #ffffff;
-  font-size: 20px;
+
+  font-family: inherit;
+  font-size: 18px;
   font-weight: 800;
+
   cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.1s ease,
+    opacity 0.2s ease;
+}
+
+.loginBtn:hover:not(:disabled) {
+  background: #e90000;
+}
+
+.loginBtn:active:not(:disabled) {
+  transform: scale(0.985);
 }
 
 .loginBtn:disabled {
   cursor: not-allowed;
-  opacity: 0.85;
+  opacity: 0.72;
 }
 
 .loginSpinner {
-  width: 22px;
-  height: 22px;
-  border: 3px solid #ffffff80;
+  width: 21px;
+  height: 21px;
+
+  display: inline-block;
+
+  border: 3px solid rgba(255, 255, 255, 0.45);
   border-top-color: #ffffff;
   border-radius: 50%;
-  display: inline-block;
-  animation: loginSpin 0.8s linear infinite;
+
+  animation: loginSpin 0.75s linear infinite;
+}
+
+.loginGoogleBtn .loginSpinner {
+  border-color: rgba(66, 133, 244, 0.2);
+  border-top-color: #4285f4;
 }
 
 @keyframes loginSpin {
@@ -219,73 +381,111 @@
 }
 
 .loginSignup {
+  margin: 2px 0 0;
   text-align: center;
-  font-size: 16px;
-  font-weight: 500;
-  color: #111827;
+
+  color: #222222;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 .loginSignup button {
-  border: none;
-  background: transparent;
-  padding: 0;
   margin-left: 4px;
+  padding: 0;
+
+  border: 0;
+  background: transparent;
   color: #2563eb;
+
+  font-family: inherit;
   font-size: inherit;
   font-weight: 700;
+
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
 }
 
+.loginSignup button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.loginGoogleBtn:focus-visible,
+.loginEyeBtn:focus-visible,
+.loginOptions button:focus-visible,
+.loginBtn:focus-visible,
+.loginSignup button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
 @media (max-width: 480px) {
   .loginPage {
-    padding: 16px;
+    align-items: flex-start;
+    padding: 28px 17px;
+  }
+
+  .loginContainer {
+    max-width: 350px;
   }
 
   .loginLogo {
-    font-size: 46px;
+    font-size: 40px;
+    letter-spacing: -2px;
   }
 
   .loginContainer h1 {
-    font-size: 18px;
-    margin-bottom: 26px;
+    margin-bottom: 25px;
+    font-size: 20px;
   }
 
-  .loginGoogleBtn,
+  .loginDivider {
+    margin: 25px 0;
+  }
+
   .loginField {
-    height: 54px;
-  }
-
-  .loginBtn {
-    height: 46px;
-    font-size: 17px;
-    border-radius: 4px;
-  }
-
-  .loginGoogleBtn span,
-  .loginField {
+    height: 52px;
     font-size: 15px;
   }
 
-  .loginOptions {
-    align-items: flex-start;
+  .loginForm {
+    gap: 15px;
+  }
+
+  .loginBtn {
+    height: 47px;
+    font-size: 17px;
   }
 
   .loginOptions label,
-  .loginOptions button {
-    font-size: 14px;
-  }
-
+  .loginOptions button,
   .loginSignup {
-    font-size: 14px;
+    font-size: 13px;
   }
 }
 
 @media (max-width: 360px) {
-  .loginBtn {
-    height: 44px;
-    font-size: 16px;
-    border-radius: 4px;
+  .loginPage {
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+
+  .loginLogo {
+    font-size: 36px;
+  }
+
+  .loginContainer h1 {
+    font-size: 18px;
+  }
+
+  .loginOptions {
+    gap: 8px;
+  }
+
+  .loginOptions label,
+  .loginOptions button {
+    font-size: 12px;
   }
 }

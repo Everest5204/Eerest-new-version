@@ -2,7 +2,9 @@ package auth
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -13,246 +15,549 @@ type AuthHandler struct {
 	JWTSecret string
 }
 
-func NewAuthHandler(service *AuthService, jwtSecret string) *AuthHandler {
+func NewAuthHandler(
+	service *AuthService,
+	jwtSecret string,
+) *AuthHandler {
 	return &AuthHandler{
 		Service:   service,
-		JWTSecret: jwtSecret,
+		JWTSecret: strings.TrimSpace(jwtSecret),
 	}
 }
 
-func (handler *AuthHandler) Signup(w http.ResponseWriter, r *http.Request) {
+func (handler *AuthHandler) Signup(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		handleMethodNotAllowed(w, http.MethodPost)
 		return
 	}
 
 	var request SignupRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Invalid request body",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
 	user, err := handler.Service.Signup(request)
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
-	token, err := handler.generateToken(user.ID.Hex())
+	token, err := handler.generateToken(
+		user.ID.Hex(),
+	)
+
 	if err != nil {
-		http.Error(w, "Failed to create token", http.StatusInternalServerError)
+		http.Error(
+			w,
+			"Failed to create token",
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(AuthResponse{
-		Token: token,
-		User:  *user,
-	})
+	setAuthResponseHeaders(w)
+	w.WriteHeader(http.StatusCreated)
+
+	_ = json.NewEncoder(w).Encode(
+		AuthResponse{
+			Token: token,
+			User:  *user,
+		},
+	)
 }
 
-func (handler *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (handler *AuthHandler) Login(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		handleMethodNotAllowed(w, http.MethodPost)
 		return
 	}
 
 	var request LoginRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Invalid request body",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
 	user, err := handler.Service.Login(request)
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusUnauthorized,
+		)
 		return
 	}
 
-	token, err := handler.generateToken(user.ID.Hex())
+	token, err := handler.generateToken(
+		user.ID.Hex(),
+	)
+
 	if err != nil {
-		http.Error(w, "Failed to create token", http.StatusInternalServerError)
+		http.Error(
+			w,
+			"Failed to create token",
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(AuthResponse{
-		Token: token,
-		User:  *user,
-	})
+	setAuthResponseHeaders(w)
+
+	_ = json.NewEncoder(w).Encode(
+		AuthResponse{
+			Token: token,
+			User:  *user,
+		},
+	)
 }
 
-func (handler *AuthHandler) GoogleAuth(w http.ResponseWriter, r *http.Request) {
+func (handler *AuthHandler) GoogleAuth(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		handleMethodNotAllowed(w, http.MethodPost)
 		return
 	}
 
 	var request GoogleAuthRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Invalid request body",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
-	user, needsSignup, err := handler.Service.GoogleAuth(request)
+	user, profile, needsSignup, err :=
+		handler.Service.GoogleAuth(request)
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusUnauthorized,
+		)
 		return
 	}
+
+	setAuthResponseHeaders(w)
 
 	if needsSignup {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(GoogleAuthResponse{
-			NeedsSignup: true,
-		})
+		_ = json.NewEncoder(w).Encode(
+			GoogleAuthResponse{
+				Profile:     profile,
+				NeedsSignup: true,
+			},
+		)
+
 		return
 	}
 
-	token, err := handler.generateToken(user.ID.Hex())
+	if user == nil {
+		http.Error(
+			w,
+			"Google authentication failed",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	token, err := handler.generateToken(
+		user.ID.Hex(),
+	)
+
 	if err != nil {
-		http.Error(w, "Failed to create token", http.StatusInternalServerError)
+		http.Error(
+			w,
+			"Failed to create token",
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(GoogleAuthResponse{
-		Token:       token,
-		User:        *user,
-		NeedsSignup: false,
-	})
+	_ = json.NewEncoder(w).Encode(
+		GoogleAuthResponse{
+			Token:       token,
+			User:        user,
+			NeedsSignup: false,
+		},
+	)
 }
 
-func (handler *AuthHandler) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+func (handler *AuthHandler) GoogleSignup(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		handleMethodNotAllowed(w, http.MethodPost)
+		return
+	}
+
+	var request GoogleSignupRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		http.Error(
+			w,
+			"Invalid request body",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	user, err := handler.Service.GoogleSignup(
+		request,
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	token, err := handler.generateToken(
+		user.ID.Hex(),
+	)
+
+	if err != nil {
+		http.Error(
+			w,
+			"Failed to create token",
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	setAuthResponseHeaders(w)
+	w.WriteHeader(http.StatusCreated)
+
+	_ = json.NewEncoder(w).Encode(
+		AuthResponse{
+			Token: token,
+			User:  *user,
+		},
+	)
+}
+
+func (handler *AuthHandler) ForgotPassword(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	if r.Method != http.MethodPost {
+		handleMethodNotAllowed(w, http.MethodPost)
 		return
 	}
 
 	var request ForgotPasswordRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Invalid request body",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
-	err := handler.Service.ForgotPassword(request)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := handler.Service.ForgotPassword(request); err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Verification code sent",
-	})
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
+	_ = json.NewEncoder(w).Encode(
+		map[string]string{
+			"message": "Verification code sent",
+		},
+	)
 }
 
-func (handler *AuthHandler) VerifyResetCode(w http.ResponseWriter, r *http.Request) {
+func (handler *AuthHandler) VerifyResetCode(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		handleMethodNotAllowed(w, http.MethodPost)
 		return
 	}
 
 	var request VerifyResetCodeRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Invalid request body",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
-	err := handler.Service.VerifyResetCode(request)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := handler.Service.VerifyResetCode(request); err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Verification successful",
-	})
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
+	_ = json.NewEncoder(w).Encode(
+		map[string]string{
+			"message": "Verification successful",
+		},
+	)
 }
 
-func (handler *AuthHandler) ResetPassword(w http.ResponseWriter, r *http.Request) {
+func (handler *AuthHandler) ResetPassword(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		handleMethodNotAllowed(w, http.MethodPost)
 		return
 	}
 
 	var request ResetPasswordRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		http.Error(
+			w,
+			"Invalid request body",
+			http.StatusBadRequest,
+		)
 		return
 	}
 
-	err := handler.Service.ResetPassword(request)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := handler.Service.ResetPassword(request); err != nil {
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusBadRequest,
+		)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Your password reset successfully",
-	})
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
+	_ = json.NewEncoder(w).Encode(
+		map[string]string{
+			"message": "Your password reset successfully",
+		},
+	)
 }
 
-func (handler *AuthHandler) Me(w http.ResponseWriter, r *http.Request) {
+func (handler *AuthHandler) Me(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		handleMethodNotAllowed(w, http.MethodGet)
 		return
 	}
 
-	authHeader := r.Header.Get("Authorization")
+	authHeader := strings.TrimSpace(
+		r.Header.Get("Authorization"),
+	)
 
-	if len(authHeader) < 8 || authHeader[:7] != "Bearer " {
-		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+	if !strings.HasPrefix(
+		authHeader,
+		"Bearer ",
+	) {
+		http.Error(
+			w,
+			"Unauthorized",
+			http.StatusUnauthorized,
+		)
 		return
 	}
 
-	tokenString := authHeader[7:]
+	tokenString := strings.TrimSpace(
+		strings.TrimPrefix(
+			authHeader,
+			"Bearer ",
+		),
+	)
 
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(handler.JWTSecret), nil
-	})
+	if tokenString == "" {
+		http.Error(
+			w,
+			"Unauthorized",
+			http.StatusUnauthorized,
+		)
+		return
+	}
+
+	token, err := jwt.Parse(
+		tokenString,
+		func(token *jwt.Token) (interface{}, error) {
+			if token.Method != jwt.SigningMethodHS256 {
+				return nil, errors.New(
+					"unexpected signing method",
+				)
+			}
+
+			return []byte(
+				handler.JWTSecret,
+			), nil
+		},
+		jwt.WithValidMethods(
+			[]string{
+				jwt.SigningMethodHS256.Alg(),
+			},
+		),
+	)
 
 	if err != nil || !token.Valid {
-		http.Error(w, "Invalid token", http.StatusUnauthorized)
+		http.Error(
+			w,
+			"Invalid token",
+			http.StatusUnauthorized,
+		)
 		return
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
+
 	if !ok {
-		http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+		http.Error(
+			w,
+			"Invalid token claims",
+			http.StatusUnauthorized,
+		)
 		return
 	}
 
 	userID, ok := claims["userId"].(string)
-	if !ok {
-		http.Error(w, "Invalid user id", http.StatusUnauthorized)
+
+	if !ok || userID == "" {
+		http.Error(
+			w,
+			"Invalid user id",
+			http.StatusUnauthorized,
+		)
 		return
 	}
 
-	user, err := handler.Service.GetUserByID(userID)
+	user, err := handler.Service.GetUserByID(
+		userID,
+	)
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusNotFound,
+		)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(user)
+	setAuthResponseHeaders(w)
+
+	_ = json.NewEncoder(w).Encode(
+		user,
+	)
 }
 
-func (handler *AuthHandler) generateToken(userID string) (string, error) {
-	claims := jwt.MapClaims{
-		"userId": userID,
-		"exp":    time.Now().Add(7 * 24 * time.Hour).Unix(),
+func (handler *AuthHandler) generateToken(
+	userID string,
+) (string, error) {
+	if handler.JWTSecret == "" {
+		return "", errors.New(
+			"JWT secret is not configured",
+		)
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	now := time.Now().UTC()
 
-	return token.SignedString([]byte(handler.JWTSecret))
+	claims := jwt.MapClaims{
+		"userId": userID,
+		"sub":    userID,
+		"iat":    now.Unix(),
+		"exp": now.Add(
+			7 * 24 * time.Hour,
+		).Unix(),
+	}
+
+	token := jwt.NewWithClaims(
+		jwt.SigningMethodHS256,
+		claims,
+	)
+
+	return token.SignedString(
+		[]byte(handler.JWTSecret),
+	)
+}
+
+func setAuthResponseHeaders(
+	w http.ResponseWriter,
+) {
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+
+	w.Header().Set(
+		"Cache-Control",
+		"no-store",
+	)
+}
+
+func handleMethodNotAllowed(
+	w http.ResponseWriter,
+	allowedMethod string,
+) {
+	w.Header().Set(
+		"Allow",
+		allowedMethod,
+	)
+
+	http.Error(
+		w,
+		"Method not allowed",
+		http.StatusMethodNotAllowed,
+	)
 }

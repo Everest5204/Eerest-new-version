@@ -13,6 +13,9 @@ type User struct {
 	LastName     string `bson:"last_name" json:"last_name"`
 	EmailOrPhone string `bson:"email_or_phone" json:"email_or_phone"`
 
+	EmailVerified bool   `bson:"email_verified,omitempty" json:"email_verified"`
+	GoogleSubject string `bson:"google_subject,omitempty" json:"-"`
+
 	Password string `bson:"password,omitempty" json:"-"`
 
 	Gender     string `bson:"gender,omitempty" json:"gender,omitempty"`

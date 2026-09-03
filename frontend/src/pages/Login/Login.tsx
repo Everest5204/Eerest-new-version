@@ -1,33 +1,42 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  GoogleLogin,
+  type CredentialResponse,
+} from "@react-oauth/google";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import { googleAuthUser, loginUser } from "../../services/authService";
-import "./Login.css";
 
-declare global {
-  interface Window {
-    google: any;
-  }
-}
+import {
+  googleAuthUser,
+  loginUser,
+} from "../../services/authService";
+
+import "./Login.css";
 
 const Login = () => {
   const navigate = useNavigate();
 
-  const [showPassword, setShowPassword] = useState(false);
+  const googleButtonWidth = Math.max(
+    200,
+    Math.min(window.innerWidth - 34, 350)
+  );
 
+  const [showPassword, setShowPassword] = useState(false);
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
 
   const [loginError, setLoginError] = useState("");
-  const [loginSuccess, setLoginSuccess] = useState("");
-
   const [isLoginLoading, setIsLoginLoading] = useState(false);
 
   const closeLoginPage = () => {
-    navigate(-1);
+    if (!isLoginLoading) {
+      navigate(-1);
+    }
   };
 
-  const stopClose = (event: React.MouseEvent<HTMLDivElement>) => {
+  const stopClose = (
+    event: React.MouseEvent<HTMLDivElement>
+  ) => {
     event.stopPropagation();
   };
 
@@ -35,92 +44,98 @@ const Login = () => {
     navigate("/signup", { replace: true });
   };
 
-  const handleGoogleLogin = () => {
-    setLoginError("");
-    setLoginSuccess("");
-
-    if (!window.google) {
-      setLoginError("Google service is still loading. Please try again.");
-      return;
+  const saveTokenAndEnterApp = (token?: string) => {
+    if (!token) {
+      throw new Error(
+        "Authentication token was not returned."
+      );
     }
 
-    const client = window.google.accounts.oauth2.initTokenClient({
-      client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-      scope: "email profile openid",
-
-      callback: async (response: any) => {
-        try {
-          setIsLoginLoading(true);
-
-          const userResponse = await fetch(
-            "https://www.googleapis.com/oauth2/v3/userinfo",
-            {
-              headers: {
-                Authorization: `Bearer ${response.access_token}`,
-              },
-            }
-          );
-
-          const googleUser = await userResponse.json();
-
-          if (!googleUser?.email) {
-            setLoginError("Google login failed");
-            return;
-          }
-
-          const authResponse = await googleAuthUser({
-            email: googleUser.email,
-            first_name: googleUser.given_name || "",
-            last_name: googleUser.family_name || "",
-          });
-
-          if (authResponse.needs_signup) {
-            navigate("/signup", {
-              replace: true,
-              state: {
-                googleSignup: true,
-                email: googleUser.email,
-                firstName: googleUser.given_name || "",
-                lastName: googleUser.family_name || "",
-              },
-            });
-            return;
-          }
-
-          sessionStorage.setItem("token", authResponse.token);
-
-          setLoginSuccess("Google login successful");
-
-          setTimeout(() => {
-            navigate("/", { replace: true });
-          }, 700);
-        } catch (error: unknown) {
-          const message =
-            error instanceof Error ? error.message : "Google login failed";
-
-          setLoginError(message);
-        } finally {
-          setIsLoginLoading(false);
-        }
-      },
-    });
-
-    client.requestAccessToken();
+    sessionStorage.setItem("token", token);
+    navigate("/", { replace: true });
   };
 
-  const handleLogin = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const handleGoogleSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
     setLoginError("");
-    setLoginSuccess("");
 
-    if (!emailOrPhone.trim()) {
-      setLoginError("Please enter your email or phone");
+    const credential =
+      credentialResponse.credential?.trim();
+
+    if (!credential) {
+      setLoginError(
+        "Google did not provide a valid authentication credential."
+      );
       return;
     }
 
-    if (!password.trim()) {
-      setLoginError("Please enter your password");
+    try {
+      setIsLoginLoading(true);
+
+      const authResponse = await googleAuthUser({
+        credential,
+      });
+
+      if (!authResponse.needs_signup) {
+        saveTokenAndEnterApp(authResponse.token);
+        return;
+      }
+
+      const googleProfile = authResponse.profile;
+
+      if (!googleProfile?.email) {
+        throw new Error(
+          "Verified Google profile information was not returned."
+        );
+      }
+
+      navigate("/signup", {
+        replace: true,
+        state: {
+          googleSignup: true,
+          googleCredential: credential,
+          email: googleProfile.email,
+          firstName: googleProfile.first_name || "",
+          lastName: googleProfile.last_name || "",
+        },
+      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Google login failed.";
+
+      setLoginError(message);
+    } finally {
+      setIsLoginLoading(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setLoginError(
+      "Google authentication was cancelled or failed. Please try again."
+    );
+  };
+
+  const handleLogin = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    setLoginError("");
+
+    const normalizedEmailOrPhone =
+      emailOrPhone.trim();
+
+    if (!normalizedEmailOrPhone) {
+      setLoginError(
+        "Please enter your email or phone."
+      );
+      return;
+    }
+
+    if (!password) {
+      setLoginError("Please enter your password.");
       return;
     }
 
@@ -128,19 +143,16 @@ const Login = () => {
       setIsLoginLoading(true);
 
       const response = await loginUser({
-        email_or_phone: emailOrPhone.trim(),
+        email_or_phone: normalizedEmailOrPhone,
         password,
       });
 
-      sessionStorage.setItem("token", response.token);
-
-      setLoginSuccess("Your login successful");
-
-      setTimeout(() => {
-        navigate("/", { replace: true });
-      }, 700);
+      saveTokenAndEnterApp(response.token);
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Login failed";
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Login failed.";
 
       setLoginError(message);
     } finally {
@@ -149,63 +161,121 @@ const Login = () => {
   };
 
   return (
-    <div className="loginPage" onClick={closeLoginPage}>
-      <div className="loginContainer" onClick={stopClose}>
+    <main
+      className="loginPage"
+      onClick={closeLoginPage}
+    >
+      <div
+        className="loginContainer"
+        onClick={stopClose}
+      >
         <h2 className="loginLogo">Mongosky</h2>
 
         <h1>Sign In to your Account</h1>
 
-        <button
-          className="loginGoogleBtn"
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={isLoginLoading}
+        <div
+          className="loginGoogleShell"
+          aria-busy={isLoginLoading}
         >
-          <img
-            src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
-            alt="Google"
-            className="loginGoogleIcon"
-          />
-
-          <span>Continue with Google</span>
-        </button>
-
-        <div className="loginDivider">
-          <span></span>
-          <p>or</p>
-          <span></span>
+          {isLoginLoading ? (
+            <button
+              className="loginGoogleBtn"
+              type="button"
+              disabled
+            >
+              <span className="loginSpinner" />
+              <span>Connecting to Google</span>
+            </button>
+          ) : (
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+              theme="outline"
+              size="large"
+              shape="rectangular"
+              text="continue_with"
+              logo_alignment="left"
+              width={String(googleButtonWidth)}
+            />
+          )}
         </div>
 
-        <form className="loginForm" onSubmit={handleLogin}>
+        <div
+          className="loginDivider"
+          aria-hidden="true"
+        >
+          <span />
+          <p>or</p>
+          <span />
+        </div>
+
+        <form
+          className="loginForm"
+          onSubmit={handleLogin}
+          noValidate
+        >
           <input
             className="loginField"
             type="text"
+            inputMode="email"
+            autoComplete="username"
             placeholder="Email or Phone"
+            aria-label="Email or phone"
             value={emailOrPhone}
-            onChange={(event) => setEmailOrPhone(event.target.value)}
+            onChange={(event) =>
+              setEmailOrPhone(event.target.value)
+            }
+            disabled={isLoginLoading}
           />
 
           <div className="loginPasswordBox">
             <input
               className="loginField loginPasswordField"
-              type={showPassword ? "text" : "password"}
+              type={
+                showPassword ? "text" : "password"
+              }
+              autoComplete="current-password"
               placeholder="Password"
+              aria-label="Password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              disabled={isLoginLoading}
             />
 
             <button
               type="button"
               className="loginEyeBtn"
-              onClick={() => setShowPassword(!showPassword)}
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              onClick={() =>
+                setShowPassword(
+                  (current) => !current
+                )
+              }
+              aria-label={
+                showPassword
+                  ? "Hide password"
+                  : "Show password"
+              }
+              disabled={isLoginLoading}
             >
-              {showPassword ? <FiEyeOff /> : <FiEye />}
+              {showPassword ? (
+                <FiEyeOff />
+              ) : (
+                <FiEye />
+              )}
             </button>
           </div>
 
-          {loginError && <p className="loginError">{loginError}</p>}
-          {loginSuccess && <p className="loginSuccess">{loginSuccess}</p>}
+          {loginError && (
+            <p
+              className="loginError"
+              role="alert"
+              aria-live="polite"
+            >
+              {loginError}
+            </p>
+          )}
 
           <div className="loginOptions">
             <label>
@@ -220,24 +290,37 @@ const Login = () => {
                   replace: true,
                 })
               }
+              disabled={isLoginLoading}
             >
               Forgotten password?
             </button>
           </div>
 
-          <button className="loginBtn" type="submit" disabled={isLoginLoading}>
-            {isLoginLoading ? <span className="loginSpinner"></span> : "Sign In"}
+          <button
+            className="loginBtn"
+            type="submit"
+            disabled={isLoginLoading}
+          >
+            {isLoginLoading ? (
+              <span className="loginSpinner" />
+            ) : (
+              "Sign In"
+            )}
           </button>
 
           <p className="loginSignup">
-            Do not have an account?
-            <button type="button" onClick={goToSignupPage}>
+            Do not have an account?{" "}
+            <button
+              type="button"
+              onClick={goToSignupPage}
+              disabled={isLoginLoading}
+            >
               Sign Up
             </button>
           </p>
         </form>
       </div>
-    </div>
+    </main>
   );
 };
 

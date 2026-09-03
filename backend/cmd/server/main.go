@@ -50,15 +50,16 @@ func main() {
 	)
 	defer cancelStartup()
 
-	authService := auth.NewAuthService(
-		db.Database,
-	)
+     authService := auth.NewAuthService(
+	    db.Database,
+	   cfg.GoogleClientID,
+   )
 
-	authHandler := auth.NewAuthHandler(
-		authService,
-		cfg.JWTSecret,
-	)
-
+      authHandler := auth.NewAuthHandler(
+    	authService,
+    	cfg.JWTSecret,
+    )
+	
 	userService := user.NewUserService(
 		db.Database,
 	)

@@ -13,7 +13,8 @@ type Config struct {
 	MongoURI string
 	DBName   string
 
-	JWTSecret string
+	JWTSecret     string
+	GoogleClientID string
 
 	GeminiAPIKey string
 	GeminiModel  string
@@ -27,13 +28,14 @@ func LoadConfig() Config {
 	loadEnvFile(".env")
 	loadEnvFile(".env.ai")
 
-	config := Config{
+	return Config{
 		Port: getEnv("PORT", "5000"),
 
 		MongoURI: getEnv("MONGODB_URI", ""),
 		DBName:   getEnv("DB_NAME", ""),
 
-		JWTSecret: getEnv("JWT_SECRET", ""),
+		JWTSecret:      getEnv("JWT_SECRET", ""),
+		GoogleClientID: getEnv("GOOGLE_CLIENT_ID", ""),
 
 		GeminiAPIKey: getEnv("GEMINI_API_KEY", ""),
 		GeminiModel: getEnv(
@@ -45,14 +47,10 @@ func LoadConfig() Config {
 		CloudinaryAPIKey:    getEnv("CLOUDINARY_API_KEY", ""),
 		CloudinaryAPISecret: getEnv("CLOUDINARY_API_SECRET", ""),
 	}
-
-	return config
 }
 
 func loadEnvFile(path string) {
-	if err := godotenv.Load(path); err != nil &&
-		!os.IsNotExist(err) {
-
+	if err := godotenv.Load(path); err != nil && !os.IsNotExist(err) {
 		log.Printf(
 			"Unable to load %s: %v",
 			path,

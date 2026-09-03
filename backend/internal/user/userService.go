@@ -15,24 +15,51 @@ type UserService struct {
 	Collection *mongo.Collection
 }
 
-func NewUserService(db *mongo.Database) *UserService {
+func NewUserService(
+	db *mongo.Database,
+) *UserService {
 	return &UserService{
 		Collection: db.Collection("users"),
 	}
 }
 
-func (service *UserService) CreateIndexes(ctx context.Context) error {
+func (service *UserService) CreateIndexes(
+	ctx context.Context,
+) error {
 	indexModels := []mongo.IndexModel{
 		{
-			Keys: bson.D{{Key: "email_or_phone", Value: 1}},
+			Keys: bson.D{
+				{
+					Key:   "email_or_phone",
+					Value: 1,
+				},
+			},
 			Options: options.Index().
 				SetUnique(true).
 				SetSparse(true).
 				SetName("unique_email_or_phone"),
 		},
+		{
+			Keys: bson.D{
+				{
+					Key:   "google_subject",
+					Value: 1,
+				},
+			},
+			Options: options.Index().
+				SetUnique(true).
+				SetSparse(true).
+				SetName("unique_google_subject"),
+		},
 	}
 
-	_, err := service.Collection.Indexes().CreateMany(ctx, indexModels)
+	_, err := service.Collection.
+		Indexes().
+		CreateMany(
+			ctx,
+			indexModels,
+		)
+
 	return err
 }
 
@@ -40,27 +67,44 @@ func (service *UserService) GetUserByID(
 	ctx context.Context,
 	userID string,
 ) (*User, error) {
-	objectID, err := bson.ObjectIDFromHex(userID)
+	objectID, err := bson.ObjectIDFromHex(
+		userID,
+	)
+
 	if err != nil {
-		return nil, errors.New("invalid user id")
+		return nil, errors.New(
+			"invalid user id",
+		)
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(
+		ctx,
+		3*time.Second,
+	)
 	defer cancel()
 
 	var user User
 
 	err = service.Collection.FindOne(
 		ctx,
-		bson.M{"_id": objectID},
-		options.FindOne().SetProjection(bson.M{
-			"password": 0,
-		}),
+		bson.M{
+			"_id": objectID,
+		},
+		options.FindOne().SetProjection(
+			bson.M{
+				"password": 0,
+			},
+		),
 	).Decode(&user)
 
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, errors.New("user not found")
+		if errors.Is(
+			err,
+			mongo.ErrNoDocuments,
+		) {
+			return nil, errors.New(
+				"user not found",
+			)
 		}
 
 		return nil, err
@@ -75,24 +119,38 @@ func (service *UserService) GetUserByEmailOrPhone(
 	ctx context.Context,
 	emailOrPhone string,
 ) (*User, error) {
-	emailOrPhone = strings.TrimSpace(emailOrPhone)
+	emailOrPhone = strings.TrimSpace(
+		emailOrPhone,
+	)
 
-	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	ctx, cancel := context.WithTimeout(
+		ctx,
+		3*time.Second,
+	)
 	defer cancel()
 
 	var user User
 
 	err := service.Collection.FindOne(
 		ctx,
-		bson.M{"email_or_phone": emailOrPhone},
-		options.FindOne().SetProjection(bson.M{
-			"password": 0,
-		}),
+		bson.M{
+			"email_or_phone": emailOrPhone,
+		},
+		options.FindOne().SetProjection(
+			bson.M{
+				"password": 0,
+			},
+		),
 	).Decode(&user)
 
 	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			return nil, errors.New("user not found")
+		if errors.Is(
+			err,
+			mongo.ErrNoDocuments,
+		) {
+			return nil, errors.New(
+				"user not found",
+			)
 		}
 
 		return nil, err
@@ -109,7 +167,11 @@ func (service *UserService) GetUserByEmail(
 ) (*User, error) {
 	return service.GetUserByEmailOrPhone(
 		ctx,
-		strings.TrimSpace(strings.ToLower(email)),
+		strings.TrimSpace(
+			strings.ToLower(
+				email,
+			),
+		),
 	)
 }
 
@@ -119,6 +181,8 @@ func (service *UserService) GetUserByPhone(
 ) (*User, error) {
 	return service.GetUserByEmailOrPhone(
 		ctx,
-		strings.TrimSpace(phone),
+		strings.TrimSpace(
+			phone,
+		),
 	)
 }
