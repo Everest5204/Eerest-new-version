@@ -1004,3 +1004,14 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+
+
+
+
+/* Public profile photo gallery integration */
+.profileViewPosts.isPhotoGallery,
+.profileViewPosts.isVideoGallery {
+  border-top-color: #e5e7eb;
+  background: #ffffff;
+}

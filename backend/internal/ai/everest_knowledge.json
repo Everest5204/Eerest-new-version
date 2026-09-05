@@ -163,8 +163,30 @@
         "মঙ্গস্কি কে বানিয়েছে",
         "মুরাদ আহমেদ সীমান্ত কে"
       ],
-      "answer_bn": "Mongosky-এর প্রতিষ্ঠাতা Murad Ahmed Simanto (মুরাদ আহমেদ সীমান্ত)। তিনি Janata Bazar High School থেকে SSC সম্পন্ন করেছেন। তাঁর গ্রামের বাড়ি ভোলা জেলায়। বর্তমানে তিনি Daffodil Polytechnic Institute-এর Computer Science বিভাগে Diploma in Engineering অধ্যয়ন করছেন।",
-      "answer_en": "Murad Ahmed Simanto is the founder of Mongosky. He completed his SSC at Janata Bazar High School. His hometown is in Bhola District, and he is currently studying for a Diploma in Engineering in the Computer Science department at Daffodil Polytechnic Institute."
+      "answer_bn": "Mongosky-এর প্রতিষ্ঠাতা Murad Ahmed Simanto (মুরাদ আহমেদ সীমান্ত)। আপনি কি তাঁর সম্পর্কে আরও বিস্তারিত জানতে চান?",
+      "answer_en": "The founder of Mongosky is Murad Ahmed Simanto. Would you like to know more about him?"
+    },
+    {
+      "id": "mongosky-founder-details",
+      "keywords": [
+        "mongosky founder details",
+        "details about mongosky founder",
+        "tell me more about mongosky founder",
+        "tell me more about murad ahmed simanto",
+        "murad ahmed simanto details",
+        "detailed information about murad ahmed simanto",
+        "mongosky founder somporke bistarito bolo",
+        "mongosky founder somproke bistarito bolo",
+        "murad ahmed simanto somporke bistarito bolo",
+        "murad ahmed simanto somproke bistarito bolo",
+        "mongosky founder সম্পর্কে বিস্তারিত বলো",
+        "mongosky প্রতিষ্ঠাতা সম্পর্কে বিস্তারিত বলো",
+        "মঙ্গস্কির প্রতিষ্ঠাতা সম্পর্কে বিস্তারিত বলো",
+        "মুরাদ আহমেদ সীমান্ত সম্পর্কে বিস্তারিত বলো",
+        "মুরাদ আহমেদ সীমান্তের বিস্তারিত তথ্য"
+      ],
+      "answer_bn": "Murad Ahmed Simanto (মুরাদ আহমেদ সীমান্ত) Mongosky-এর প্রতিষ্ঠাতা। তিনি Janata Bazar High School থেকে SSC সম্পন্ন করেছেন এবং তাঁর গ্রামের বাড়ি ভোলা জেলায়। বর্তমানে তিনি Daffodil Polytechnic Institute-এর Computer Science বিভাগে Diploma in Engineering অধ্যয়ন করছেন।",
+      "answer_en": "Murad Ahmed Simanto is the founder of Mongosky. He completed his SSC at Janata Bazar High School and is from Bhola District. He is currently studying for a Diploma in Engineering in Computer Science at Daffodil Polytechnic Institute."
     },
     {
       "id": "mongosky-co-founder",
@@ -188,8 +210,36 @@
         "মঙ্গস্কির সহ-প্রতিষ্ঠাতা কে",
         "আরাফাত হাসান রোহান কে"
       ],
-      "answer_bn": "Mongosky-এর সহ-প্রতিষ্ঠাতা A.H. Rohan (Arafat Hasan Rohan)। তিনি Janata Bazar High School থেকে SSC সম্পন্ন করেছেন। বর্তমানে তিনি Lalmohan Hamim Residential School and College-এ উচ্চমাধ্যমিক দ্বিতীয় বর্ষে অধ্যয়ন করছেন। তিনি Mongosky website-এর management নিয়ে কাজ করেন।",
-      "answer_en": "A.H. Rohan (Arafat Hasan Rohan) is the co-founder of Mongosky. He completed his SSC at Janata Bazar High School and is currently a second-year higher secondary student at Lalmohan Hamim Residential School and College. He works on the management of the Mongosky website."
+      "answer_bn": "Mongosky-এর সহ-প্রতিষ্ঠাতা A.H. Rohan (Arafat Hasan Rohan)। আপনি কি তাঁর সম্পর্কে আরও বিস্তারিত জানতে চান?",
+      "answer_en": "The co-founder of Mongosky is A.H. Rohan (Arafat Hasan Rohan). Would you like to know more about him?"
+    },
+    {
+      "id": "mongosky-co-founder-details",
+      "keywords": [
+        "mongosky co founder details",
+        "mongosky co-founder details",
+        "details about mongosky co founder",
+        "details about mongosky co-founder",
+        "tell me more about mongosky co founder",
+        "tell me more about mongosky co-founder",
+        "tell me more about a h rohan",
+        "tell me more about a.h. rohan",
+        "tell me more about arafat hasan rohan",
+        "a h rohan details",
+        "a.h. rohan details",
+        "arafat hasan rohan details",
+        "mongosky co founder somporke bistarito bolo",
+        "mongosky co founder somproke bistarito bolo",
+        "arafat hasan rohan somporke bistarito bolo",
+        "arafat hasan rohan somproke bistarito bolo",
+        "mongosky co founder সম্পর্কে বিস্তারিত বলো",
+        "mongosky সহ প্রতিষ্ঠাতা সম্পর্কে বিস্তারিত বলো",
+        "মঙ্গস্কির সহ প্রতিষ্ঠাতা সম্পর্কে বিস্তারিত বলো",
+        "আরাফাত হাসান রোহান সম্পর্কে বিস্তারিত বলো",
+        "আরাফাত হাসান রোহানের বিস্তারিত তথ্য"
+      ],
+      "answer_bn": "A.H. Rohan (Arafat Hasan Rohan) Mongosky-এর সহ-প্রতিষ্ঠাতা। তিনি Janata Bazar High School থেকে SSC সম্পন্ন করেছেন। বর্তমানে তিনি Lalmohan Hamim Residential School and College-এ উচ্চমাধ্যমিক দ্বিতীয় বর্ষে অধ্যয়ন করছেন এবং Mongosky website management নিয়ে কাজ করছেন।",
+      "answer_en": "A.H. Rohan (Arafat Hasan Rohan) is the co-founder of Mongosky. He completed his SSC at Janata Bazar High School and is currently a second-year higher secondary student at Lalmohan Hamim Residential School and College. He also works on the management of the Mongosky website."
     },
     {
       "id": "mongosky-management",

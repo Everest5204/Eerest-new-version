@@ -10,6 +10,7 @@ import {
 import {
   Copy,
   FileText,
+  Images,
   Loader2,
   MessageCircle,
   MoreHorizontal,
@@ -17,6 +18,7 @@ import {
   User,
   UserCheck,
   UserPlus,
+  Video,
   X,
 } from "lucide-react";
 
@@ -28,6 +30,17 @@ import {
 
 import Post from "../components/Post/Post";
 import { VerifiedName } from "../components/VerifiedBadge";
+
+import {
+  hasProfilePhotos,
+  ProfilePhotoGallery,
+  ProfilePhotoGallerySkeleton,
+} from "../features/profile-photo-gallery";
+
+import {
+  ProfileVideoGallery,
+  ProfileVideoGallerySkeleton,
+} from "../features/profile-video-gallery";
 
 import {
   getUserPosts,
@@ -62,7 +75,9 @@ const getErrorMessage = (
   fallbackMessage: string,
 ): string => {
   const apiError = error as ApiErrorShape;
-  const responseMessage = apiError.response?.data?.error;
+
+  const responseMessage =
+    apiError.response?.data?.error;
 
   if (
     typeof responseMessage === "string" &&
@@ -81,13 +96,21 @@ const getErrorMessage = (
   return fallbackMessage;
 };
 
-const getPostCreatedTime = (post: FeedPost): number => {
-  const createdTime = new Date(post.created_at).getTime();
+const getPostCreatedTime = (
+  post: FeedPost,
+): number => {
+  const createdTime = new Date(
+    post.created_at,
+  ).getTime();
 
-  return Number.isFinite(createdTime) ? createdTime : 0;
+  return Number.isFinite(createdTime)
+    ? createdTime
+    : 0;
 };
 
-const isTextPost = (post: FeedPost): boolean => {
+const isTextPost = (
+  post: FeedPost,
+): boolean => {
   return (
     post.type === "text" ||
     Boolean(post.text) ||
@@ -105,35 +128,45 @@ const mergePostData = (
     return {
       ...existingPost,
       ...incomingPost,
+
       type:
         incomingPost.type ||
         existingPost.type ||
         "text",
+
       caption:
         incomingPost.caption ??
         existingPost.caption,
+
       text:
         incomingPost.text ??
         existingPost.text,
+
       text_background:
         incomingPost.text_background ??
         existingPost.text_background,
+
       text_color:
         incomingPost.text_color ??
         existingPost.text_color,
+
       text_style:
         incomingPost.text_style ??
         existingPost.text_style,
+
       media:
         incomingPost.media.length > 0
           ? incomingPost.media
           : existingPost.media,
+
       media_url:
         incomingPost.media_url ||
         existingPost.media_url,
+
       media_id:
         incomingPost.media_id ||
         existingPost.media_id,
+
       media_type:
         incomingPost.media_type ||
         existingPost.media_type,
@@ -143,6 +176,7 @@ const mergePostData = (
   return {
     ...existingPost,
     ...incomingPost,
+
     media:
       incomingPost.media.length > 0
         ? incomingPost.media
@@ -153,24 +187,31 @@ const mergePostData = (
 const mergeUniquePosts = (
   orderedPosts: FeedPost[],
 ): FeedPost[] => {
-  const postMap = new Map<string, FeedPost>();
+  const postMap =
+    new Map<string, FeedPost>();
 
   orderedPosts.forEach((post) => {
     if (!post.id) {
       return;
     }
 
-    const existingPost = postMap.get(post.id);
+    const existingPost =
+      postMap.get(post.id);
 
     postMap.set(
       post.id,
       existingPost
-        ? mergePostData(existingPost, post)
+        ? mergePostData(
+            existingPost,
+            post,
+          )
         : post,
     );
   });
 
-  return Array.from(postMap.values()).sort(
+  return Array.from(
+    postMap.values(),
+  ).sort(
     (firstPost, secondPost) =>
       getPostCreatedTime(secondPost) -
       getPostCreatedTime(firstPost),
@@ -183,7 +224,8 @@ const postHasMediaType = (
 ): boolean => {
   if (
     post.media.some(
-      (mediaItem) => mediaItem.type === mediaType,
+      (mediaItem) =>
+        mediaItem.type === mediaType,
     )
   ) {
     return true;
@@ -192,16 +234,29 @@ const postHasMediaType = (
   return post.media_type === mediaType;
 };
 
-const copyText = async (value: string): Promise<void> => {
-  if (navigator.clipboard && window.isSecureContext) {
-    await navigator.clipboard.writeText(value);
+const copyText = async (
+  value: string,
+): Promise<void> => {
+  if (
+    navigator.clipboard &&
+    window.isSecureContext
+  ) {
+    await navigator.clipboard.writeText(
+      value,
+    );
+
     return;
   }
 
-  const textArea = document.createElement("textarea");
+  const textArea =
+    document.createElement("textarea");
 
   textArea.value = value;
-  textArea.setAttribute("readonly", "");
+  textArea.setAttribute(
+    "readonly",
+    "",
+  );
+
   textArea.style.position = "fixed";
   textArea.style.opacity = "0";
   textArea.style.pointerEvents = "none";
@@ -210,10 +265,13 @@ const copyText = async (value: string): Promise<void> => {
   textArea.select();
 
   try {
-    const copied = document.execCommand("copy");
+    const copied =
+      document.execCommand("copy");
 
     if (!copied) {
-      throw new Error("Copy command failed");
+      throw new Error(
+        "Copy command failed",
+      );
     }
   } finally {
     textArea.remove();
@@ -230,8 +288,11 @@ const ProfileHeaderSkeleton = () => {
 
       <div className="profileViewSkeletonContent">
         <div className="profileViewSkeletonAvatar" />
+
         <div className="profileViewSkeletonLine profileViewSkeletonName" />
+
         <div className="profileViewSkeletonLine profileViewSkeletonStats" />
+
         <div className="profileViewSkeletonActions">
           <div />
           <div />
@@ -248,7 +309,9 @@ const ProfileFeedSkeleton = () => {
       className="profileViewFeedSkeleton"
       aria-label="Loading posts"
     >
-      {Array.from({ length: 2 }).map((_, index) => (
+      {Array.from({
+        length: 2,
+      }).map((_, index) => (
         <article
           className="profileViewPostSkeleton"
           key={index}
@@ -258,6 +321,7 @@ const ProfileFeedSkeleton = () => {
 
             <div>
               <div className="profileViewPostSkeletonLine" />
+
               <div className="profileViewPostSkeletonLine short" />
             </div>
           </div>
@@ -271,14 +335,30 @@ const ProfileFeedSkeleton = () => {
 
 const ProfileViewPage = () => {
   const navigate = useNavigate();
-  const { userID } = useParams<{ userID: string }>();
 
-  const cleanUserID = userID?.trim() ?? "";
+  const { userID } =
+    useParams<{
+      userID: string;
+    }>();
 
-  const observerRef = useRef<HTMLDivElement | null>(null);
-  const copyButtonRef = useRef<HTMLButtonElement | null>(null);
-  const loadingRef = useRef(false);
-  const feedSessionRef = useRef(0);
+  const cleanUserID =
+    userID?.trim() ?? "";
+
+  const observerRef =
+    useRef<HTMLDivElement | null>(
+      null,
+    );
+
+  const copyButtonRef =
+    useRef<HTMLButtonElement | null>(
+      null,
+    );
+
+  const loadingRef =
+    useRef(false);
+
+  const feedSessionRef =
+    useRef(0);
 
   const {
     profile,
@@ -290,9 +370,18 @@ const ProfileViewPage = () => {
     toggleFollow,
   } = useProfileView(cleanUserID);
 
-  const [posts, setPosts] = useState<FeedPost[]>([]);
-  const [mediaNextCursor, setMediaNextCursor] = useState("");
-  const [textNextCursor, setTextNextCursor] = useState("");
+  const [posts, setPosts] =
+    useState<FeedPost[]>([]);
+
+  const [
+    mediaNextCursor,
+    setMediaNextCursor,
+  ] = useState("");
+
+  const [
+    textNextCursor,
+    setTextNextCursor,
+  ] = useState("");
 
   const [
     hasMoreMediaPosts,
@@ -304,34 +393,61 @@ const ProfileViewPage = () => {
     setHasMoreTextPosts,
   ] = useState(false);
 
-  const [postsLoading, setPostsLoading] = useState(false);
+  const [
+    postsLoading,
+    setPostsLoading,
+  ] = useState(false);
+
   const [
     initialPostsLoaded,
     setInitialPostsLoaded,
   ] = useState(false);
 
-  const [postsError, setPostsError] = useState<string | null>(
+  const [
+    postsError,
+    setPostsError,
+  ] = useState<string | null>(
     null,
   );
 
-  const [activeTab, setActiveTab] =
-    useState<ProfileViewTab>("all");
+  const [
+    activeTab,
+    setActiveTab,
+  ] =
+    useState<ProfileViewTab>(
+      "all",
+    );
 
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
-  const [feedRequestVersion, setFeedRequestVersion] =
-    useState(0);
+  const [
+    isMoreOpen,
+    setIsMoreOpen,
+  ] = useState(false);
+
+  const [notice, setNotice] =
+    useState<string | null>(null);
+
+  const [
+    feedRequestVersion,
+    setFeedRequestVersion,
+  ] = useState(0);
 
   const hasMorePosts =
-    hasMoreMediaPosts || hasMoreTextPosts;
+    hasMoreMediaPosts ||
+    hasMoreTextPosts;
 
-  const setPostsLoadingState = useCallback(
-    (value: boolean) => {
-      loadingRef.current = value;
-      setPostsLoading(value);
-    },
-    [],
-  );
+  const hasMoreActivePosts =
+    activeTab === "all"
+      ? hasMorePosts
+      : hasMoreMediaPosts;
+
+  const setPostsLoadingState =
+    useCallback(
+      (value: boolean) => {
+        loadingRef.current = value;
+        setPostsLoading(value);
+      },
+      [],
+    );
 
   useEffect(() => {
     if (profile?.is_self) {
@@ -339,19 +455,30 @@ const ProfileViewPage = () => {
         replace: true,
       });
     }
-  }, [navigate, profile?.is_self]);
+  }, [
+    navigate,
+    profile?.is_self,
+  ]);
 
   useEffect(() => {
     if (!cleanUserID) {
       setPosts([]);
-      setPostsError("Profile user ID is missing");
+
+      setPostsError(
+        "Profile user ID is missing",
+      );
+
       setInitialPostsLoaded(true);
       setPostsLoadingState(false);
+
       return;
     }
 
-    const sessionID = feedSessionRef.current + 1;
-    feedSessionRef.current = sessionID;
+    const sessionID =
+      feedSessionRef.current + 1;
+
+    feedSessionRef.current =
+      sessionID;
 
     setPosts([]);
     setMediaNextCursor("");
@@ -362,15 +489,19 @@ const ProfileViewPage = () => {
     setInitialPostsLoaded(false);
     setPostsLoadingState(true);
 
-    const loadInitialPosts = async (): Promise<void> => {
-      try {
-        const [mediaResponse, textResponse] =
-          await Promise.all([
+    const loadInitialPosts =
+      async (): Promise<void> => {
+        try {
+          const [
+            mediaResponse,
+            textResponse,
+          ] = await Promise.all([
             getUserPosts(
               cleanUserID,
               "",
               PROFILE_POST_LIMIT,
             ),
+
             getUserTextPosts(
               cleanUserID,
               "",
@@ -378,45 +509,74 @@ const ProfileViewPage = () => {
             ),
           ]);
 
-        if (feedSessionRef.current !== sessionID) {
-          return;
+          if (
+            feedSessionRef.current !==
+            sessionID
+          ) {
+            return;
+          }
+
+          setPosts(
+            mergeUniquePosts([
+              ...mediaResponse.posts,
+              ...textResponse.posts,
+            ]),
+          );
+
+          setMediaNextCursor(
+            mediaResponse.next_cursor,
+          );
+
+          setTextNextCursor(
+            textResponse.next_cursor,
+          );
+
+          setHasMoreMediaPosts(
+            mediaResponse.has_more,
+          );
+
+          setHasMoreTextPosts(
+            textResponse.has_more,
+          );
+        } catch (
+          requestError: unknown
+        ) {
+          if (
+            feedSessionRef.current !==
+            sessionID
+          ) {
+            return;
+          }
+
+          setPostsError(
+            getErrorMessage(
+              requestError,
+              "Unable to load profile posts",
+            ),
+          );
+        } finally {
+          if (
+            feedSessionRef.current ===
+            sessionID
+          ) {
+            setInitialPostsLoaded(
+              true,
+            );
+
+            setPostsLoadingState(
+              false,
+            );
+          }
         }
-
-        setPosts(
-          mergeUniquePosts([
-            ...mediaResponse.posts,
-            ...textResponse.posts,
-          ]),
-        );
-
-        setMediaNextCursor(mediaResponse.next_cursor);
-        setTextNextCursor(textResponse.next_cursor);
-
-        setHasMoreMediaPosts(mediaResponse.has_more);
-        setHasMoreTextPosts(textResponse.has_more);
-      } catch (requestError: unknown) {
-        if (feedSessionRef.current !== sessionID) {
-          return;
-        }
-
-        setPostsError(
-          getErrorMessage(
-            requestError,
-            "Unable to load profile posts",
-          ),
-        );
-      } finally {
-        if (feedSessionRef.current === sessionID) {
-          setInitialPostsLoaded(true);
-          setPostsLoadingState(false);
-        }
-      }
-    };
+      };
 
     void loadInitialPosts();
 
     return () => {
-      if (feedSessionRef.current === sessionID) {
+      if (
+        feedSessionRef.current ===
+        sessionID
+      ) {
         feedSessionRef.current += 1;
         loadingRef.current = false;
       }
@@ -427,158 +587,252 @@ const ProfileViewPage = () => {
     setPostsLoadingState,
   ]);
 
-  const loadMorePosts = useCallback(async (): Promise<void> => {
+  const loadMorePosts =
+    useCallback(
+      async (): Promise<void> => {
+        if (
+          !cleanUserID ||
+          !hasMoreActivePosts ||
+          loadingRef.current
+        ) {
+          return;
+        }
+
+        const shouldLoadMedia =
+          hasMoreMediaPosts &&
+          Boolean(
+            mediaNextCursor,
+          );
+
+        const shouldLoadText =
+          activeTab === "all" &&
+          hasMoreTextPosts &&
+          Boolean(
+            textNextCursor,
+          );
+
+        if (
+          !shouldLoadMedia &&
+          !shouldLoadText
+        ) {
+          if (
+            hasMoreMediaPosts
+          ) {
+            setHasMoreMediaPosts(
+              false,
+            );
+          }
+
+          if (
+            activeTab === "all" &&
+            hasMoreTextPosts
+          ) {
+            setHasMoreTextPosts(
+              false,
+            );
+          }
+
+          return;
+        }
+
+        const sessionID =
+          feedSessionRef.current;
+
+        setPostsLoadingState(
+          true,
+        );
+
+        setPostsError(null);
+
+        try {
+          const [
+            mediaResponse,
+            textResponse,
+          ] = await Promise.all([
+            shouldLoadMedia
+              ? getUserPosts(
+                  cleanUserID,
+                  mediaNextCursor,
+                  PROFILE_POST_LIMIT,
+                )
+              : Promise.resolve(
+                  null,
+                ),
+
+            shouldLoadText
+              ? getUserTextPosts(
+                  cleanUserID,
+                  textNextCursor,
+                  PROFILE_POST_LIMIT,
+                )
+              : Promise.resolve(
+                  null,
+                ),
+          ]);
+
+          if (
+            feedSessionRef.current !==
+            sessionID
+          ) {
+            return;
+          }
+
+          setPosts(
+            (currentPosts) =>
+              mergeUniquePosts([
+                ...currentPosts,
+                ...(
+                  mediaResponse
+                    ?.posts ?? []
+                ),
+                ...(
+                  textResponse
+                    ?.posts ?? []
+                ),
+              ]),
+          );
+
+          if (mediaResponse) {
+            setMediaNextCursor(
+              mediaResponse.next_cursor,
+            );
+
+            setHasMoreMediaPosts(
+              mediaResponse.has_more,
+            );
+          }
+
+          if (textResponse) {
+            setTextNextCursor(
+              textResponse.next_cursor,
+            );
+
+            setHasMoreTextPosts(
+              textResponse.has_more,
+            );
+          }
+        } catch (
+          requestError: unknown
+        ) {
+          if (
+            feedSessionRef.current !==
+            sessionID
+          ) {
+            return;
+          }
+
+          setPostsError(
+            getErrorMessage(
+              requestError,
+              "Unable to load more posts",
+            ),
+          );
+        } finally {
+          if (
+            feedSessionRef.current ===
+            sessionID
+          ) {
+            setPostsLoadingState(
+              false,
+            );
+          }
+        }
+      },
+      [
+        activeTab,
+        cleanUserID,
+        hasMoreActivePosts,
+        hasMoreMediaPosts,
+        hasMoreTextPosts,
+        mediaNextCursor,
+        setPostsLoadingState,
+        textNextCursor,
+      ],
+    );
+
+  useEffect(() => {
+    const target =
+      observerRef.current;
+
     if (
-      !cleanUserID ||
-      !hasMorePosts ||
-      loadingRef.current
+      !target ||
+      !hasMoreActivePosts
     ) {
       return;
     }
 
-    const shouldLoadMedia =
-      hasMoreMediaPosts && Boolean(mediaNextCursor);
-
-    const shouldLoadText =
-      hasMoreTextPosts && Boolean(textNextCursor);
-
-    if (!shouldLoadMedia && !shouldLoadText) {
-      if (hasMoreMediaPosts) {
-        setHasMoreMediaPosts(false);
-      }
-
-      if (hasMoreTextPosts) {
-        setHasMoreTextPosts(false);
-      }
-
-      return;
-    }
-
-    const sessionID = feedSessionRef.current;
-
-    setPostsLoadingState(true);
-    setPostsError(null);
-
-    try {
-      const [mediaResponse, textResponse] =
-        await Promise.all([
-          shouldLoadMedia
-            ? getUserPosts(
-                cleanUserID,
-                mediaNextCursor,
-                PROFILE_POST_LIMIT,
-              )
-            : Promise.resolve(null),
-
-          shouldLoadText
-            ? getUserTextPosts(
-                cleanUserID,
-                textNextCursor,
-                PROFILE_POST_LIMIT,
-              )
-            : Promise.resolve(null),
-        ]);
-
-      if (feedSessionRef.current !== sessionID) {
-        return;
-      }
-
-      setPosts((currentPosts) =>
-        mergeUniquePosts([
-          ...currentPosts,
-          ...(mediaResponse?.posts ?? []),
-          ...(textResponse?.posts ?? []),
-        ]),
+    const observer =
+      new IntersectionObserver(
+        (entries) => {
+          if (
+            entries[0]
+              ?.isIntersecting
+          ) {
+            void loadMorePosts();
+          }
+        },
+        {
+          root: null,
+          rootMargin: "360px",
+          threshold: 0.1,
+        },
       );
-
-      if (mediaResponse) {
-        setMediaNextCursor(mediaResponse.next_cursor);
-        setHasMoreMediaPosts(mediaResponse.has_more);
-      }
-
-      if (textResponse) {
-        setTextNextCursor(textResponse.next_cursor);
-        setHasMoreTextPosts(textResponse.has_more);
-      }
-    } catch (requestError: unknown) {
-      if (feedSessionRef.current !== sessionID) {
-        return;
-      }
-
-      setPostsError(
-        getErrorMessage(
-          requestError,
-          "Unable to load more posts",
-        ),
-      );
-    } finally {
-      if (feedSessionRef.current === sessionID) {
-        setPostsLoadingState(false);
-      }
-    }
-  }, [
-    cleanUserID,
-    hasMoreMediaPosts,
-    hasMorePosts,
-    hasMoreTextPosts,
-    mediaNextCursor,
-    setPostsLoadingState,
-    textNextCursor,
-  ]);
-
-  useEffect(() => {
-    const target = observerRef.current;
-
-    if (!target || !hasMorePosts) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          void loadMorePosts();
-        }
-      },
-      {
-        root: null,
-        rootMargin: "360px",
-        threshold: 0.1,
-      },
-    );
 
     observer.observe(target);
 
-    return () => observer.disconnect();
-  }, [hasMorePosts, loadMorePosts]);
+    return () =>
+      observer.disconnect();
+  }, [
+    hasMoreActivePosts,
+    loadMorePosts,
+  ]);
 
   useEffect(() => {
     if (!isMoreOpen) {
       return;
     }
 
-    const previousOverflow = document.body.style.overflow;
+    const previousOverflow =
+      document.body.style.overflow;
 
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow =
+      "hidden";
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    const handleKeyDown = (
+      event: KeyboardEvent,
+    ) => {
+      if (
+        event.key === "Escape"
+      ) {
         setIsMoreOpen(false);
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener(
+      "keydown",
+      handleKeyDown,
+    );
 
-    const focusFrame = window.requestAnimationFrame(() => {
-      copyButtonRef.current?.focus();
-    });
+    const focusFrame =
+      window.requestAnimationFrame(
+        () => {
+          copyButtonRef.current
+            ?.focus();
+        },
+      );
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      document.body.style.overflow =
+        previousOverflow;
+
       document.removeEventListener(
         "keydown",
         handleKeyDown,
       );
-      window.cancelAnimationFrame(focusFrame);
+
+      window.cancelAnimationFrame(
+        focusFrame,
+      );
     };
   }, [isMoreOpen]);
 
@@ -587,70 +841,125 @@ const ProfileViewPage = () => {
       return;
     }
 
-    const timeoutID = window.setTimeout(() => {
-      setNotice(null);
-    }, 2600);
+    const timeoutID =
+      window.setTimeout(() => {
+        setNotice(null);
+      }, 2600);
 
-    return () => window.clearTimeout(timeoutID);
+    return () =>
+      window.clearTimeout(
+        timeoutID,
+      );
   }, [notice]);
 
-  const filteredPosts = useMemo(() => {
-    if (activeTab === "photos") {
-      return posts.filter((post) =>
-        postHasMediaType(post, "image"),
-      );
-    }
+  const filteredPosts =
+    useMemo(() => {
+      if (
+        activeTab === "videos"
+      ) {
+        return posts.filter(
+          (post) =>
+            postHasMediaType(
+              post,
+              "video",
+            ),
+        );
+      }
 
-    if (activeTab === "videos") {
-      return posts.filter((post) =>
-        postHasMediaType(post, "video"),
-      );
-    }
+      return posts;
+    }, [
+      activeTab,
+      posts,
+    ]);
 
-    return posts;
-  }, [activeTab, posts]);
-
-  const reloadFeed = useCallback(() => {
-    setFeedRequestVersion(
-      (currentVersion) => currentVersion + 1,
+  const profileHasPhotos =
+    useMemo(
+      () =>
+        hasProfilePhotos(
+          posts,
+        ),
+      [posts],
     );
-  }, []);
 
-  const handlePageRetry = useCallback(() => {
-    reload();
-    reloadFeed();
-  }, [reload, reloadFeed]);
+  const visibleItemCount =
+    activeTab === "photos"
+      ? profileHasPhotos
+        ? 1
+        : 0
+      : filteredPosts.length;
 
-  const handleMessage = useCallback(() => {
-    if (!profile?.can_message) {
-      return;
-    }
+  const reloadFeed =
+    useCallback(() => {
+      setFeedRequestVersion(
+        (
+          currentVersion,
+        ) =>
+          currentVersion + 1,
+      );
+    }, []);
 
-    setNotice(
-      "Messaging will be connected in the Chat section.",
+  const handlePageRetry =
+    useCallback(() => {
+      reload();
+      reloadFeed();
+    }, [
+      reload,
+      reloadFeed,
+    ]);
+
+  const handleMessage =
+    useCallback(() => {
+      if (
+        !profile?.can_message
+      ) {
+        return;
+      }
+
+      setNotice(
+        "Messaging will be connected in the Chat section.",
+      );
+    }, [
+      profile?.can_message,
+    ]);
+
+  const copyProfileLink =
+    useCallback(
+      async () => {
+        if (!profile) {
+          return;
+        }
+
+        const profileURL =
+          `${window.location.origin}/profile/` +
+          encodeURIComponent(
+            profile.id,
+          );
+
+        try {
+          await copyText(
+            profileURL,
+          );
+
+          setNotice(
+            "Profile link copied",
+          );
+        } catch {
+          setNotice(
+            "Unable to copy profile link",
+          );
+        } finally {
+          setIsMoreOpen(
+            false,
+          );
+        }
+      },
+      [profile],
     );
-  }, [profile?.can_message]);
 
-  const copyProfileLink = useCallback(async () => {
-    if (!profile) {
-      return;
-    }
-
-    const profileURL =
-      `${window.location.origin}/profile/` +
-      encodeURIComponent(profile.id);
-
-    try {
-      await copyText(profileURL);
-      setNotice("Profile link copied");
-    } catch {
-      setNotice("Unable to copy profile link");
-    } finally {
-      setIsMoreOpen(false);
-    }
-  }, [profile]);
-
-  if (isLoading && !profile) {
+  if (
+    isLoading &&
+    !profile
+  ) {
     return (
       <main className="profileViewPage">
         <div className="profileViewWrapper">
@@ -661,22 +970,40 @@ const ProfileViewPage = () => {
     );
   }
 
-  if (error || !profile) {
+  if (
+    error ||
+    !profile
+  ) {
     return (
       <main className="profileViewPage">
         <section
           className="profileViewErrorState"
           role="alert"
         >
-          <User size={68} strokeWidth={1.5} />
-          <h1>Profile unavailable</h1>
-          <p>{error ?? "Unable to find this profile."}</p>
+          <User
+            size={68}
+            strokeWidth={1.5}
+          />
+
+          <h1>
+            Profile unavailable
+          </h1>
+
+          <p>
+            {error ??
+              "Unable to find this profile."}
+          </p>
 
           <button
             type="button"
-            onClick={handlePageRetry}
+            onClick={
+              handlePageRetry
+            }
           >
-            <RefreshCw size={18} />
+            <RefreshCw
+              size={18}
+            />
+
             Try Again
           </button>
         </section>
@@ -684,7 +1011,9 @@ const ProfileViewPage = () => {
     );
   }
 
-  if (profile.is_self) {
+  if (
+    profile.is_self
+  ) {
     return null;
   }
 
@@ -693,15 +1022,22 @@ const ProfileViewPage = () => {
     "Everest User";
 
   const profileImageURL =
-    profile.profile_image_url?.trim() ?? "";
+    profile
+      .profile_image_url
+      ?.trim() ?? "";
 
   const coverImageURL =
-    profile.cover_image_url?.trim() ?? "";
+    profile
+      .cover_image_url
+      ?.trim() ?? "";
 
-  const totalPosts = Math.max(
-    Number(profile.posts_count) || 0,
-    posts.length,
-  );
+  const totalPosts =
+    Math.max(
+      Number(
+        profile.posts_count,
+      ) || 0,
+      posts.length,
+    );
 
   const emptyStateTitle =
     activeTab === "photos"
@@ -709,6 +1045,13 @@ const ProfileViewPage = () => {
       : activeTab === "videos"
         ? "No videos yet"
         : "No posts yet";
+
+  const EmptyStateIcon =
+    activeTab === "photos"
+      ? Images
+      : activeTab === "videos"
+        ? Video
+        : FileText;
 
   return (
     <>
@@ -718,7 +1061,9 @@ const ProfileViewPage = () => {
             <div className="profileViewCover">
               {coverImageURL ? (
                 <img
-                  src={coverImageURL}
+                  src={
+                    coverImageURL
+                  }
                   alt={`${fullName}'s cover`}
                   className="profileViewCoverImage"
                   loading="eager"
@@ -731,76 +1076,108 @@ const ProfileViewPage = () => {
               <div className="profileViewAvatar">
                 {profileImageURL ? (
                   <img
-                    src={profileImageURL}
+                    src={
+                      profileImageURL
+                    }
                     alt={fullName}
                     className="profileViewAvatarImage"
                     loading="eager"
                     decoding="async"
                   />
                 ) : (
-                  <User size={104} strokeWidth={1.5} />
+                  <User
+                    size={104}
+                    strokeWidth={
+                      1.5
+                    }
+                  />
                 )}
               </div>
 
               <VerifiedName
-               as="h1"
-               className="profileViewName"
-               userID={profile.id}
-               name={fullName}
-               badgeSize="lg"
-             />
+                as="h1"
+                className="profileViewName"
+                userID={
+                  profile.id
+                }
+                name={fullName}
+                badgeSize="lg"
+              />
 
               {profile.profile_title ? (
                 <p className="profileViewTitle">
-                  {profile.profile_title}
+                  {
+                    profile.profile_title
+                  }
                 </p>
               ) : null}
 
-             <div
-  className="profileViewStats"
-  aria-label="Profile statistics"
->
-  <Link
-    to={`/profile-connections/${encodeURIComponent(
-      profile.id,
-    )}/followers`}
-    aria-label={`View ${profile.followers_count} followers`}
-    style={{
-      color: "inherit",
-      textDecoration: "none",
-    }}
-  >
-    <strong>
-      {profile.followers_count}
-    </strong>{" "}
-    followers
-  </Link>
+              <div
+                className="profileViewStats"
+                aria-label="Profile statistics"
+              >
+                <Link
+                  to={`/profile-connections/${encodeURIComponent(
+                    profile.id,
+                  )}/followers`}
+                  aria-label={`View ${profile.followers_count} followers`}
+                  style={{
+                    color:
+                      "inherit",
+                    textDecoration:
+                      "none",
+                  }}
+                >
+                  <strong>
+                    {
+                      profile.followers_count
+                    }
+                  </strong>{" "}
+                  followers
+                </Link>
 
-  <span aria-hidden="true">•</span>
+                <span
+                  aria-hidden="true"
+                >
+                  •
+                </span>
 
-  <Link
-    to={`/profile-connections/${encodeURIComponent(
-      profile.id,
-    )}/following`}
-    aria-label={`View ${profile.following_count} following`}
-    style={{
-      color: "inherit",
-      textDecoration: "none",
-    }}
-  >
-    <strong>
-      {profile.following_count}
-    </strong>{" "}
-    following
-  </Link>
+                <Link
+                  to={`/profile-connections/${encodeURIComponent(
+                    profile.id,
+                  )}/following`}
+                  aria-label={`View ${profile.following_count} following`}
+                  style={{
+                    color:
+                      "inherit",
+                    textDecoration:
+                      "none",
+                  }}
+                >
+                  <strong>
+                    {
+                      profile.following_count
+                    }
+                  </strong>{" "}
+                  following
+                </Link>
 
-  <span aria-hidden="true">•</span>
+                <span
+                  aria-hidden="true"
+                >
+                  •
+                </span>
 
-  <span>
-    <strong>{totalPosts}</strong>{" "}
-    {totalPosts === 1 ? "post" : "posts"}
-  </span>
-</div>
+                <span>
+                  <strong>
+                    {totalPosts}
+                  </strong>{" "}
+                  {totalPosts ===
+                  1
+                    ? "post"
+                    : "posts"}
+                </span>
+              </div>
 
               <div className="profileViewActions">
                 <button
@@ -810,8 +1187,12 @@ const ProfileViewPage = () => {
                       ? "isFollowing"
                       : ""
                   }`}
-                  aria-pressed={profile.is_following}
-                  disabled={isFollowPending}
+                  aria-pressed={
+                    profile.is_following
+                  }
+                  disabled={
+                    isFollowPending
+                  }
                   onClick={() => {
                     void toggleFollow();
                   }}
@@ -822,9 +1203,13 @@ const ProfileViewPage = () => {
                       size={20}
                     />
                   ) : profile.is_following ? (
-                    <UserCheck size={20} />
+                    <UserCheck
+                      size={20}
+                    />
                   ) : (
-                    <UserPlus size={20} />
+                    <UserPlus
+                      size={20}
+                    />
                   )}
 
                   {isFollowPending
@@ -837,10 +1222,17 @@ const ProfileViewPage = () => {
                 <button
                   type="button"
                   className="profileViewMessageButton"
-                  disabled={!profile.can_message}
-                  onClick={handleMessage}
+                  disabled={
+                    !profile.can_message
+                  }
+                  onClick={
+                    handleMessage
+                  }
                 >
-                  <MessageCircle size={20} />
+                  <MessageCircle
+                    size={20}
+                  />
+
                   Message
                 </button>
 
@@ -848,11 +1240,19 @@ const ProfileViewPage = () => {
                   type="button"
                   className="profileViewMoreButton"
                   aria-label="More profile options"
-                  aria-expanded={isMoreOpen}
+                  aria-expanded={
+                    isMoreOpen
+                  }
                   aria-controls="profile-view-options"
-                  onClick={() => setIsMoreOpen(true)}
+                  onClick={() =>
+                    setIsMoreOpen(
+                      true,
+                    )
+                  }
                 >
-                  <MoreHorizontal size={24} />
+                  <MoreHorizontal
+                    size={24}
+                  />
                 </button>
               </div>
 
@@ -872,40 +1272,106 @@ const ProfileViewPage = () => {
               >
                 {(
                   [
-                    ["all", "All"],
-                    ["photos", "Photos"],
-                    ["videos", "Videos"],
+                    [
+                      "all",
+                      "All",
+                    ],
+                    [
+                      "photos",
+                      "Photos",
+                    ],
+                    [
+                      "videos",
+                      "Videos",
+                    ],
                   ] as const
-                ).map(([tabValue, tabLabel]) => (
-                  <button
-                    key={tabValue}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeTab === tabValue}
-                    className={
-                      activeTab === tabValue
-                        ? "active"
-                        : ""
-                    }
-                    onClick={() => setActiveTab(tabValue)}
-                  >
-                    {tabLabel}
-                  </button>
-                ))}
+                ).map(
+                  ([
+                    tabValue,
+                    tabLabel,
+                  ]) => (
+                    <button
+                      key={
+                        tabValue
+                      }
+                      type="button"
+                      role="tab"
+                      aria-selected={
+                        activeTab ===
+                        tabValue
+                      }
+                      className={
+                        activeTab ===
+                        tabValue
+                          ? "active"
+                          : ""
+                      }
+                      onClick={() =>
+                        setActiveTab(
+                          tabValue,
+                        )
+                      }
+                    >
+                      {tabLabel}
+                    </button>
+                  ),
+                )}
               </div>
             </div>
           </section>
 
           <section
-            className="profileViewPosts"
+            className={`profileViewPosts ${
+              activeTab ===
+              "photos"
+                ? "isPhotoGallery"
+                : activeTab ===
+                    "videos"
+                  ? "isVideoGallery"
+                  : ""
+            }`}
             aria-label={`${fullName}'s posts`}
           >
-            {filteredPosts.map((post) => (
-              <Post key={post.id} post={post} />
-            ))}
+            {activeTab ===
+            "photos" ? (
+              <ProfilePhotoGallery
+                posts={posts}
+                ownerName={
+                  fullName
+                }
+              />
+            ) : activeTab ===
+              "videos" ? (
+              <ProfileVideoGallery
+                posts={posts}
+                ownerName={
+                  fullName
+                }
+              />
+            ) : (
+              filteredPosts.map(
+                (post) => (
+                  <Post
+                    key={
+                      post.id
+                    }
+                    post={post}
+                  />
+                ),
+              )
+            )}
 
-            {postsLoading && posts.length === 0 ? (
-              <ProfileFeedSkeleton />
+            {postsLoading &&
+            posts.length === 0 ? (
+              activeTab ===
+              "photos" ? (
+                <ProfilePhotoGallerySkeleton />
+              ) : activeTab ===
+                "videos" ? (
+                <ProfileVideoGallerySkeleton />
+              ) : (
+                <ProfileFeedSkeleton />
+              )
             ) : null}
 
             {postsError ? (
@@ -913,13 +1379,20 @@ const ProfileViewPage = () => {
                 className="profileViewPostsError"
                 role="alert"
               >
-                <p>{postsError}</p>
+                <p>
+                  {postsError}
+                </p>
 
                 <button
                   type="button"
-                  onClick={reloadFeed}
+                  onClick={
+                    reloadFeed
+                  }
                 >
-                  <RefreshCw size={17} />
+                  <RefreshCw
+                    size={17}
+                  />
+
                   Retry
                 </button>
               </div>
@@ -931,7 +1404,8 @@ const ProfileViewPage = () => {
               aria-hidden="true"
             />
 
-            {postsLoading && posts.length > 0 ? (
+            {postsLoading &&
+            posts.length > 0 ? (
               <div
                 className="profileViewLoadingMore"
                 aria-label="Loading more posts"
@@ -946,13 +1420,27 @@ const ProfileViewPage = () => {
             {initialPostsLoaded &&
             !postsLoading &&
             !postsError &&
-            filteredPosts.length === 0 &&
-            !hasMorePosts ? (
+            visibleItemCount ===
+              0 &&
+            !hasMoreActivePosts ? (
               <div className="profileViewEmptyState">
-                <FileText size={62} strokeWidth={1.5} />
-                <h2>{emptyStateTitle}</h2>
+                <EmptyStateIcon
+                  size={62}
+                  strokeWidth={
+                    1.5
+                  }
+                />
+
+                <h2>
+                  {
+                    emptyStateTitle
+                  }
+                </h2>
+
                 <p>
-                  This user has not shared anything here.
+                  This user has not
+                  shared anything
+                  here.
                 </p>
               </div>
             ) : null}
@@ -963,9 +1451,16 @@ const ProfileViewPage = () => {
       {isMoreOpen ? (
         <div
           className="profileViewSheetBackdrop"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setIsMoreOpen(false);
+          onMouseDown={(
+            event,
+          ) => {
+            if (
+              event.target ===
+              event.currentTarget
+            ) {
+              setIsMoreOpen(
+                false,
+              );
             }
           }}
         >
@@ -989,7 +1484,11 @@ const ProfileViewPage = () => {
               <button
                 type="button"
                 aria-label="Close profile options"
-                onClick={() => setIsMoreOpen(false)}
+                onClick={() =>
+                  setIsMoreOpen(
+                    false,
+                  )
+                }
               >
                 <X size={21} />
               </button>
@@ -1004,13 +1503,19 @@ const ProfileViewPage = () => {
               }}
             >
               <span className="profileViewSheetIcon">
-                <Copy size={21} />
+                <Copy
+                  size={21}
+                />
               </span>
 
               <span>
-                <strong>Copy profile link</strong>
+                <strong>
+                  Copy profile link
+                </strong>
+
                 <small>
-                  Copy a direct link to this profile
+                  Copy a direct link
+                  to this profile
                 </small>
               </span>
             </button>
@@ -1031,4 +1536,6 @@ const ProfileViewPage = () => {
   );
 };
 
-export default memo(ProfileViewPage);
+export default memo(
+  ProfileViewPage,
+);

@@ -346,8 +346,11 @@ func (service *PostService) GetFeedPosts(
 			"$ne": true,
 		},
 		"type": bson.M{
-			"$ne": PostTypeVideo,
-		},
+	"$nin": bson.A{
+		PostTypeVideo,
+		PostTypeText,
+	},
+},
 	}
 
 	return service.getPosts(

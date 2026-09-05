@@ -560,3 +560,44 @@
     padding: 10px 12px;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Profile photo gallery integration */
+
+.profilePosts.isPhotoGallery,
+.profilePosts.isVideoGallery {
+  border-top-color: #e5e7eb;
+  background: #ffffff;
+}
+.profilePhotoLoading {
+  width: 100%;
+  min-height: 64px;
+  background: #ffffff;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profilePhotoLoading svg {
+  animation: profilePhotoLoadingSpin 750ms linear infinite;
+}
+
+@keyframes profilePhotoLoadingSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}

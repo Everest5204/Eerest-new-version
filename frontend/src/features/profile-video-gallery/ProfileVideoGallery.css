@@ -1,0 +1,477 @@
+.profileVideoGallery,
+.profileVideoGallery *,
+.profileVideoViewer,
+.profileVideoViewer * {
+  box-sizing: border-box;
+}
+
+.profileVideoGallery {
+  width: 100%;
+  padding: 2px;
+  background: #ffffff;
+}
+
+.profileVideoGrid,
+.profileVideoSkeletonGrid {
+  width: 100%;
+  display: grid;
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.profileVideoTile,
+.profileVideoSkeletonGrid > span {
+  min-width: 0;
+  aspect-ratio: 9 / 16;
+}
+
+.profileVideoTile {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #e8edf3;
+  color: #ffffff;
+  cursor: pointer;
+  isolation: isolate;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.profileVideoPreview,
+.profileVideoPlaceholder,
+.profileVideoTileShade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.profileVideoPreview {
+  z-index: 1;
+  display: block;
+  border: 0;
+  background: #111827;
+  object-fit: cover;
+  object-position: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(1.001);
+  transition:
+    opacity 190ms ease,
+    transform 220ms ease;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.profileVideoPreview.isReady {
+  opacity: 1;
+}
+
+.profileVideoPlaceholder {
+  z-index: 0;
+  display: grid;
+  place-items: center;
+  color: #dc2340;
+  background:
+    radial-gradient(
+      circle at 22% 14%,
+      rgba(255, 255, 255, 0.96),
+      transparent 34%
+    ),
+    linear-gradient(
+      145deg,
+      #fff0f3,
+      #e8edf4 52%,
+      #dbe4ee
+    );
+  opacity: 1;
+  transition:
+    opacity 180ms ease,
+    visibility 180ms ease;
+}
+
+.profileVideoPlaceholder::after,
+.profileVideoSkeletonGrid > span::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background:
+    linear-gradient(
+      105deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.56) 46%,
+      transparent 62%
+    );
+  background-size: 220% 100%;
+  animation:
+    profileVideoShimmer
+    1.25s
+    ease-in-out
+    infinite;
+}
+
+.profileVideoPlaceholder.isHidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.profileVideoTileShade {
+  z-index: 2;
+  background:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.54),
+      transparent 38%
+    );
+  pointer-events: none;
+}
+
+.profileVideoPlayBadge {
+  position: absolute;
+  z-index: 3;
+  left: 9px;
+  bottom: 9px;
+  width: 31px;
+  height: 31px;
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.34);
+  border-radius: 50%;
+  background:
+    rgba(11, 11, 11, 0.58);
+  box-shadow:
+    0 3px 12px
+    rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(7px);
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+
+.profileVideoPlayBadge svg {
+  margin-left: 2px;
+}
+
+.profileVideoTile:focus-visible {
+  z-index: 4;
+  outline: 3px solid #ef1734;
+  outline-offset: -3px;
+}
+
+.profileVideoTile:active
+.profileVideoPreview {
+  transform: scale(0.985);
+}
+
+.profileVideoSkeletonGrid {
+  padding: 2px;
+  background: #ffffff;
+}
+
+.profileVideoSkeletonGrid > span {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      145deg,
+      #f2f5f8,
+      #e2e8f0
+    );
+}
+
+.profileVideoViewer {
+  position: fixed;
+  z-index: 10020;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: #050505;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  animation:
+    profileVideoViewerIn
+    150ms
+    ease
+    both;
+}
+
+.profileVideoViewerShell {
+  position: relative;
+  width: min(100%, 560px);
+  height: 100%;
+  overflow: hidden;
+  background: #000000;
+  isolation: isolate;
+  touch-action: pan-y pinch-zoom;
+}
+
+.profileVideoViewerPlayer {
+  border-radius: inherit;
+}
+
+.profileVideoViewerHeader {
+  position: absolute;
+  z-index: 8;
+  top: 0;
+  right: 0;
+  left: 0;
+  min-height: 74px;
+  padding:
+    max(
+      12px,
+      env(safe-area-inset-top)
+    )
+    max(
+      14px,
+      env(safe-area-inset-right)
+    )
+    12px
+    max(
+      14px,
+      env(safe-area-inset-left)
+    );
+  background:
+    linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.72),
+      transparent
+    );
+  pointer-events: none;
+  display: grid;
+  grid-template-columns:
+    46px 1fr 46px;
+  align-items: start;
+}
+
+.profileVideoViewerHeader strong {
+  grid-column: 2;
+  justify-self: center;
+  min-height: 36px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background:
+    rgba(0, 0, 0, 0.46);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 20px;
+  font-variant-numeric:
+    tabular-nums;
+  backdrop-filter: blur(9px);
+}
+
+.profileVideoViewerClose,
+.profileVideoViewerNav {
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.18);
+  background:
+    rgba(13, 13, 13, 0.65);
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background-color 150ms ease,
+    transform 120ms ease,
+    opacity 150ms ease;
+}
+
+.profileVideoViewerClose {
+  grid-column: 1;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  pointer-events: auto;
+}
+
+.profileVideoViewerCaption {
+  position: absolute;
+  z-index: 7;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  max-height: 33%;
+  margin: 0;
+  padding:
+    76px
+    max(
+      18px,
+      env(safe-area-inset-right)
+    )
+    max(
+      22px,
+      calc(
+        env(safe-area-inset-bottom)
+        + 14px
+      )
+    )
+    max(
+      18px,
+      env(safe-area-inset-left)
+    );
+  overflow: hidden;
+  color:
+    rgba(255, 255, 255, 0.96);
+  background:
+    linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.82),
+      transparent
+    );
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-shadow:
+    0 1px 3px
+    rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  display: -webkit-box;
+-webkit-box-orient: vertical;
+line-clamp: 3;
+-webkit-line-clamp: 3;
+}
+
+.profileVideoViewerNav {
+  position: absolute;
+  z-index: 9;
+  right: 16px;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.profileVideoViewerNav.previous {
+  top: calc(50% - 54px);
+}
+
+.profileVideoViewerNav.next {
+  top: calc(50% + 8px);
+}
+
+.profileVideoViewerClose:focus-visible,
+.profileVideoViewerNav:focus-visible {
+  outline:
+    3px solid
+    rgba(255, 255, 255, 0.94);
+  outline-offset: 3px;
+}
+
+.profileVideoViewerClose:active,
+.profileVideoViewerNav:active {
+  transform: scale(0.92);
+}
+
+@media
+  (hover: hover) and
+  (pointer: fine) {
+  .profileVideoTile:hover
+  .profileVideoPreview {
+    transform: scale(1.035);
+  }
+
+  .profileVideoTile:hover
+  .profileVideoPlayBadge {
+    background:
+      rgba(229, 21, 54, 0.88);
+  }
+
+  .profileVideoViewerClose:hover,
+  .profileVideoViewerNav:hover {
+    background:
+      rgba(32, 32, 32, 0.9);
+  }
+}
+
+@media (min-width: 720px) {
+  .profileVideoViewer {
+    padding: 4vh 18px;
+    background:
+      rgba(3, 3, 3, 0.98);
+  }
+
+  .profileVideoViewerShell {
+    width:
+      min(
+        520px,
+        calc(92vh * 9 / 16)
+      );
+    width:
+      min(
+        520px,
+        calc(92dvh * 9 / 16)
+      );
+    height: min(92vh, 920px);
+    height: min(92dvh, 920px);
+    border:
+      1px solid
+      rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    box-shadow:
+      0 28px 80px
+      rgba(0, 0, 0, 0.48);
+  }
+}
+
+@media (max-width: 719px) {
+  .profileVideoViewerNav {
+    display: none;
+  }
+
+  .profileVideoViewer
+  .reel-player__sound-button {
+    right:
+      max(
+        12px,
+        env(safe-area-inset-right)
+      );
+  }
+}
+
+@keyframes profileVideoShimmer {
+  from {
+    background-position: 200% 0;
+  }
+
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes profileVideoViewerIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media
+  (prefers-reduced-motion: reduce) {
+  .profileVideoGallery *,
+  .profileVideoViewer,
+  .profileVideoViewer * {
+    scroll-behavior: auto !important;
+    animation-duration:
+      0.01ms !important;
+    animation-iteration-count:
+      1 !important;
+    transition-duration:
+      0.01ms !important;
+  }
+}
