@@ -601,3 +601,28 @@
     transform: rotate(360deg);
   }
 }
+
+
+
+
+
+
+
+
+
+
+.profileBio {
+  width: 100%;
+  max-width: 100%;
+  margin: 14px 0 0;
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.profileBio + .profileActions {
+  margin-top: 18px;
+}

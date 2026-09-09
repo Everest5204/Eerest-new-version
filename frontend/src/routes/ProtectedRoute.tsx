@@ -1,17 +1,9 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
-import {
-  Navigate,
-  Outlet,
-  useLocation,
-} from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
-import {
-  getCurrentUser,
-} from "../services/authService";
+import NotificationProvider from "../components/Notification/Core/NotificationProvider";
+import { getCurrentUser } from "../services/authService";
 
 import "./ProtectedRoute.css";
 
@@ -20,37 +12,50 @@ type AuthenticationStatus =
   | "authenticated"
   | "unauthenticated";
 
+interface SessionCheck {
+  readonly token: string | null;
+  readonly status: AuthenticationStatus;
+}
+
 const ProtectedRoute = () => {
   const location = useLocation();
   const token = sessionStorage.getItem("token");
 
-  const [status, setStatus] =
-    useState<AuthenticationStatus>(
-      token
-        ? "checking"
-        : "unauthenticated",
-    );
+  const [session, setSession] = useState<SessionCheck>(() => ({
+    token,
+    status: token ? "checking" : "unauthenticated",
+  }));
+
+  // A different token must be verified before mounting its notification provider.
+  const status: AuthenticationStatus = !token
+    ? "unauthenticated"
+    : session.token === token
+      ? session.status
+      : "checking";
 
   useEffect(() => {
-    if (!token) {
-      return;
-    }
+    if (!token) return;
 
     let isActive = true;
 
+    const ownsSession = () =>
+      isActive && sessionStorage.getItem("token") === token;
+
     const validateSession = async () => {
+      if (!ownsSession()) return;
+
       try {
         await getCurrentUser();
 
-        if (isActive) {
-          setStatus("authenticated");
+        if (ownsSession()) {
+          setSession({ token, status: "authenticated" });
         }
       } catch {
-        sessionStorage.removeItem("token");
+        // An old request must not remove a newer login's token.
+        if (!ownsSession()) return;
 
-        if (isActive) {
-          setStatus("unauthenticated");
-        }
+        sessionStorage.removeItem("token");
+        setSession({ token, status: "unauthenticated" });
       }
     };
 
@@ -69,14 +74,9 @@ const ProtectedRoute = () => {
         aria-live="polite"
         aria-label="Checking your session"
       >
-        <span
-          className="protected-route-spinner"
-          aria-hidden="true"
-        />
+        <span className="protected-route-spinner" aria-hidden="true" />
 
-        <span className="protected-route-loader-text">
-          Mongosky
-        </span>
+        <span className="protected-route-loader-text">Mongosky</span>
       </main>
     );
   }
@@ -93,7 +93,11 @@ const ProtectedRoute = () => {
     );
   }
 
-  return <Outlet />;
+  return (
+    <NotificationProvider token={token}>
+      <Outlet />
+    </NotificationProvider>
+  );
 };
 
 export default ProtectedRoute;

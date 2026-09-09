@@ -27,6 +27,8 @@ type User struct {
 	FollowingCount int64 `bson:"following_count,omitempty" json:"following_count"`
 	PostsCount     int64 `bson:"posts_count,omitempty" json:"posts_count"`
 
+	Bio string `bson:"bio,omitempty" json:"bio"`
+
 	ProfileImageURL string `bson:"profile_image_url,omitempty" json:"profile_image_url,omitempty"`
 	ProfileImageID  string `bson:"profile_image_id,omitempty" json:"profile_image_id,omitempty"`
 

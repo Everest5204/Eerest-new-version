@@ -12,9 +12,7 @@ import { AboutPage } from "./pages/About";
 import AI from "./pages/AI/AI";
 import { CommunityGuidelinesPage } from "./pages/CommunityGuidelines";
 import EditMediaPost from "./pages/editMediaPost/EditMediaPost";
-import {
-  PostEditProvider,
-} from "./pages/editMediaPost/PostEditContext";
+import { PostEditProvider, } from "./pages/editMediaPost/PostEditContext";
 import EditTextPost from "./pages/editTextPost/EditTextPost";
 import FollowPage from "./pages/Follow/FollowPage";
 import Home from "./pages/Home/Home";
@@ -33,6 +31,9 @@ import SearchPage from "./pages/Search/Search";
 import { SettingsPage } from "./pages/Settings";
 import Signup from "./pages/Signup/Signup";
 import SignupSuccess from "./pages/Signup/SignupSuccess";
+import EditProfile from "./pages/editProfile/EditProfile";
+import { ChangeNamePage } from "./pages/ChangeName";
+import { NotificationPage } from "./components/Notification/NotificationPage";
 
 function App() {
   return (
@@ -164,6 +165,24 @@ function App() {
               path="/saved-items"
               element={<SavedItemsPage />}
             />
+
+
+            <Route
+              path="/profile/edit"
+              element={<EditProfile />}
+            />
+
+            <Route
+              path="/change-name"
+              element={<ChangeNamePage />}
+            />
+
+
+             <Route
+               path="/notifications"
+               element={<NotificationPage />}
+             />
+             
 
             <Route
               path="/settings"

@@ -83,7 +83,7 @@ const drawerItems: DrawerItem[] = [
   {
     icon: Pencil,
     label: "Change name",
-    path: "",
+    path: "/change-name",
   },
   {
     icon: Smartphone,

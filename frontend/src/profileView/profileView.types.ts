@@ -3,6 +3,7 @@ export type ProfileView = {
   first_name: string;
   last_name: string;
   profile_title?: string;
+  bio: string;
 
   followers_count: number;
   following_count: number;
@@ -25,7 +26,10 @@ export type FollowMutationResponse = {
   followers_count: number;
 };
 
-export type ProfileViewTab = "all" | "photos" | "videos";
+export type ProfileViewTab =
+  | "all"
+  | "photos"
+  | "videos";
 
 export type ProfileViewErrorResponse = {
   error: string;

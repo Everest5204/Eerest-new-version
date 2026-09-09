@@ -17,10 +17,16 @@ import {
 
 import LeftDrawer from "../Drawer/LeftDrawer";
 
+import {
+  useNotificationUnreadCount,
+} from "../Notification/Core/useNotifications";
+
 import "./Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
+
+  const unreadCount = useNotificationUnreadCount();
 
   const [drawerOpen, setDrawerOpen] =
     useState(false);
@@ -90,7 +96,7 @@ const Navbar = () => {
     <>
       <nav className="navbar">
         <div className="navbar-logo">
-         Mongoksy
+          Mongoksy
         </div>
 
         <div className="navbar-actions">
@@ -109,22 +115,49 @@ const Navbar = () => {
           </button>
 
           <button
-            className="nav-icon"
+            className="nav-icon navbar-notification-button"
             type="button"
+            aria-label={
+              unreadCount > 0
+                ? `Notifications, ${unreadCount} unread`
+                : "Notifications"
+            }
+            onClick={() =>
+              navigate("/notifications")
+            }
           >
             <Bell
               size={24}
               strokeWidth={2.3}
+              aria-hidden="true"
+              focusable="false"
             />
+
+            {unreadCount > 0 && (
+              <span
+                className="navbar-notification-badge"
+                aria-hidden="true"
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
 
           <button
             className="nav-icon"
             type="button"
+            aria-label="Messages"
+            onClick={() =>
+              window.alert(
+                "Messaging is currently unavailable.",
+              )
+            }
           >
             <MessageCircle
               size={24}
               strokeWidth={2.3}
+              aria-hidden="true"
+              focusable="false"
             />
           </button>
 

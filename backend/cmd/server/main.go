@@ -4,6 +4,9 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
+    "os/signal"
+    "syscall"
 	"time"
 
 	"everest-backend/internal/ai"
@@ -14,17 +17,27 @@ import (
 	"everest-backend/internal/editmediapost"
 	"everest-backend/internal/edittextpost"
 	"everest-backend/internal/follow"
+	follownotification "everest-backend/internal/notification/follow"
+
+    commentnotification "everest-backend/internal/notification/comment"
+    notification "everest-backend/internal/notification/core"
+
 	"everest-backend/internal/post"
 	"everest-backend/internal/postdelete"
 	"everest-backend/internal/profileconnections"
 	"everest-backend/internal/profilemedia"
 	"everest-backend/internal/profileview"
 	"everest-backend/internal/reaction"
+
+	reactionnotification "everest-backend/internal/notification/reaction"
+
 	"everest-backend/internal/reels"
 	"everest-backend/internal/search"
 	"everest-backend/internal/textpost"
 	"everest-backend/internal/user"
 	"everest-backend/internal/verifiedbadge"
+	"everest-backend/internal/editprofile"
+	"everest-backend/internal/changename"
 )
 
 const (
@@ -43,6 +56,40 @@ func main() {
 		cfg.MongoURI,
 		cfg.DBName,
 	)
+
+
+
+notificationService := notification.NewService(db.Database)
+
+notificationIndexCtx, cancelNotificationIndexes := context.WithTimeout(
+    context.Background(),
+    startupTimeout,
+)
+
+notificationIndexErr := notificationService.CreateIndexes(
+    notificationIndexCtx,
+)
+cancelNotificationIndexes()
+
+if notificationIndexErr != nil {
+    log.Fatal("Notification indexes failed:", notificationIndexErr)
+}
+
+notificationHandler := notification.NewHandler(notificationService)
+
+notificationHub := notification.NewHub()
+defer notificationHub.Close()
+
+notificationStreamHandler := notification.NewStreamHandler(
+    notificationService,
+    notificationHub,
+)
+
+notificationWatcher := notification.NewWatcher(
+    notificationService,
+    notificationHub,
+)
+
 
 	startupCtx, cancelStartup := context.WithTimeout(
 		context.Background(),
@@ -67,6 +114,20 @@ func main() {
 	userHandler := user.NewUserHandler(
 		userService,
 	)
+
+
+
+changeNameService :=
+	changename.NewService(
+		db.Database,
+	)
+
+changeNameHandler :=
+	changename.NewHandler(
+		changeNameService,
+	)
+
+
 
 	if err := userService.CreateIndexes(startupCtx); err != nil {
 		log.Println(
@@ -198,9 +259,24 @@ func main() {
 		textPostEditService,
 	)
 
-	reactionService := reaction.NewReactionService(
-		db.Database,
-	)
+	
+
+
+	reactionNotificationService := reactionnotification.NewService(
+    db.Database,
+    notificationService,
+)
+
+reactionNotificationHandler := reactionnotification.NewHandler(
+    reactionNotificationService,
+)
+
+reactionService := reaction.NewReactionService(
+    db.Database,
+    reactionNotificationHandler,
+)
+
+
 
 	reactionHandler := reaction.NewReactionHandler(
 		reactionService,
@@ -213,9 +289,22 @@ func main() {
 		)
 	}
 
-	commentService := comment.NewCommentService(
-		db.Database,
-	)
+	
+commentNotificationService := commentnotification.NewService(
+    db.Database,
+    notificationService,
+)
+
+commentNotificationHandler := commentnotification.NewHandler(
+    commentNotificationService,
+)
+
+commentService := comment.NewCommentService(
+    db.Database,
+    commentNotificationHandler,
+)
+
+
 
 	commentHandler := comment.NewCommentHandler(
 		commentService,
@@ -258,9 +347,32 @@ func main() {
 		profileMediaService,
 	)
 
-	profileViewService := profileview.NewService(
+profileEditService :=
+	editprofile.NewProfileEditService(
 		db.Database,
 	)
+
+profileEditHandler :=
+	editprofile.NewProfileEditHandler(
+		profileEditService,
+	)
+
+
+	
+	followNotificationService := follownotification.NewService(
+    db.Database,
+    notificationService,
+)
+
+followNotificationHandler := follownotification.NewHandler(
+    followNotificationService,
+)
+
+profileViewService := profileview.NewService(
+    db.Database,
+    followNotificationHandler,
+)
+
 
 	profileConnectionsService :=
 		profileconnections.NewService(
@@ -332,6 +444,14 @@ func main() {
 		cfg.JWTSecret,
 	)
 
+
+changename.RegisterRoutes(
+	mux,
+	changeNameHandler,
+	cfg.JWTSecret,
+)
+
+
 	verifiedbadge.RegisterRoutes(
 		mux,
 		verifiedBadgeHandler,
@@ -349,6 +469,12 @@ func main() {
 		profileViewHandler,
 		cfg.JWTSecret,
 	)
+
+editprofile.RegisterProfileEditRoutes(
+	mux,
+	profileEditHandler,
+	cfg.JWTSecret,
+)
 
 	profileconnections.RegisterRoutes(
 		mux,
@@ -422,6 +548,21 @@ func main() {
 		cfg.JWTSecret,
 	)
 
+
+notification.RegisterRoutes(
+    mux,
+    notificationHandler,
+    cfg.JWTSecret,
+)
+
+notification.RegisterStreamRoute(
+    mux,
+    notificationStreamHandler,
+    cfg.JWTSecret,
+)
+
+
+
 	server := &http.Server{
 		Addr: ":" + cfg.Port,
 
@@ -435,18 +576,72 @@ func main() {
 		IdleTimeout:       serverIdleTimeout,
 	}
 
-	log.Println(
-		"Everest backend running on port",
-		cfg.Port,
-	)
+signalCtx, stopSignals := signal.NotifyContext(
+    context.Background(),
+    os.Interrupt,
+    syscall.SIGTERM,
+)
+defer stopSignals()
 
-	if err := server.ListenAndServe(); err != nil &&
-		err != http.ErrServerClosed {
-		log.Fatal(
-			"Server failed:",
-			err,
-		)
-	}
+notificationCtx, cancelNotifications := context.WithCancel(
+    context.Background(),
+)
+defer cancelNotifications()
+
+serverErrors := make(chan error, 2)
+watcherDone := make(chan struct{})
+
+go func() {
+    defer close(watcherDone)
+
+    if err := notificationWatcher.Run(notificationCtx); err != nil {
+        serverErrors <- err
+    }
+}()
+
+go func() {
+    serverErrors <- server.ListenAndServe()
+}()
+
+log.Println(
+    "Everest backend running on port",
+    cfg.Port,
+)
+
+var runErr error
+
+select {
+case <-signalCtx.Done():
+case runErr = <-serverErrors:
+}
+
+stopSignals()
+cancelNotifications()
+notificationHub.Close()
+
+shutdownCtx, cancelShutdown := context.WithTimeout(
+    context.Background(),
+    10*time.Second,
+)
+defer cancelShutdown()
+
+if err := server.Shutdown(shutdownCtx); err != nil {
+    log.Println("Server shutdown warning:", err)
+
+    if closeErr := server.Close(); closeErr != nil {
+        log.Println("Server close warning:", closeErr)
+    }
+}
+
+select {
+case <-watcherDone:
+case <-shutdownCtx.Done():
+    log.Println("Notification watcher shutdown timed out")
+}
+
+if runErr != nil && runErr != http.ErrServerClosed {
+    log.Fatal("Server stopped:", runErr)
+}
 }
 
 func registerHealthRoute(

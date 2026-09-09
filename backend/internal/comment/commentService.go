@@ -10,6 +10,8 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readconcern"
+	"go.mongodb.org/mongo-driver/v2/mongo/writeconcern"
 )
 
 const (
@@ -18,19 +20,30 @@ const (
 	maxCommentTextLength = 2000
 )
 
+// CommentNotificationHandler is supplied once during server startup.
+// Its implementation must use the transaction context supplied by CreateComment.
+type CommentNotificationHandler interface {
+	HandleCreatedComment(context.Context, bson.ObjectID, bson.ObjectID, bson.ObjectID) error
+}
+
 type CommentService struct {
 	commentsCollection     *mongo.Collection
 	commentLovesCollection *mongo.Collection
 	postsCollection        *mongo.Collection
 	usersCollection        *mongo.Collection
+	notificationHandler    CommentNotificationHandler
 }
 
-func NewCommentService(db *mongo.Database) *CommentService {
+func NewCommentService(
+	db *mongo.Database,
+	notificationHandler CommentNotificationHandler,
+) *CommentService {
 	return &CommentService{
 		commentsCollection:     db.Collection("comments"),
 		commentLovesCollection: db.Collection("comment_loves"),
 		postsCollection:        db.Collection("posts"),
 		usersCollection:        db.Collection("users"),
+		notificationHandler:    notificationHandler,
 	}
 }
 
@@ -160,13 +173,20 @@ func (service *CommentService) CreateComment(
 	authUserID string,
 	request CreateCommentRequest,
 ) (*CreateCommentResponse, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if service == nil || service.notificationHandler == nil {
+		return nil, errors.New("comment notification handler is not configured")
+	}
+
 	userObjectID, err := bson.ObjectIDFromHex(authUserID)
-	if err != nil {
+	if err != nil || userObjectID.IsZero() {
 		return nil, errors.New("invalid user id")
 	}
 
 	postObjectID, err := bson.ObjectIDFromHex(request.PostID)
-	if err != nil {
+	if err != nil || postObjectID.IsZero() {
 		return nil, errors.New("invalid post id")
 	}
 
@@ -175,30 +195,17 @@ func (service *CommentService) CreateComment(
 		return nil, err
 	}
 
-	if err := service.ensurePostExists(ctx, postObjectID); err != nil {
-		return nil, err
-	}
-
 	var parentObjectID *bson.ObjectID
 
 	if strings.TrimSpace(request.ParentID) != "" {
 		parsedParentID, err := bson.ObjectIDFromHex(request.ParentID)
-		if err != nil {
+		if err != nil || parsedParentID.IsZero() {
 			return nil, errors.New("invalid parent comment id")
 		}
-
-		parentComment, err := service.getCommentByID(ctx, parsedParentID, true)
-		if err != nil {
-			return nil, err
-		}
-
-		if parentComment.PostID != postObjectID {
-			return nil, errors.New("parent comment does not belong to this post")
-		}
-
 		parentObjectID = &parsedParentID
 	}
 
+	// Keep one source ID and timestamp across transaction retries.
 	now := time.Now().UTC()
 
 	commentItem := Comment{
@@ -217,28 +224,69 @@ func (service *CommentService) CreateComment(
 	dbCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
 	defer cancel()
 
-	if _, err := service.commentsCollection.InsertOne(dbCtx, commentItem); err != nil {
-		return nil, err
-	}
-
-	if parentObjectID != nil {
-		_ = service.syncRepliesCount(dbCtx, *parentObjectID)
-	}
-
-	commentsCount, err := service.syncPostCommentsCount(dbCtx, postObjectID)
+	session, err := service.commentsCollection.Database().Client().StartSession()
 	if err != nil {
 		return nil, err
 	}
+	defer session.EndSession(context.Background())
 
-	feedComment, err := service.buildSingleFeedComment(dbCtx, userObjectID, commentItem)
+	var response CreateCommentResponse
+	_, err = session.WithTransaction(
+		dbCtx,
+		func(txCtx context.Context) (any, error) {
+			if err := service.ensurePostExists(txCtx, postObjectID); err != nil {
+				return nil, err
+			}
+
+			if parentObjectID != nil {
+				parentComment, err := service.getCommentByID(txCtx, *parentObjectID, true)
+				if err != nil {
+					return nil, err
+				}
+				if parentComment.PostID != postObjectID {
+					return nil, errors.New("parent comment does not belong to this post")
+				}
+			}
+
+			if _, err := service.commentsCollection.InsertOne(txCtx, commentItem); err != nil {
+				return nil, err
+			}
+			if err := service.notificationHandler.HandleCreatedComment(
+				txCtx, commentItem.ID, commentItem.PostID, commentItem.UserID,
+			); err != nil {
+				return nil, err
+			}
+
+			if parentObjectID != nil {
+				if err := service.syncRepliesCount(txCtx, *parentObjectID); err != nil {
+					return nil, err
+				}
+			}
+			commentsCount, err := service.syncPostCommentsCount(txCtx, postObjectID)
+			if err != nil {
+				return nil, err
+			}
+
+			// Prepare the existing response before committing, so a read failure
+			// cannot make a successfully saved comment appear to have failed.
+			feedComment, err := service.buildSingleFeedComment(txCtx, userObjectID, commentItem)
+			if err != nil {
+				return nil, err
+			}
+			response = CreateCommentResponse{
+				Comment:       feedComment,
+				CommentsCount: commentsCount,
+			}
+			return nil, nil
+		},
+		options.Transaction().
+			SetReadConcern(readconcern.Snapshot()).
+			SetWriteConcern(writeconcern.Majority()),
+	)
 	if err != nil {
 		return nil, err
 	}
-
-	return &CreateCommentResponse{
-		Comment:       feedComment,
-		CommentsCount: commentsCount,
-	}, nil
+	return &response, nil
 }
 
 func (service *CommentService) UpdateComment(

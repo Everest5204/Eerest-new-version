@@ -9,6 +9,7 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readconcern"
 	"go.mongodb.org/mongo-driver/v2/mongo/writeconcern"
 )
 
@@ -28,17 +29,25 @@ var (
 	)
 )
 
+// FollowNotificationHandler runs inside the newly created follow's transaction.
+type FollowNotificationHandler interface {
+	HandleCreatedFollow(context.Context, bson.ObjectID, bson.ObjectID, bson.ObjectID) error
+}
+
 type Service struct {
-	client            *mongo.Client
-	usersCollection   *mongo.Collection
-	followsCollection *mongo.Collection
+	client              *mongo.Client
+	usersCollection     *mongo.Collection
+	followsCollection   *mongo.Collection
+	notificationHandler FollowNotificationHandler
 }
 
 func NewService(
 	database *mongo.Database,
+	notificationHandler FollowNotificationHandler,
 ) *Service {
 	return &Service{
-		client: database.Client(),
+		client:              database.Client(),
+		notificationHandler: notificationHandler,
 
 		usersCollection: database.Collection(
 			"users",
@@ -265,6 +274,16 @@ func (service *Service) setFollowState(
 	profileUserID string,
 	shouldFollow bool,
 ) (*FollowMutationResponse, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if service == nil || service.client == nil || service.usersCollection == nil || service.followsCollection == nil {
+		return nil, errors.New("profile service is not configured")
+	}
+	if shouldFollow && service.notificationHandler == nil {
+		return nil, errors.New("follow notification handler is not configured")
+	}
+
 	viewerID, err := parseUserID(
 		viewerUserID,
 	)
@@ -282,6 +301,17 @@ func (service *Service) setFollowState(
 	if viewerID == targetID {
 		return nil, ErrCannotFollowSelf
 	}
+	if viewerID.IsZero() || targetID.IsZero() {
+		return nil, ErrInvalidUserID
+	}
+
+	// A transaction retry reuses the same relationship ID and event identity.
+	var followID bson.ObjectID
+	var followCreatedAt time.Time
+	if shouldFollow {
+		followID = bson.NewObjectID()
+		followCreatedAt = time.Now().UTC()
+	}
 
 	transactionCtx, cancel := context.WithTimeout(
 		ctx,
@@ -298,6 +328,7 @@ func (service *Service) setFollowState(
 	)
 
 	transactionOptions := options.Transaction().
+		SetReadConcern(readconcern.Snapshot()).
 		SetWriteConcern(
 			writeconcern.Majority(),
 		)
@@ -322,17 +353,27 @@ func (service *Service) setFollowState(
 			}
 
 			if shouldFollow {
-				created, createErr :=
+				createdID, createErr :=
 					service.createFollow(
 						sessionCtx,
 						viewerID,
 						targetID,
+						followID,
+						followCreatedAt,
 					)
 				if createErr != nil {
 					return nil, createErr
 				}
 
-				if created {
+				if !createdID.IsZero() {
+					// Return the original error so notification failure aborts or
+					// retries the source follow and both counters together.
+					if err := service.notificationHandler.HandleCreatedFollow(
+						sessionCtx, createdID, viewerID, targetID,
+					); err != nil {
+						return nil, err
+					}
+
 					if updateErr :=
 						service.incrementFollowCounts(
 							sessionCtx,
@@ -406,7 +447,9 @@ func (service *Service) createFollow(
 	ctx context.Context,
 	viewerID bson.ObjectID,
 	targetID bson.ObjectID,
-) (bool, error) {
+	followID bson.ObjectID,
+	createdAt time.Time,
+) (bson.ObjectID, error) {
 	result, err := service.followsCollection.UpdateOne(
 		ctx,
 		bson.M{
@@ -415,12 +458,12 @@ func (service *Service) createFollow(
 		},
 		bson.M{
 			"$setOnInsert": bson.M{
-				"_id": bson.NewObjectID(),
+				"_id": followID,
 
 				"follower_id":  viewerID,
 				"following_id": targetID,
 
-				"created_at": time.Now().UTC(),
+				"created_at": createdAt,
 			},
 		},
 		options.UpdateOne().SetUpsert(
@@ -428,10 +471,18 @@ func (service *Service) createFollow(
 		),
 	)
 	if err != nil {
-		return false, err
+		return bson.NilObjectID, err
 	}
 
-	return result.UpsertedCount == 1, nil
+	if result.UpsertedCount == 0 {
+		// Repeating an existing follow does not create another notification.
+		return bson.NilObjectID, nil
+	}
+	insertedID, ok := result.UpsertedID.(bson.ObjectID)
+	if !ok || insertedID.IsZero() || insertedID != followID {
+		return bson.NilObjectID, errors.New("invalid inserted follow id")
+	}
+	return insertedID, nil
 }
 
 func (service *Service) deleteFollow(

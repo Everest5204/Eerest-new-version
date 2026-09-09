@@ -10,6 +10,8 @@ import {
 
 import {
   Link,
+  useLocation,
+  useNavigate,
 } from "react-router-dom";
 
 import {
@@ -26,6 +28,8 @@ import {
 } from "lucide-react";
 
 import Post from "../../components/Post/Post";
+
+import PostActionToast from "../../features/post-actions/shared/PostActionToast";
 
 import {
   VerifiedName,
@@ -72,6 +76,7 @@ type UserProfile = {
   followers_count: number;
   following_count: number;
   posts_count: number;
+  bio: string;
   profile_image_url?: string;
   cover_image_url?: string;
 };
@@ -262,6 +267,12 @@ const ProfileFeedSkeleton = () => {
 };
 
 const Profile = () => {
+  const location =
+    useLocation();
+
+  const navigate =
+    useNavigate();
+
   const observerRef =
     useRef<HTMLDivElement | null>(
       null,
@@ -334,6 +345,11 @@ const Profile = () => {
     setProfileSheetOpen,
   ] = useState(false);
 
+  const [
+    storyNoticeOpen,
+    setStoryNoticeOpen,
+  ] = useState(false);
+
   const hasMorePosts =
     hasMoreMediaPosts ||
     hasMoreTextPosts;
@@ -342,6 +358,36 @@ const Profile = () => {
     activeTab === "all"
       ? hasMorePosts
       : hasMoreMediaPosts;
+
+  const openEditProfile =
+    useCallback(() => {
+      const returnTo =
+        `${location.pathname}${location.search}${location.hash}`;
+
+      navigate(
+        "/profile/edit",
+        {
+          state: {
+            returnTo,
+          },
+        },
+      );
+    }, [
+      location.hash,
+      location.pathname,
+      location.search,
+      navigate,
+    ]);
+
+  const showStoryNotice =
+    useCallback(() => {
+      setStoryNoticeOpen(true);
+    }, []);
+
+  const closeStoryNotice =
+    useCallback(() => {
+      setStoryNoticeOpen(false);
+    }, []);
 
   const closeProfileSheet =
     useCallback(() => {
@@ -460,6 +506,9 @@ const Profile = () => {
               data.posts_count ??
                 0,
             ),
+
+          bio:
+            data.bio ?? "",
 
           profile_image_url:
             data.profile_image_url ??
@@ -895,6 +944,9 @@ const Profile = () => {
     user?.cover_image_url
       ?.trim() || "";
 
+  const profileBio =
+    user?.bio?.trim() ?? "";
+
   const totalPosts =
     Math.max(
       user?.posts_count ?? 0,
@@ -1249,10 +1301,17 @@ const Profile = () => {
             </span>
           </div>
 
+          {profileBio ? (
+            <p className="profileBio">
+              {profileBio}
+            </p>
+          ) : null}
+
           <div className="profileActions">
             <button
               className="profileStoryBtn"
               type="button"
+              onClick={showStoryNotice}
             >
               <CirclePlus
                 size={20}
@@ -1264,6 +1323,7 @@ const Profile = () => {
             <button
               className="profileEditBtn"
               type="button"
+              onClick={openEditProfile}
             >
               <User
                 size={20}
@@ -1523,6 +1583,13 @@ const Profile = () => {
           </section>
         </div>
       ) : null}
+
+      <PostActionToast
+        open={storyNoticeOpen}
+        message="This feature is currently unavailable."
+        tone="info"
+        onClose={closeStoryNotice}
+      />
     </div>
   );
 };

@@ -12,6 +12,7 @@ type profileDocument struct {
 	FirstName       string        `bson:"first_name"`
 	LastName        string        `bson:"last_name"`
 	ProfileTitle    string        `bson:"profile_title,omitempty"`
+	Bio             string        `bson:"bio,omitempty"`
 	FollowersCount  int64         `bson:"followers_count,omitempty"`
 	FollowingCount  int64         `bson:"following_count,omitempty"`
 	PostsCount      int64         `bson:"posts_count,omitempty"`
@@ -33,6 +34,7 @@ type Profile struct {
 	FirstName       string `json:"first_name"`
 	LastName        string `json:"last_name"`
 	ProfileTitle    string `json:"profile_title,omitempty"`
+	Bio             string `json:"bio"`
 	FollowersCount  int64  `json:"followers_count"`
 	FollowingCount  int64  `json:"following_count"`
 	PostsCount      int64  `json:"posts_count"`

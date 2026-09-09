@@ -124,6 +124,22 @@
   font-weight: 900;
 }
 
+.profileViewBio {
+  width: 100%;
+  max-width: 100%;
+  margin: 14px 0 0;
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.profileViewBio + .profileViewActions {
+  margin-top: 18px;
+}
+
 .profileViewActions {
   width: 100%;
   margin-top: 24px;

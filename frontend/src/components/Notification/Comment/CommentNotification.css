@@ -1,0 +1,181 @@
+.comment-notification {
+  --comment-notification-accent: #2563eb;
+  --comment-notification-surface: #ffffff;
+  --comment-notification-hover: #f8fafc;
+  --comment-notification-pressed: #f1f5f9;
+
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  min-height: 84px;
+  margin: 0;
+  padding: 14px 16px;
+  border: 0;
+  border-block-end: 1px solid #eef2f6;
+  border-radius: 0;
+  appearance: none;
+  background-color: var(--comment-notification-surface);
+  box-shadow: none;
+  color: #334155;
+  color-scheme: light;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: normal;
+  text-align: start;
+  text-transform: none;
+  white-space: normal;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 140ms ease-out;
+}
+
+.comment-notification * {
+  box-sizing: border-box;
+}
+
+.comment-notification--unread {
+  --comment-notification-surface: #f5f8ff;
+  --comment-notification-hover: #eef4ff;
+  --comment-notification-pressed: #e6efff;
+}
+
+.comment-notification--reply {
+  --comment-notification-accent: #7c3aed;
+}
+
+.comment-notification:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -3px;
+}
+
+.comment-notification__avatar {
+  position: relative;
+  display: block;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.comment-notification__avatar-image,
+.comment-notification__avatar-fallback {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #f1f5f9;
+}
+
+.comment-notification__avatar-image {
+  object-fit: cover;
+}
+
+.comment-notification__avatar-fallback {
+  display: grid;
+  place-items: center;
+  color: #64748b;
+}
+
+.comment-notification__type-icon {
+  position: absolute;
+  inset-block-end: -2px;
+  inset-inline-end: -2px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--comment-notification-surface);
+  border-radius: 50%;
+  background-color: var(--comment-notification-accent);
+  color: #ffffff;
+}
+
+.comment-notification__avatar-fallback > svg,
+.comment-notification__type-icon > svg {
+  display: block;
+}
+
+.comment-notification__content {
+  display: block;
+  flex: 1 1 0%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.comment-notification__message {
+  display: block;
+}
+
+.comment-notification__name {
+  color: #111827;
+  font-weight: 600;
+}
+
+.comment-notification__time {
+  display: block;
+  margin-block-start: 4px;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+
+.comment-notification--unread .comment-notification__time {
+  color: #1d4ed8;
+}
+
+.comment-notification__unread-dot {
+  display: block;
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #2563eb;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .comment-notification:hover {
+    --comment-notification-surface: var(--comment-notification-hover);
+  }
+}
+
+.comment-notification:active {
+  --comment-notification-surface: var(--comment-notification-pressed);
+}
+
+@media (max-width: 360px) {
+  .comment-notification {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .comment-notification__avatar {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comment-notification {
+    transition: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .comment-notification:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .comment-notification__type-icon,
+  .comment-notification__unread-dot {
+    border: 1px solid CanvasText;
+  }
+}

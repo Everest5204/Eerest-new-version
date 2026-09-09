@@ -1031,6 +1031,9 @@ const ProfileViewPage = () => {
       .cover_image_url
       ?.trim() ?? "";
 
+  const profileBio =
+    profile.bio?.trim() ?? "";
+
   const totalPosts =
     Math.max(
       Number(
@@ -1176,8 +1179,14 @@ const ProfileViewPage = () => {
                   1
                     ? "post"
                     : "posts"}
-                </span>
+                  </span>
               </div>
+
+              {profileBio ? (
+                <p className="profileViewBio">
+                  {profileBio}
+                </p>
+              ) : null}
 
               <div className="profileViewActions">
                 <button

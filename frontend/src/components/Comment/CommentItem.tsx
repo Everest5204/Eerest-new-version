@@ -93,6 +93,9 @@ const CommentItem = ({
   const [editing, setEditing] = useState(false);
   const [replying, setReplying] = useState(false);
 
+  const lovePendingRef = useRef(false);
+  const [lovePending, setLovePending] = useState(false);
+
   const [repliesOpen, setRepliesOpen] = useState(false);
   const [repliesLoaded, setRepliesLoaded] = useState(false);
   const [repliesLoading, setRepliesLoading] = useState(false);
@@ -238,30 +241,43 @@ const CommentItem = ({
     setRepliesOpen(true);
   };
 
-  const handleLove = async () => {
-    const previousItem = item;
+ const handleLove = async () => {
+  if (lovePendingRef.current) return;
+
+  lovePendingRef.current = true;
+  setLovePending(true);
+
+  const previousLoved = item.is_loved_by_me;
+  const previousCount = item.loves_count;
+
+  setItem((current) => ({
+    ...current,
+    is_loved_by_me: !previousLoved,
+    loves_count: Math.max(
+      0,
+      previousCount + (previousLoved ? -1 : 1),
+    ),
+  }));
+
+  try {
+    const response = await toggleCommentLove(item.id);
 
     setItem((current) => ({
       ...current,
-      is_loved_by_me: !current.is_loved_by_me,
-      loves_count: Math.max(
-        0,
-        current.loves_count + (current.is_loved_by_me ? -1 : 1)
-      ),
+      is_loved_by_me: response.loved,
+      loves_count: response.loves_count,
     }));
-
-    try {
-      const response = await toggleCommentLove(item.id);
-
-      setItem((current) => ({
-        ...current,
-        is_loved_by_me: response.loved,
-        loves_count: response.loves_count,
-      }));
-    } catch {
-      setItem(previousItem);
-    }
-  };
+  } catch {
+    setItem((current) => ({
+      ...current,
+      is_loved_by_me: previousLoved,
+      loves_count: previousCount,
+    }));
+  } finally {
+    lovePendingRef.current = false;
+    setLovePending(false);
+  }
+};
 
   const handleUpdate = async (text: string) => {
     const response = await updateComment(item.id, text);
@@ -419,20 +435,32 @@ const handleDelete = async () => {
         <div className="commentMeta">
           {timeAgo ? <span>{timeAgo}</span> : null}
 
-          <button
-            type="button"
-            className={item.is_loved_by_me ? "active" : ""}
-            onClick={() => {
-              void handleLove();
-            }}
-          >
-            <Heart
-              size={15}
-              strokeWidth={2.3}
-              fill={item.is_loved_by_me ? "currentColor" : "none"}
-            />
-            <span>{item.loves_count > 0 ? item.loves_count : "Love"}</span>
-          </button>
+ 
+<button
+  type="button"
+  className={item.is_loved_by_me ? "active" : ""}
+  disabled={lovePending}
+  aria-pressed={item.is_loved_by_me}
+  aria-label={
+    item.is_loved_by_me
+      ? "Remove love from comment"
+      : "Love this comment"
+  }
+  onClick={() => {
+    void handleLove();
+  }}
+>
+  <Heart
+    size={15}
+    strokeWidth={2.3}
+    fill={item.is_loved_by_me ? "currentColor" : "none"}
+    aria-hidden="true"
+  />
+  <span>
+    {item.loves_count > 0 ? item.loves_count : "Love"}
+  </span>
+</button>
+
 
           <button
             type="button"

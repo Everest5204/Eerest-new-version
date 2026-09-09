@@ -10,25 +10,39 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"go.mongodb.org/mongo-driver/v2/mongo/readconcern"
+	"go.mongodb.org/mongo-driver/v2/mongo/writeconcern"
 )
 
 const (
 	reactionDBTimeout         = 5 * time.Second
+	reactionMutationTimeout   = 8 * time.Second
 	reactionCounterTimeout    = 3 * time.Second
 	reactionTopReactionsLimit = 2
 )
+
+// ReactionNotificationHandler connects newly inserted reactions to notifications.
+// It runs synchronously inside the source reaction's transaction.
+type ReactionNotificationHandler interface {
+	HandleCreatedReaction(context.Context, bson.ObjectID, bson.ObjectID, bson.ObjectID) error
+}
 
 type ReactionService struct {
 	reactionsCollection *mongo.Collection
 	usersCollection     *mongo.Collection
 	postsCollection     *mongo.Collection
+	notificationHandler ReactionNotificationHandler
 }
 
-func NewReactionService(db *mongo.Database) *ReactionService {
+func NewReactionService(
+	db *mongo.Database,
+	notificationHandler ReactionNotificationHandler,
+) *ReactionService {
 	return &ReactionService{
 		reactionsCollection: db.Collection("post_reactions"),
 		usersCollection:     db.Collection("users"),
 		postsCollection:     db.Collection("posts"),
+		notificationHandler: notificationHandler,
 	}
 }
 
@@ -94,60 +108,93 @@ func (service *ReactionService) SetReaction(
 	postID string,
 	reactionType string,
 ) (*SetReactionResponse, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if service == nil || service.notificationHandler == nil {
+		return nil, errors.New("reaction notification handler is not configured")
+	}
+
 	cleanReactionType, err := validateReactionType(reactionType)
 	if err != nil {
 		return nil, err
 	}
 
 	userObjectID, err := bson.ObjectIDFromHex(strings.TrimSpace(userID))
-	if err != nil {
+	if err != nil || userObjectID.IsZero() {
 		return nil, errors.New("invalid user id")
 	}
 
 	postObjectID, err := bson.ObjectIDFromHex(strings.TrimSpace(postID))
-	if err != nil {
+	if err != nil || postObjectID.IsZero() {
 		return nil, errors.New("invalid post id")
 	}
 
+	// Retries of this transaction retain the same source ID and creation time.
+	// An existing reaction keeps its own ID because this value is insert-only.
+	reactionID := bson.NewObjectID()
 	now := time.Now().UTC()
+	var response *SetReactionResponse
 
-	dbCtx, cancel := context.WithTimeout(ctx, reactionDBTimeout)
-	defer cancel()
+	err = service.withReactionTransaction(ctx, func(txCtx context.Context) error {
+		result, err := service.reactionsCollection.UpdateOne(
+			txCtx,
+			bson.M{
+				"post_id": postObjectID,
+				"user_id": userObjectID,
+			},
+			bson.M{
+				"$set": bson.M{
+					"reaction_type": cleanReactionType,
+					"updated_at":    now,
+				},
+				"$setOnInsert": bson.M{
+					"_id":        reactionID,
+					"post_id":    postObjectID,
+					"user_id":    userObjectID,
+					"created_at": now,
+				},
+			},
+			options.UpdateOne().SetUpsert(true),
+		)
+		if err != nil {
+			return err
+		}
 
-	_, err = service.reactionsCollection.UpdateOne(
-		dbCtx,
-		bson.M{
-			"post_id": postObjectID,
-			"user_id": userObjectID,
-		},
-		bson.M{
-			"$set": bson.M{
-				"reaction_type": cleanReactionType,
-				"updated_at":    now,
-			},
-			"$setOnInsert": bson.M{
-				"post_id":    postObjectID,
-				"user_id":    userObjectID,
-				"created_at": now,
-			},
-		},
-		options.UpdateOne().SetUpsert(true),
-	)
+		// Updating a reaction type or repeating the same request is not a new
+		// notification. The handler verifies the inserted record and recipient.
+		if result.UpsertedCount > 0 {
+			insertedID, ok := result.UpsertedID.(bson.ObjectID)
+			if !ok || insertedID.IsZero() || insertedID != reactionID {
+				return errors.New("invalid inserted reaction id")
+			}
+			if err := service.notificationHandler.HandleCreatedReaction(
+				txCtx, insertedID, postObjectID, userObjectID,
+			); err != nil {
+				// Return driver errors unchanged so WithTransaction can retry.
+				return err
+			}
+		}
+
+		summary, err := service.GetPostSummary(txCtx, userID, postID)
+		if err != nil {
+			return err
+		}
+		if err := service.updatePostReactionCounter(txCtx, postObjectID, summary.Total); err != nil {
+			return err
+		}
+		response = &SetReactionResponse{
+			ReactionType: summary.CurrentUserReaction,
+			Summary:      summary,
+		}
+		return nil
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	summary, err := service.GetPostSummary(ctx, userID, postID)
-	if err != nil {
-		return nil, err
-	}
-
-	service.updatePostReactionCounter(ctx, postObjectID, summary.Total)
-
-	return &SetReactionResponse{
-		ReactionType: summary.CurrentUserReaction,
-		Summary:      summary,
-	}, nil
+	// The core watcher observes the committed notification; do not publish here.
+	return response, nil
 }
 
 func (service *ReactionService) RemoveReaction(
@@ -155,41 +202,81 @@ func (service *ReactionService) RemoveReaction(
 	userID string,
 	postID string,
 ) (*DeleteReactionResponse, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	userObjectID, err := bson.ObjectIDFromHex(strings.TrimSpace(userID))
-	if err != nil {
+	if err != nil || userObjectID.IsZero() {
 		return nil, errors.New("invalid user id")
 	}
 
 	postObjectID, err := bson.ObjectIDFromHex(strings.TrimSpace(postID))
-	if err != nil {
+	if err != nil || postObjectID.IsZero() {
 		return nil, errors.New("invalid post id")
 	}
 
-	dbCtx, cancel := context.WithTimeout(ctx, reactionDBTimeout)
+	var response *DeleteReactionResponse
+	// Removing and setting reactions both update the post counter in their
+	// transactions, so concurrent changes can conflict and retry consistently.
+	err = service.withReactionTransaction(ctx, func(txCtx context.Context) error {
+		_, err := service.reactionsCollection.DeleteOne(
+			txCtx,
+			bson.M{
+				"post_id": postObjectID,
+				"user_id": userObjectID,
+			},
+		)
+		if err != nil {
+			return err
+		}
+
+		summary, err := service.GetPostSummary(txCtx, userID, postID)
+		if err != nil {
+			return err
+		}
+		if err := service.updatePostReactionCounter(txCtx, postObjectID, summary.Total); err != nil {
+			return err
+		}
+		response = &DeleteReactionResponse{
+			ReactionType: "",
+			Summary:      summary,
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (service *ReactionService) withReactionTransaction(
+	ctx context.Context,
+	mutation func(context.Context) error,
+) error {
+	if service == nil || service.reactionsCollection == nil ||
+		service.postsCollection == nil || service.usersCollection == nil {
+		return errors.New("reaction service is not configured")
+	}
+
+	dbCtx, cancel := context.WithTimeout(ctx, reactionMutationTimeout)
 	defer cancel()
 
-	_, err = service.reactionsCollection.DeleteOne(
+	session, err := service.reactionsCollection.Database().Client().StartSession()
+	if err != nil {
+		return err
+	}
+	defer session.EndSession(context.Background())
+
+	_, err = session.WithTransaction(
 		dbCtx,
-		bson.M{
-			"post_id": postObjectID,
-			"user_id": userObjectID,
+		func(txCtx context.Context) (any, error) {
+			return nil, mutation(txCtx)
 		},
+		options.Transaction().
+			SetReadConcern(readconcern.Snapshot()).
+			SetWriteConcern(writeconcern.Majority()),
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	summary, err := service.GetPostSummary(ctx, userID, postID)
-	if err != nil {
-		return nil, err
-	}
-
-	service.updatePostReactionCounter(ctx, postObjectID, summary.Total)
-
-	return &DeleteReactionResponse{
-		ReactionType: "",
-		Summary:      summary,
-	}, nil
+	return err
 }
 
 func (service *ReactionService) GetPostSummary(
@@ -558,11 +645,11 @@ func (service *ReactionService) updatePostReactionCounter(
 	ctx context.Context,
 	postID bson.ObjectID,
 	total int64,
-) {
+) error {
 	dbCtx, cancel := context.WithTimeout(ctx, reactionCounterTimeout)
 	defer cancel()
 
-	_, _ = service.postsCollection.UpdateOne(
+	_, err := service.postsCollection.UpdateOne(
 		dbCtx,
 		bson.M{
 			"_id": postID,
@@ -574,6 +661,7 @@ func (service *ReactionService) updatePostReactionCounter(
 			},
 		},
 	)
+	return err
 }
 
 func emptyReactionCounts() ReactionCounts {
