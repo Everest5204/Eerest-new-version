@@ -42,8 +42,6 @@ func (handler *Handler) HandleCreatedComment(
 
 
 
-
-
 // HandleCreatedCommentLove runs after inserting a new love,
 // within the same transaction as the comment love action.
 func (handler *Handler) HandleCreatedCommentLove(

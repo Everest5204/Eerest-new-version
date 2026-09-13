@@ -21,9 +21,10 @@ const (
 )
 
 // CommentNotificationHandler is supplied once during server startup.
-// Its implementation must use the transaction context supplied by CreateComment.
+// Its implementation must use the transaction context supplied by the mutation.
 type CommentNotificationHandler interface {
 	HandleCreatedComment(context.Context, bson.ObjectID, bson.ObjectID, bson.ObjectID) error
+	HandleCreatedCommentLove(context.Context, bson.ObjectID, bson.ObjectID, bson.ObjectID) error
 }
 
 type CommentService struct {
@@ -442,73 +443,110 @@ func (service *CommentService) ToggleCommentLove(
 	authUserID string,
 	commentID string,
 ) (*ToggleCommentLoveResponse, error) {
-	userObjectID, err := bson.ObjectIDFromHex(authUserID)
-	if err != nil {
-		return nil, errors.New("invalid user id")
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	if service == nil || service.commentsCollection == nil ||
+		service.commentLovesCollection == nil || service.postsCollection == nil ||
+		service.notificationHandler == nil {
+		return nil, errors.New("comment love service is not configured")
 	}
 
+	userObjectID, err := bson.ObjectIDFromHex(authUserID)
+	if err != nil || userObjectID.IsZero() {
+		return nil, errors.New("invalid user id")
+	}
 	commentObjectID, err := bson.ObjectIDFromHex(commentID)
-	if err != nil {
+	if err != nil || commentObjectID.IsZero() {
 		return nil, errors.New("invalid comment id")
 	}
 
-	dbCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
-	defer cancel()
-
-	if _, err := service.getCommentByID(dbCtx, commentObjectID, true); err != nil {
-		return nil, err
-	}
-
-	loveFilter := bson.M{
-		"comment_id": commentObjectID,
-		"user_id":    userObjectID,
-	}
-
-	var existingLove CommentLove
-
-	err = service.commentLovesCollection.FindOne(dbCtx, loveFilter).Decode(&existingLove)
-	if err == nil {
-		_, deleteErr := service.commentLovesCollection.DeleteOne(dbCtx, loveFilter)
-		if deleteErr != nil {
-			return nil, deleteErr
-		}
-
-		lovesCount, updateErr := service.syncCommentLovesCount(dbCtx, commentObjectID)
-		if updateErr != nil {
-			return nil, updateErr
-		}
-
-		return &ToggleCommentLoveResponse{
-			Loved:      false,
-			LovesCount: lovesCount,
-		}, nil
-	}
-
-	if !errors.Is(err, mongo.ErrNoDocuments) {
-		return nil, err
-	}
-
+	// Keep the source ID stable if WithTransaction retries its callback.
 	loveItem := CommentLove{
 		ID:        bson.NewObjectID(),
 		CommentID: commentObjectID,
 		UserID:    userObjectID,
 		CreatedAt: time.Now().UTC(),
 	}
-
-	_, err = service.commentLovesCollection.InsertOne(dbCtx, loveItem)
-	if err != nil && !mongo.IsDuplicateKeyError(err) {
-		return nil, err
+	loveFilter := bson.M{
+		"comment_id": commentObjectID,
+		"user_id":    userObjectID,
 	}
 
-	lovesCount, err := service.syncCommentLovesCount(dbCtx, commentObjectID)
+	dbCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	defer cancel()
+
+	session, err := service.commentsCollection.Database().Client().StartSession()
 	if err != nil {
 		return nil, err
 	}
+	defer session.EndSession(context.Background())
 
-	return &ToggleCommentLoveResponse{
-		Loved:      true,
-		LovesCount: lovesCount,
-	}, nil
+	var response ToggleCommentLoveResponse
+	_, err = session.WithTransaction(
+		dbCtx,
+		func(txCtx context.Context) (any, error) {
+			savedComment, err := service.getCommentByID(txCtx, commentObjectID, true)
+			if err != nil {
+				return nil, err
+			}
+			if err := service.ensurePostExists(txCtx, savedComment.PostID); err != nil {
+				return nil, err
+			}
+
+			var existingLove CommentLove
+			err = service.commentLovesCollection.FindOne(txCtx, loveFilter).Decode(&existingLove)
+			loved := false
+
+			switch {
+			case err == nil:
+				result, err := service.commentLovesCollection.DeleteOne(txCtx, bson.M{
+					"_id":        existingLove.ID,
+					"comment_id": commentObjectID,
+					"user_id":    userObjectID,
+				})
+				if err != nil {
+					return nil, err
+				}
+				if result.DeletedCount != 1 {
+					return nil, errors.New("comment love could not be removed")
+				}
+				// Removing love does not create another notification.
+
+			case errors.Is(err, mongo.ErrNoDocuments):
+				if _, err := service.commentLovesCollection.InsertOne(txCtx, loveItem); err != nil {
+					// Preserve database errors so a failed transaction cannot report success.
+					return nil, err
+				}
+				if err := service.notificationHandler.HandleCreatedCommentLove(
+					txCtx, loveItem.ID, loveItem.CommentID, loveItem.UserID,
+				); err != nil {
+					return nil, err
+				}
+				loved = true
+
+			default:
+				return nil, err
+			}
+
+			lovesCount, err := service.syncCommentLovesCount(txCtx, commentObjectID)
+			if err != nil {
+				return nil, err
+			}
+			response = ToggleCommentLoveResponse{
+				Loved:      loved,
+				LovesCount: lovesCount,
+			}
+			return nil, nil
+		},
+		options.Transaction().
+			SetReadConcern(readconcern.Snapshot()).
+			SetWriteConcern(writeconcern.Majority()),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &response, nil
 }
 
 func (service *CommentService) getCommentsByFilter(

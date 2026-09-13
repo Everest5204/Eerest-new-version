@@ -1163,6 +1163,22 @@ const Profile = () => {
 
       <div className="profileWrapper">
         <div className="profileCover">
+
+{coverUploading && (
+  <div
+    className="profileMediaUploadOverlay"
+    role="status"
+    aria-label="Uploading cover image"
+  >
+    <LoaderCircle
+      className="profileMediaUploadSpinner"
+      size={32}
+      strokeWidth={3}
+      aria-hidden="true"
+    />
+  </div>
+)}
+
           {coverImageURL ? (
             <img
               src={
@@ -1195,6 +1211,22 @@ const Profile = () => {
         <div className="profileInfo">
           <div className="profileAvatarBox">
             <div className="profileAvatar">
+
+{profileUploading && (
+  <div
+    className="profileMediaUploadOverlay"
+    role="status"
+    aria-label="Uploading profile image"
+  >
+    <LoaderCircle
+      className="profileMediaUploadSpinner"
+      size={32}
+      strokeWidth={3}
+      aria-hidden="true"
+    />
+  </div>
+)}
+
               {profileImageURL ? (
                 <img
                   src={

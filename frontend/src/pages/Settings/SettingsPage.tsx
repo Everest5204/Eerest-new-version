@@ -50,15 +50,17 @@ const settingsItems: SettingsItem[] = [
     label: "Personal Details",
     icon: UserRound,
   },
-  {
-    id: "change-password",
-    label: "Change Password",
-    icon: KeyRound,
-  },
+ {
+   id: "change-password",
+   label: "Change Password",
+   icon: KeyRound,
+   path: "/change-password",
+ },
   {
     id: "get-verified",
     label: "Get Verified",
     icon: BadgeCheck,
+    path: "/get-verified",
   },
   {
     id: "privacy-policy",
@@ -77,12 +79,17 @@ const settingsItems: SettingsItem[] = [
     icon: UserRoundX,
     danger: true,
   },
+
+
   {
     id: "delete-account",
     label: "Delete Account",
     icon: Trash2,
+    path: "/delete-account",
     danger: true,
   },
+
+
   {
     id: "about",
     label: "About",

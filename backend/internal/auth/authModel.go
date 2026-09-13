@@ -33,10 +33,11 @@ type SignupRequest struct {
 	LastName     string `json:"last_name"`
 	EmailOrPhone string `json:"email_or_phone"`
 	Password     string `json:"password"`
-	Gender       string `json:"gender"`
-	BirthMonth   int    `json:"birth_month"`
-	BirthDay     int    `json:"birth_day"`
-	BirthYear    int    `json:"birth_year"`
+
+	Gender     string `json:"gender"`
+	BirthMonth int    `json:"birth_month"`
+	BirthDay   int    `json:"birth_day"`
+	BirthYear  int    `json:"birth_year"`
 }
 
 type LoginRequest struct {
@@ -45,12 +46,12 @@ type LoginRequest struct {
 }
 
 // Credential contains the Google-signed ID token.
-// The backend will extract the verified email and identity from this token.
+// Identity is verified by the backend.
 type GoogleAuthRequest struct {
 	Credential string `json:"credential"`
 }
 
-// Used only when a verified Google user does not already have an account.
+// Used when a verified Google user needs to create an account.
 type GoogleSignupRequest struct {
 	Credential string `json:"credential"`
 
@@ -80,6 +81,7 @@ type VerifyResetCodeRequest struct {
 
 type ResetPasswordRequest struct {
 	EmailOrPhone string `json:"email_or_phone"`
+	Code         string `json:"code"`
 	NewPassword  string `json:"new_password"`
 }
 

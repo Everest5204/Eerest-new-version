@@ -14,6 +14,8 @@ import (
 	"everest-backend/internal/comment"
 	"everest-backend/internal/config"
 	"everest-backend/internal/database"
+	"everest-backend/internal/deleteaccount"
+    "everest-backend/internal/middleware"
 	"everest-backend/internal/editmediapost"
 	"everest-backend/internal/edittextpost"
 	"everest-backend/internal/follow"
@@ -38,6 +40,7 @@ import (
 	"everest-backend/internal/verifiedbadge"
 	"everest-backend/internal/editprofile"
 	"everest-backend/internal/changename"
+	"everest-backend/internal/changepassword"
 )
 
 const (
@@ -57,6 +60,37 @@ func main() {
 		cfg.DBName,
 	)
 
+deleteAccountService, err := deleteaccount.NewService(
+    db.Database,
+    cfg,
+)
+if err != nil {
+    log.Fatal("Delete account service failed:", err)
+}
+
+deleteAccountIndexCtx, cancelDeleteAccountIndexes := context.WithTimeout(
+    context.Background(),
+    startupTimeout,
+)
+
+deleteAccountIndexErr := deleteAccountService.EnsureIndexes(
+    deleteAccountIndexCtx,
+)
+cancelDeleteAccountIndexes()
+
+if deleteAccountIndexErr != nil {
+    log.Fatal("Delete account indexes failed:", deleteAccountIndexErr)
+}
+
+deleteAccountHandler := deleteaccount.NewHandler(deleteAccountService)
+
+accountAccessMiddleware, err := middleware.NewAccountAccessMiddleware(
+    db.Database,
+    cfg.JWTSecret,
+)
+if err != nil {
+    log.Fatal("Account access middleware failed:", err)
+}
 
 
 notificationService := notification.NewService(db.Database)
@@ -106,6 +140,15 @@ notificationWatcher := notification.NewWatcher(
 		authService,
 		cfg.JWTSecret,
 	)
+
+changePasswordService := changepassword.NewService(
+	db.Database,
+)
+
+changePasswordHandler := changepassword.NewHandler(
+	changePasswordService,
+)
+
 
 	userService := user.NewUserService(
 		db.Database,
@@ -444,6 +487,18 @@ profileViewService := profileview.NewService(
 		cfg.JWTSecret,
 	)
 
+deleteaccount.RegisterRoutes(
+    mux,
+    deleteAccountHandler,
+    cfg.JWTSecret,
+)
+
+	changepassword.RegisterRoutes(
+	mux,
+	changePasswordHandler,
+	cfg.JWTSecret,
+)
+
 
 changename.RegisterRoutes(
 	mux,
@@ -567,8 +622,10 @@ notification.RegisterStreamRoute(
 		Addr: ":" + cfg.Port,
 
 		Handler: securityMiddleware(
-			corsMiddleware(mux),
-		),
+    corsMiddleware(
+        accountAccessMiddleware(mux),
+    ),
+),
 
 		ReadTimeout:       serverReadTimeout,
 		ReadHeaderTimeout: serverReadHeaderTimeout,
@@ -587,6 +644,19 @@ notificationCtx, cancelNotifications := context.WithCancel(
     context.Background(),
 )
 defer cancelNotifications()
+
+
+deletionCtx, cancelDeletions := context.WithCancel(
+    context.Background(),
+)
+defer cancelDeletions()
+
+deletionWorkerDone := make(chan struct{})
+
+go func() {
+    defer close(deletionWorkerDone)
+    deleteAccountService.RunWorker(deletionCtx)
+}()
 
 serverErrors := make(chan error, 2)
 watcherDone := make(chan struct{})
@@ -617,6 +687,7 @@ case runErr = <-serverErrors:
 
 stopSignals()
 cancelNotifications()
+cancelDeletions()
 notificationHub.Close()
 
 shutdownCtx, cancelShutdown := context.WithTimeout(
@@ -638,6 +709,13 @@ case <-watcherDone:
 case <-shutdownCtx.Done():
     log.Println("Notification watcher shutdown timed out")
 }
+
+select {
+case <-deletionWorkerDone:
+case <-shutdownCtx.Done():
+    log.Println("Account deletion worker shutdown timed out")
+}
+
 
 if runErr != nil && runErr != http.ErrServerClosed {
     log.Fatal("Server stopped:", runErr)

@@ -34,6 +34,9 @@ import SignupSuccess from "./pages/Signup/SignupSuccess";
 import EditProfile from "./pages/editProfile/EditProfile";
 import { ChangeNamePage } from "./pages/ChangeName";
 import { NotificationPage } from "./components/Notification/NotificationPage";
+import { ChangePasswordPage } from "./pages/ChangePassword";
+import { GetVerifiedPage } from "./pages/GetVerified";
+import { DeleteAccountPage } from "./pages/DeleteAccount";
 
 function App() {
   return (
@@ -182,7 +185,22 @@ function App() {
                path="/notifications"
                element={<NotificationPage />}
              />
+
+             <Route
+              path="/change-password"
+              element={<ChangePasswordPage />}
+            />
              
+
+             <Route
+              path="/get-verified"
+              element={<GetVerifiedPage />}
+            />
+
+            <Route
+             path="/delete-account"
+             element={<DeleteAccountPage />}
+            />
 
             <Route
               path="/settings"

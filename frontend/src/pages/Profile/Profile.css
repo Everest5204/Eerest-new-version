@@ -604,13 +604,6 @@
 
 
 
-
-
-
-
-
-
-
 .profileBio {
   width: 100%;
   max-width: 100%;
@@ -625,4 +618,56 @@
 
 .profileBio + .profileActions {
   margin-top: 18px;
+}
+
+
+
+
+
+/* Profile and cover upload loading */
+
+.profileAvatar {
+  position: relative;
+}
+
+.profileCover > .profileMediaUploadOverlay,
+.profileAvatar > .profileMediaUploadOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+}
+
+.profileAvatar > .profileMediaUploadOverlay {
+  border-radius: 50%;
+}
+
+.profileMediaUploadOverlay > .profileMediaUploadSpinner {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  color: #737373;
+  animation: profileMediaUploadSpin 800ms linear infinite;
+}
+
+.profileCoverCamera.uploading,
+.profileAvatarCamera.uploading {
+  pointer-events: none;
+  cursor: wait;
+}
+
+@keyframes profileMediaUploadSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profileMediaUploadOverlay > .profileMediaUploadSpinner {
+    animation: none;
+  }
 }

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/v2/bson"
 )
 
 type AuthHandler struct {
@@ -20,8 +22,10 @@ func NewAuthHandler(
 	jwtSecret string,
 ) *AuthHandler {
 	return &AuthHandler{
-		Service:   service,
-		JWTSecret: strings.TrimSpace(jwtSecret),
+		Service: service,
+
+		// Use the same key bytes as the shared authentication middleware.
+		JWTSecret: jwtSecret,
 	}
 }
 
@@ -37,34 +41,39 @@ func (handler *AuthHandler) Signup(
 	var request SignupRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(
+		writeAuthError(
 			w,
-			"Invalid request body",
 			http.StatusBadRequest,
+			"Invalid request body",
 		)
 		return
 	}
 
 	user, err := handler.Service.Signup(request)
-
 	if err != nil {
-		http.Error(
+		writeAuthServiceError(
 			w,
-			err.Error(),
+			err,
 			http.StatusBadRequest,
 		)
 		return
 	}
 
-	token, err := handler.generateToken(
-		user.ID.Hex(),
-	)
-
-	if err != nil {
-		http.Error(
+	if user == nil {
+		writeAuthError(
 			w,
-			"Failed to create token",
 			http.StatusInternalServerError,
+			"Failed to create account",
+		)
+		return
+	}
+
+	token, err := handler.generateToken(user.ID.Hex())
+	if err != nil {
+		writeAuthError(
+			w,
+			http.StatusInternalServerError,
+			"Failed to create token",
 		)
 		return
 	}
@@ -72,12 +81,10 @@ func (handler *AuthHandler) Signup(
 	setAuthResponseHeaders(w)
 	w.WriteHeader(http.StatusCreated)
 
-	_ = json.NewEncoder(w).Encode(
-		AuthResponse{
-			Token: token,
-			User:  *user,
-		},
-	)
+	_ = json.NewEncoder(w).Encode(AuthResponse{
+		Token: token,
+		User:  *user,
+	})
 }
 
 func (handler *AuthHandler) Login(
@@ -92,46 +99,49 @@ func (handler *AuthHandler) Login(
 	var request LoginRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(
+		writeAuthError(
 			w,
-			"Invalid request body",
 			http.StatusBadRequest,
+			"Invalid request body",
 		)
 		return
 	}
 
 	user, err := handler.Service.Login(request)
-
 	if err != nil {
-		http.Error(
+		writeAuthServiceError(
 			w,
-			err.Error(),
+			err,
 			http.StatusUnauthorized,
 		)
 		return
 	}
 
-	token, err := handler.generateToken(
-		user.ID.Hex(),
-	)
-
-	if err != nil {
-		http.Error(
+	if user == nil {
+		writeAuthError(
 			w,
-			"Failed to create token",
 			http.StatusInternalServerError,
+			"Login failed",
+		)
+		return
+	}
+
+	token, err := handler.generateToken(user.ID.Hex())
+	if err != nil {
+		writeAuthError(
+			w,
+			http.StatusInternalServerError,
+			"Failed to create token",
 		)
 		return
 	}
 
 	setAuthResponseHeaders(w)
 
-	_ = json.NewEncoder(w).Encode(
-		AuthResponse{
-			Token: token,
-			User:  *user,
-		},
-	)
+	_ = json.NewEncoder(w).Encode(AuthResponse{
+		Token: token,
+		User:  *user,
+	})
 }
 
 func (handler *AuthHandler) GoogleAuth(
@@ -146,10 +156,10 @@ func (handler *AuthHandler) GoogleAuth(
 	var request GoogleAuthRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(
+		writeAuthError(
 			w,
-			"Invalid request body",
 			http.StatusBadRequest,
+			"Invalid request body",
 		)
 		return
 	}
@@ -158,56 +168,50 @@ func (handler *AuthHandler) GoogleAuth(
 		handler.Service.GoogleAuth(request)
 
 	if err != nil {
-		http.Error(
+		writeAuthServiceError(
 			w,
-			err.Error(),
+			err,
 			http.StatusUnauthorized,
+		)
+		return
+	}
+
+	if needsSignup {
+		setAuthResponseHeaders(w)
+
+		_ = json.NewEncoder(w).Encode(GoogleAuthResponse{
+			Profile:     profile,
+			NeedsSignup: true,
+		})
+		return
+	}
+
+	if user == nil {
+		writeAuthError(
+			w,
+			http.StatusInternalServerError,
+			"Google authentication failed",
+		)
+		return
+	}
+
+	token, err := handler.generateToken(user.ID.Hex())
+	if err != nil {
+		writeAuthError(
+			w,
+			http.StatusInternalServerError,
+			"Failed to create token",
 		)
 		return
 	}
 
 	setAuthResponseHeaders(w)
 
-	if needsSignup {
-		_ = json.NewEncoder(w).Encode(
-			GoogleAuthResponse{
-				Profile:     profile,
-				NeedsSignup: true,
-			},
-		)
-
-		return
-	}
-
-	if user == nil {
-		http.Error(
-			w,
-			"Google authentication failed",
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	token, err := handler.generateToken(
-		user.ID.Hex(),
-	)
-
-	if err != nil {
-		http.Error(
-			w,
-			"Failed to create token",
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	_ = json.NewEncoder(w).Encode(
-		GoogleAuthResponse{
-			Token:       token,
-			User:        user,
-			NeedsSignup: false,
-		},
-	)
+	_ = json.NewEncoder(w).Encode(GoogleAuthResponse{
+		Token:       token,
+		User:        user,
+		NeedsSignup: false,
+	})
 }
 
 func (handler *AuthHandler) GoogleSignup(
@@ -222,36 +226,39 @@ func (handler *AuthHandler) GoogleSignup(
 	var request GoogleSignupRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(
+		writeAuthError(
 			w,
+			http.StatusBadRequest,
 			"Invalid request body",
+		)
+		return
+	}
+
+	user, err := handler.Service.GoogleSignup(request)
+	if err != nil {
+		writeAuthServiceError(
+			w,
+			err,
 			http.StatusBadRequest,
 		)
 		return
 	}
 
-	user, err := handler.Service.GoogleSignup(
-		request,
-	)
-
-	if err != nil {
-		http.Error(
+	if user == nil {
+		writeAuthError(
 			w,
-			err.Error(),
-			http.StatusBadRequest,
-		)
-		return
-	}
-
-	token, err := handler.generateToken(
-		user.ID.Hex(),
-	)
-
-	if err != nil {
-		http.Error(
-			w,
-			"Failed to create token",
 			http.StatusInternalServerError,
+			"Failed to create Google account",
+		)
+		return
+	}
+
+	token, err := handler.generateToken(user.ID.Hex())
+	if err != nil {
+		writeAuthError(
+			w,
+			http.StatusInternalServerError,
+			"Failed to create token",
 		)
 		return
 	}
@@ -259,12 +266,10 @@ func (handler *AuthHandler) GoogleSignup(
 	setAuthResponseHeaders(w)
 	w.WriteHeader(http.StatusCreated)
 
-	_ = json.NewEncoder(w).Encode(
-		AuthResponse{
-			Token: token,
-			User:  *user,
-		},
-	)
+	_ = json.NewEncoder(w).Encode(AuthResponse{
+		Token: token,
+		User:  *user,
+	})
 }
 
 func (handler *AuthHandler) ForgotPassword(
@@ -279,33 +284,28 @@ func (handler *AuthHandler) ForgotPassword(
 	var request ForgotPasswordRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(
+		writeAuthError(
 			w,
-			"Invalid request body",
 			http.StatusBadRequest,
+			"Invalid request body",
 		)
 		return
 	}
 
 	if err := handler.Service.ForgotPassword(request); err != nil {
-		http.Error(
+		writeAuthServiceError(
 			w,
-			err.Error(),
+			err,
 			http.StatusBadRequest,
 		)
 		return
 	}
 
-	w.Header().Set(
-		"Content-Type",
-		"application/json",
-	)
+	setAuthResponseHeaders(w)
 
-	_ = json.NewEncoder(w).Encode(
-		map[string]string{
-			"message": "Verification code sent",
-		},
-	)
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"message": "Verification code sent",
+	})
 }
 
 func (handler *AuthHandler) VerifyResetCode(
@@ -320,33 +320,28 @@ func (handler *AuthHandler) VerifyResetCode(
 	var request VerifyResetCodeRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(
+		writeAuthError(
 			w,
-			"Invalid request body",
 			http.StatusBadRequest,
+			"Invalid request body",
 		)
 		return
 	}
 
 	if err := handler.Service.VerifyResetCode(request); err != nil {
-		http.Error(
+		writeAuthServiceError(
 			w,
-			err.Error(),
+			err,
 			http.StatusBadRequest,
 		)
 		return
 	}
 
-	w.Header().Set(
-		"Content-Type",
-		"application/json",
-	)
+	setAuthResponseHeaders(w)
 
-	_ = json.NewEncoder(w).Encode(
-		map[string]string{
-			"message": "Verification successful",
-		},
-	)
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"message": "Verification successful",
+	})
 }
 
 func (handler *AuthHandler) ResetPassword(
@@ -361,33 +356,28 @@ func (handler *AuthHandler) ResetPassword(
 	var request ResetPasswordRequest
 
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		http.Error(
+		writeAuthError(
 			w,
-			"Invalid request body",
 			http.StatusBadRequest,
+			"Invalid request body",
 		)
 		return
 	}
 
 	if err := handler.Service.ResetPassword(request); err != nil {
-		http.Error(
+		writeAuthServiceError(
 			w,
-			err.Error(),
+			err,
 			http.StatusBadRequest,
 		)
 		return
 	}
 
-	w.Header().Set(
-		"Content-Type",
-		"application/json",
-	)
+	setAuthResponseHeaders(w)
 
-	_ = json.NewEncoder(w).Encode(
-		map[string]string{
-			"message": "Your password reset successfully",
-		},
-	)
+	_ = json.NewEncoder(w).Encode(map[string]string{
+		"message": "Your password reset successfully",
+	})
 }
 
 func (handler *AuthHandler) Me(
@@ -399,40 +389,23 @@ func (handler *AuthHandler) Me(
 		return
 	}
 
-	authHeader := strings.TrimSpace(
-		r.Header.Get("Authorization"),
-	)
+	authorization := r.Header.Values("Authorization")
 
-	if !strings.HasPrefix(
-		authHeader,
-		"Bearer ",
-	) {
-		http.Error(
-			w,
-			"Unauthorized",
-			http.StatusUnauthorized,
-		)
+	if len(authorization) != 1 {
+		writeAuthUnauthorized(w, "Unauthorized")
 		return
 	}
 
-	tokenString := strings.TrimSpace(
-		strings.TrimPrefix(
-			authHeader,
-			"Bearer ",
-		),
-	)
+	parts := strings.Fields(authorization[0])
 
-	if tokenString == "" {
-		http.Error(
-			w,
-			"Unauthorized",
-			http.StatusUnauthorized,
-		)
+	if len(parts) != 2 ||
+		!strings.EqualFold(parts[0], "Bearer") {
+		writeAuthUnauthorized(w, "Unauthorized")
 		return
 	}
 
 	token, err := jwt.Parse(
-		tokenString,
+		parts[1],
 		func(token *jwt.Token) (interface{}, error) {
 			if token.Method != jwt.SigningMethodHS256 {
 				return nil, errors.New(
@@ -440,72 +413,70 @@ func (handler *AuthHandler) Me(
 				)
 			}
 
-			return []byte(
-				handler.JWTSecret,
-			), nil
+			return []byte(handler.JWTSecret), nil
 		},
-		jwt.WithValidMethods(
-			[]string{
-				jwt.SigningMethodHS256.Alg(),
-			},
-		),
+		jwt.WithValidMethods([]string{
+			jwt.SigningMethodHS256.Alg(),
+		}),
+		jwt.WithExpirationRequired(),
+		jwt.WithIssuedAt(),
+		jwt.WithLeeway(5*time.Second),
 	)
 
-	if err != nil || !token.Valid {
-		http.Error(
-			w,
-			"Invalid token",
-			http.StatusUnauthorized,
-		)
+	if err != nil || token == nil || !token.Valid {
+		writeAuthUnauthorized(w, "Invalid token")
 		return
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
-
 	if !ok {
-		http.Error(
-			w,
-			"Invalid token claims",
-			http.StatusUnauthorized,
-		)
+		writeAuthUnauthorized(w, "Invalid token claims")
 		return
 	}
 
 	userID, ok := claims["userId"].(string)
-
 	if !ok || userID == "" {
-		http.Error(
-			w,
-			"Invalid user id",
-			http.StatusUnauthorized,
-		)
+		writeAuthUnauthorized(w, "Invalid user id")
 		return
 	}
 
-	user, err := handler.Service.GetUserByID(
-		userID,
+	objectID, err := bson.ObjectIDFromHex(userID)
+	if err != nil || objectID == bson.NilObjectID {
+		writeAuthUnauthorized(w, "Invalid user id")
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(
+		r.Context(),
+		authOperationTimeout,
 	)
+	defer cancel()
 
+	// Verify the account still exists and is available.
+	user, err := handler.Service.findActiveAuthUser(
+		ctx,
+		objectID,
+	)
 	if err != nil {
-		http.Error(
+		writeAuthServiceError(
 			w,
-			err.Error(),
-			http.StatusNotFound,
+			err,
+			http.StatusServiceUnavailable,
 		)
 		return
 	}
+
+	user.Password = ""
 
 	setAuthResponseHeaders(w)
 
-	_ = json.NewEncoder(w).Encode(
-		user,
-	)
+	_ = json.NewEncoder(w).Encode(user)
 }
 
 func (handler *AuthHandler) generateToken(
 	userID string,
 ) (string, error) {
-	if handler.JWTSecret == "" {
+	if strings.TrimSpace(handler.JWTSecret) == "" {
 		return "", errors.New(
 			"JWT secret is not configured",
 		)
@@ -517,9 +488,7 @@ func (handler *AuthHandler) generateToken(
 		"userId": userID,
 		"sub":    userID,
 		"iat":    now.Unix(),
-		"exp": now.Add(
-			7 * 24 * time.Hour,
-		).Unix(),
+		"exp":    now.Add(7 * 24 * time.Hour).Unix(),
 	}
 
 	token := jwt.NewWithClaims(
@@ -532,32 +501,79 @@ func (handler *AuthHandler) generateToken(
 	)
 }
 
+func writeAuthServiceError(
+	w http.ResponseWriter,
+	err error,
+	fallbackStatus int,
+) {
+	statusCode := fallbackStatus
+	message := err.Error()
+
+	switch {
+	case errors.Is(err, ErrAuthAccountUnavailable):
+		statusCode = http.StatusForbidden
+		message = ErrAuthAccountUnavailable.Error()
+
+	case errors.Is(err, ErrAuthAccountStatusUnavailable):
+		statusCode = http.StatusServiceUnavailable
+		message = ErrAuthAccountStatusUnavailable.Error()
+
+	case errors.Is(err, context.DeadlineExceeded),
+		errors.Is(err, context.Canceled):
+		statusCode = http.StatusServiceUnavailable
+		message = "The request could not be completed in time. Please try again."
+	}
+
+	writeAuthError(w, statusCode, message)
+}
+
+func writeAuthUnauthorized(
+	w http.ResponseWriter,
+	message string,
+) {
+	w.Header().Set(
+		"WWW-Authenticate",
+		`Bearer error="invalid_token"`,
+	)
+
+	writeAuthError(
+		w,
+		http.StatusUnauthorized,
+		message,
+	)
+}
+
+func writeAuthError(
+	w http.ResponseWriter,
+	statusCode int,
+	message string,
+) {
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+
+	http.Error(w, message, statusCode)
+}
+
 func setAuthResponseHeaders(
 	w http.ResponseWriter,
 ) {
 	w.Header().Set(
 		"Content-Type",
-		"application/json",
+		"application/json; charset=utf-8",
 	)
-
-	w.Header().Set(
-		"Cache-Control",
-		"no-store",
-	)
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
 }
 
 func handleMethodNotAllowed(
 	w http.ResponseWriter,
 	allowedMethod string,
 ) {
-	w.Header().Set(
-		"Allow",
-		allowedMethod,
-	)
+	w.Header().Set("Allow", allowedMethod)
 
-	http.Error(
+	writeAuthError(
 		w,
-		"Method not allowed",
 		http.StatusMethodNotAllowed,
+		"Method not allowed",
 	)
 }
