@@ -786,6 +786,7 @@ func corsMiddleware(
 		"http://127.0.0.1:3000": true,
 		"https://mongosky.com": true,
 		"https://www.mongosky.com": true,
+		"https://mongosky-frontend.onrender.com": true,
 	}
 
 	return http.HandlerFunc(
