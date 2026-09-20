@@ -1,33 +1,35 @@
-@layer theme, base, components, utilities;
+/* Generate Tailwind styles from all files inside src. */
+@import "tailwindcss" source("./") important;
 
-@import "tailwindcss/theme.css" layer(theme) prefix(tw);
+/*
+ * Support both existing class formats:
+ * bg-white, flex, px-4
+ * tw:bg-white, tw:flex, tw:px-4
+ */
+@custom-variant tw (&);
 
-@import "tailwindcss/utilities.css" layer(utilities) prefix(tw) important source(none);
+/*
+ * Keep global defaults in the base layer,
+ * so they do not override utility spacing.
+ */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-@source "./pages/ChangePassword";
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-height: 100%;
+  }
 
-@source "./pages/GetVerified";
-
-@source "./pages/DeleteAccount";
-
-
-
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body,
-#root {
-  width: 100%;
-  min-height: 100%;
-}
-
-body {
-  font-family: Arial, Helvetica, sans-serif;
-  background: #111217;
-  overflow-x: hidden;
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #ffffff;
+    color: #111827;
+    overflow-x: hidden;
+  }
 }

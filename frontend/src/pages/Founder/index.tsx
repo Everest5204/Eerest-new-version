@@ -1,0 +1,1 @@
+export { default as FounderPage } from "./FounderPage";

@@ -38,6 +38,10 @@ import { ChangePasswordPage } from "./pages/ChangePassword";
 import { GetVerifiedPage } from "./pages/GetVerified";
 import { DeleteAccountPage } from "./pages/DeleteAccount";
 
+import { CompanyPage } from "./pages/Company";
+import { FounderPage } from "./pages/Founder";
+import { CoFounderPage } from "./pages/CoFounder";
+
 function App() {
   return (
     <BrowserRouter>
@@ -77,6 +81,22 @@ function App() {
             path="/about"
             element={<AboutPage />}
           />
+
+
+          <Route
+           path="/company"
+           element={<CompanyPage />}
+          />
+
+          <Route
+           path="/founder"
+           element={<FounderPage />}
+         />
+
+         <Route
+          path="/co-founder"
+          element={<CoFounderPage />}
+         />
 
           <Route element={<ProtectedRoute />}>
             <Route
@@ -201,6 +221,7 @@ function App() {
              path="/delete-account"
              element={<DeleteAccountPage />}
             />
+
 
             <Route
               path="/settings"

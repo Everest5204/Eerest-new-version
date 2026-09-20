@@ -1,7 +1,13 @@
-const API_BASE_URL = (
+const configuredBaseURL = (
   import.meta.env.VITE_API_BASE_URL ??
-  `${import.meta.env.VITE_API_URL}/api`
-).replace(/\/+$/, "");
+  import.meta.env.VITE_API_URL ??
+  ""
+).trim().replace(/\/+$/, "");
+
+const API_BASE_URL = configuredBaseURL.endsWith("/api")
+  ? configuredBaseURL
+  : `${configuredBaseURL}/api`;
+  
 
 export type AIMessageRole =
   | "user"
