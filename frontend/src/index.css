@@ -6,7 +6,9 @@
 @source "./pages/ChangePassword";
 @source "./pages/GetVerified";
 @source "./pages/DeleteAccount";
-
+@source "./pages/Company";
+@source "./pages/Founder";
+@source "./pages/CoFounder";
 * {
   margin: 0;
   padding: 0;
