@@ -7,7 +7,6 @@ const configuredBaseURL = (
 const API_BASE_URL = configuredBaseURL.endsWith("/api")
   ? configuredBaseURL
   : `${configuredBaseURL}/api`;
-  
 
 export type AIMessageRole =
   | "user"
