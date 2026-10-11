@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"everest-backend/internal/middleware"
 	"fmt"
 	"io"
 	"log"
@@ -28,6 +29,7 @@ type notificationSnapshotReader interface {
 
 type StreamHandler struct {
 	service           notificationSnapshotReader
+	checkSession      func(context.Context, string, int64) error
 	hub               *Hub
 	heartbeatInterval time.Duration
 	maxDuration       time.Duration
@@ -38,6 +40,7 @@ var _ http.Handler = (*StreamHandler)(nil)
 func NewStreamHandler(service *Service, hub *Hub) *StreamHandler {
 	return &StreamHandler{
 		service:           service,
+		checkSession:      service.checkStreamSession,
 		hub:               hub,
 		heartbeatInterval: notificationStreamHeartbeat,
 		maxDuration:       notificationStreamLifetime,
@@ -126,6 +129,10 @@ func (handler *StreamHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 				return
 			}
 
+			version, _ := r.Context().Value(middleware.SessionVersionKey).(int64)
+			if handler.checkSession != nil && handler.checkSession(ctx, userID, version) != nil {
+				return
+			}
 			snapshot, err := handler.service.GetNotifications(ctx, userID, "", DefaultListLimit)
 			if err != nil {
 				if ctx.Err() == nil {
@@ -141,6 +148,10 @@ func (handler *StreamHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 			nextRefresh = time.Now().Add(notificationStreamRefreshSpacing)
 
 		case <-heartbeat.C:
+			version, _ := r.Context().Value(middleware.SessionVersionKey).(int64)
+			if handler.checkSession != nil && handler.checkSession(ctx, userID, version) != nil {
+				return
+			}
 			if err := writeNotificationStreamFrame(ctx, w, controller, []byte(": keep-alive\n\n")); err != nil {
 				return
 			}

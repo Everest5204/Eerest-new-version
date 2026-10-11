@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"everest-backend/internal/accountstate"
 	"strings"
 	"sync"
 	"time"
@@ -106,19 +107,7 @@ func (service *ReelsService) GetReels(
 		}
 	}
 
-	findOptions := options.Find().
-		SetSort(bson.D{
-			{Key: "created_at", Value: -1},
-			{Key: "_id", Value: -1},
-		}).
-		SetLimit(limit + 1).
-		SetProjection(reelPostProjection())
-
-	resultCursor, err := service.postsCollection.Find(
-		dbCtx,
-		filter,
-		findOptions,
-	)
+	resultCursor, err := service.postsCollection.Aggregate(dbCtx, accountstate.VisiblePostPipeline(filter, limit+1, reelPostProjection()))
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +274,7 @@ func (service *ReelsService) buildReelItems(
 		user := usersMap[postDocument.UserID]
 
 		if user.ID.IsZero() {
-			user.ID = postDocument.UserID
+			continue
 		}
 
 		reactionType := reactionsMap[postDocument.ID]
@@ -335,11 +324,11 @@ func (service *ReelsService) loadReelUsers(
 
 	resultCursor, err := service.usersCollection.Find(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": bson.M{
 				"$in": userIDs,
 			},
-		},
+		}),
 		options.Find().SetProjection(bson.M{
 			"_id":               1,
 			"first_name":        1,

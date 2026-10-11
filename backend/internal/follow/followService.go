@@ -3,6 +3,7 @@ package follow
 import (
 	"context"
 	"errors"
+	"everest-backend/internal/accountstate"
 	"strings"
 	"time"
 
@@ -374,9 +375,9 @@ func (service *Service) getFollowCounts(
 
 	err := service.usersCollection.FindOne(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": viewerID,
-		},
+		}),
 		options.FindOne().SetProjection(bson.M{
 			"followers_count": 1,
 			"following_count": 1,
@@ -417,11 +418,11 @@ func (service *Service) getUsersMap(
 
 	resultCursor, err := service.usersCollection.Find(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": bson.M{
 				"$in": userIDs,
 			},
-		},
+		}),
 		options.Find().SetProjection(bson.M{
 			"_id":               1,
 			"first_name":        1,

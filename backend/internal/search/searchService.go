@@ -2,6 +2,7 @@ package search
 
 import (
 	"context"
+	"everest-backend/internal/accountstate"
 	"regexp"
 	"strings"
 	"time"
@@ -87,9 +88,9 @@ func (service *Service) SearchUsers(
 	)
 	defer cancel()
 
-	filter := buildNameFilter(
+	filter := accountstate.ActiveFilter(buildNameFilter(
 		normalizedQuery,
-	)
+	))
 
 	findOptions := options.Find().
 		SetProjection(
@@ -98,7 +99,7 @@ func (service *Service) SearchUsers(
 				"first_name":        1,
 				"last_name":         1,
 				"profile_image_url": 1,
-				"profile_title": 1,
+				"profile_title":     1,
 			},
 		).
 		SetLimit(limit)
@@ -140,17 +141,13 @@ func (service *Service) SearchUsers(
 			UserResult{
 				ID: document.ID.Hex(),
 
-				FirstName:
-				document.FirstName,
+				FirstName: document.FirstName,
 
-				LastName:
-				document.LastName,
+				LastName: document.LastName,
 
-				ProfileImageURL:
-				document.ProfileImageURL,
+				ProfileImageURL: document.ProfileImageURL,
 
-				ProfileTitle:
-	            document.ProfileTitle,
+				ProfileTitle: document.ProfileTitle,
 			},
 		)
 	}
@@ -233,11 +230,9 @@ func appendCombinedNameFilters(
 		lastNameQuery,
 	)
 
-	for _, firstNameFilter :=
-		range firstNameFilters {
+	for _, firstNameFilter := range firstNameFilters {
 
-		for _, lastNameFilter :=
-			range lastNameFilters {
+		for _, lastNameFilter := range lastNameFilters {
 
 			filters = append(
 				filters,

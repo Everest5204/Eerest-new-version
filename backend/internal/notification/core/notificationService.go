@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"everest-backend/internal/accountstate"
 	"fmt"
 	"strconv"
 	"strings"
@@ -313,14 +314,14 @@ func (service *Service) getActors(
 	}
 	cursor, err := service.usersCollection.Find(
 		ctx,
-		bson.M{"_id": bson.M{"$in": ids}},
-options.Find().SetProjection(bson.M{
-	"_id":               1,
-	"first_name":        1,
-	"last_name":         1,
-	"profile_image_url": 1,
-	"profile_title":     1,
-}).SetBatchSize(int32(len(ids))),
+		accountstate.ActiveFilter(bson.M{"_id": bson.M{"$in": ids}}),
+		options.Find().SetProjection(bson.M{
+			"_id":               1,
+			"first_name":        1,
+			"last_name":         1,
+			"profile_image_url": 1,
+			"profile_title":     1,
+		}).SetBatchSize(int32(len(ids))),
 	)
 	if err != nil {
 		return nil, err
@@ -331,13 +332,13 @@ options.Find().SetProjection(bson.M{
 		return nil, err
 	}
 	for _, user := range users {
-actors[user.ID] = &NotificationActor{
-	ID:              user.ID.Hex(),
-	FirstName:       user.FirstName,
-	LastName:        user.LastName,
-	ProfileImageURL: user.ProfileImageURL,
-	ProfileTitle:    user.ProfileTitle,
-}
+		actors[user.ID] = &NotificationActor{
+			ID:              user.ID.Hex(),
+			FirstName:       user.FirstName,
+			LastName:        user.LastName,
+			ProfileImageURL: user.ProfileImageURL,
+			ProfileTitle:    user.ProfileTitle,
+		}
 	}
 	return actors, nil
 }
@@ -404,21 +405,21 @@ func validateNotificationInput(input CreateNotificationInput) error {
 		valid = input.PostID == nil && input.CommentID == nil && input.ParentID == nil && input.ReactionType == ""
 	case TypePostReaction:
 		// Allowed reaction values are validated by the reaction section.
-		
-     valid = input.PostID != nil && input.CommentID == nil && input.ParentID == nil && input.ReactionType != ""
-	 
+
+		valid = input.PostID != nil && input.CommentID == nil && input.ParentID == nil && input.ReactionType != ""
+
 	case TypePostComment:
-	valid = input.PostID != nil && input.CommentID != nil && input.ParentID == nil && input.ReactionType == ""
+		valid = input.PostID != nil && input.CommentID != nil && input.ParentID == nil && input.ReactionType == ""
 
-case TypeCommentLove:
-	valid = input.PostID != nil &&
-		input.CommentID != nil &&
-		input.ReactionType == "love"
+	case TypeCommentLove:
+		valid = input.PostID != nil &&
+			input.CommentID != nil &&
+			input.ReactionType == "love"
 
-	if valid && input.ParentID != nil &&
-		*input.CommentID == *input.ParentID {
-		valid = false
-	}
+		if valid && input.ParentID != nil &&
+			*input.CommentID == *input.ParentID {
+			valid = false
+		}
 	case TypeCommentReply:
 		valid = input.PostID != nil && input.CommentID != nil && input.ParentID != nil && input.ReactionType == ""
 		if valid && *input.CommentID == *input.ParentID {
@@ -485,4 +486,15 @@ func notificationTargetID(id *bson.ObjectID) string {
 		return ""
 	}
 	return id.Hex()
+}
+func (service *Service) checkStreamSession(ctx context.Context, userID string, version int64) error {
+	id, err := parseNotificationUserID(userID)
+	if err != nil {
+		return err
+	}
+	filter := accountstate.ActiveFilter(accountstate.VersionFilter(version))
+	filter["_id"] = id
+	checkCtx, cancel := context.WithTimeout(ctx, notificationDatabaseTimeout)
+	defer cancel()
+	return service.usersCollection.FindOne(checkCtx, filter, options.FindOne().SetProjection(bson.M{"_id": 1})).Err()
 }

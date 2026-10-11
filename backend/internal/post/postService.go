@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"everest-backend/internal/accountstate"
 	"mime/multipart"
 	"strings"
 	"time"
@@ -346,11 +347,11 @@ func (service *PostService) GetFeedPosts(
 			"$ne": true,
 		},
 		"type": bson.M{
-	"$nin": bson.A{
-		PostTypeVideo,
-		PostTypeText,
-	},
-},
+			"$nin": bson.A{
+				PostTypeVideo,
+				PostTypeText,
+			},
+		},
 	}
 
 	return service.getPosts(
@@ -442,21 +443,7 @@ func (service *PostService) getPosts(
 		}
 	}
 
-	findOptions := options.Find().
-		SetSort(
-			bson.D{
-				{Key: "created_at", Value: -1},
-				{Key: "_id", Value: -1},
-			},
-		).
-		SetLimit(limit + 1)
-
-	cursorResult, err :=
-		service.postsCollection.Find(
-			dbCtx,
-			filter,
-			findOptions,
-		)
+	cursorResult, err := service.postsCollection.Aggregate(dbCtx, accountstate.VisiblePostPipeline(filter, limit+1, nil))
 
 	if err != nil {
 		return nil, err
@@ -546,7 +533,7 @@ func (service *PostService) getPosts(
 			usersMap[item.UserID]
 
 		if postUser.ID.IsZero() {
-			postUser.ID = item.UserID
+			continue
 		}
 
 		isSelf :=
@@ -619,9 +606,9 @@ func (service *PostService) getPostUserByID(
 
 	err := service.usersCollection.FindOne(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": userID,
-		},
+		}),
 		options.FindOne().
 			SetProjection(
 				bson.M{
@@ -655,11 +642,11 @@ func (service *PostService) getUsersMap(
 	cursorResult, err :=
 		service.usersCollection.Find(
 			ctx,
-			bson.M{
+			accountstate.ActiveFilter(bson.M{
 				"_id": bson.M{
 					"$in": userIDs,
 				},
-			},
+			}),
 			options.Find().
 				SetProjection(
 					bson.M{
@@ -750,7 +737,7 @@ func (service *PostService) getFollowingUserIDs(
 	}
 
 	for _, relation := range relations {
-	followingUserIDs[relation.FollowingID] = struct{}{}
+		followingUserIDs[relation.FollowingID] = struct{}{}
 	}
 
 	return followingUserIDs, nil

@@ -25,7 +25,9 @@ type User struct {
 	ResetCode      string    `bson:"reset_code,omitempty" json:"-"`
 	ResetCodeExpAt time.Time `bson:"reset_code_exp_at,omitempty" json:"-"`
 
-	CreatedAt time.Time `bson:"created_at" json:"created_at"`
+	CreatedAt      time.Time `bson:"created_at" json:"created_at"`
+	Deactivated    bool      `bson:"deactivated" json:"-"`
+	SessionVersion int64     `bson:"session_version" json:"-"`
 }
 
 type SignupRequest struct {

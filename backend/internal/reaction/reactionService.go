@@ -3,6 +3,7 @@ package reaction
 import (
 	"context"
 	"errors"
+	"everest-backend/internal/accountstate"
 	"sort"
 	"strings"
 	"time"
@@ -297,6 +298,9 @@ func (service *ReactionService) GetPostSummary(
 	dbCtx, cancel := context.WithTimeout(ctx, reactionDBTimeout)
 	defer cancel()
 
+	if err := accountstate.RequireVisiblePost(dbCtx, service.postsCollection, service.usersCollection, postObjectID); err != nil {
+		return nil, err
+	}
 	counts, err := service.getReactionCounts(dbCtx, postObjectID)
 	if err != nil {
 		return nil, err
@@ -351,6 +355,9 @@ func (service *ReactionService) GetReactionUsers(
 	dbCtx, cancel := context.WithTimeout(ctx, reactionDBTimeout)
 	defer cancel()
 
+	if err := accountstate.RequireVisiblePost(dbCtx, service.postsCollection, service.usersCollection, postObjectID); err != nil {
+		return nil, err
+	}
 	counts, err := service.getReactionCounts(dbCtx, postObjectID)
 	if err != nil {
 		return nil, err
@@ -405,6 +412,7 @@ func (service *ReactionService) getReactionUserItems(
 				"preserveNullAndEmptyArrays": true,
 			},
 		},
+		bson.M{"$match": bson.M{"user.deactivated": bson.M{"$ne": true}, "user.deletion_requested": bson.M{"$ne": true}, "user._id": bson.M{"$exists": true}}},
 		bson.M{
 			"$project": bson.M{
 				"_id":           1,
@@ -613,9 +621,9 @@ func (service *ReactionService) getReactionUser(
 
 	err := service.usersCollection.FindOne(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": userID,
-		},
+		}),
 		options.FindOne().SetProjection(bson.M{
 			"first_name":        1,
 			"last_name":         1,
@@ -624,9 +632,7 @@ func (service *ReactionService) getReactionUser(
 	).Decode(&user)
 
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		return &ReactionUser{
-			ID: userID.Hex(),
-		}, nil
+		return nil, nil
 	}
 
 	if err != nil {

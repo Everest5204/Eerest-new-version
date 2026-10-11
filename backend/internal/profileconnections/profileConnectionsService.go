@@ -3,6 +3,7 @@ package profileconnections
 import (
 	"context"
 	"errors"
+	"everest-backend/internal/accountstate"
 	"strings"
 	"time"
 
@@ -266,9 +267,9 @@ func (service *Service) getOwner(
 
 	err := service.usersCollection.FindOne(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": ownerID,
-		},
+		}),
 		options.FindOne().SetProjection(bson.M{
 			"_id":               1,
 			"first_name":        1,
@@ -379,11 +380,11 @@ func (service *Service) getUsersMap(
 
 	resultCursor, err := service.usersCollection.Find(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": bson.M{
 				"$in": userIDs,
 			},
-		},
+		}),
 		options.Find().SetProjection(bson.M{
 			"_id":               1,
 			"first_name":        1,

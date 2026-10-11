@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"everest-backend/internal/accountstate"
 	"strings"
 	"time"
 
@@ -715,11 +716,11 @@ func (service *CommentService) getUsersMap(
 
 	cursorResult, err := service.usersCollection.Find(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": bson.M{
 				"$in": userIDs,
 			},
-		},
+		}),
 		options.Find().SetProjection(bson.M{
 			"first_name":        1,
 			"last_name":         1,
@@ -783,26 +784,14 @@ func (service *CommentService) getLovedByMeMap(
 	return lovedMap, nil
 }
 
-func (service *CommentService) ensurePostExists(
-	ctx context.Context,
-	postID bson.ObjectID,
-) error {
-	err := service.postsCollection.FindOne(
-		ctx,
-		bson.M{
-			"_id":        postID,
-			"is_deleted": bson.M{"$ne": true},
-		},
-		options.FindOne().SetProjection(bson.M{
-			"_id": 1,
-		}),
-	).Err()
-
-	if errors.Is(err, mongo.ErrNoDocuments) {
-		return errors.New("post not found")
+func (service *CommentService) ensurePostExists(ctx context.Context, postID bson.ObjectID) error {
+	if err := accountstate.RequireVisiblePost(ctx, service.postsCollection, service.usersCollection, postID); err != nil {
+		if errors.Is(err, accountstate.ErrUnavailable) {
+			return errors.New("post not found")
+		}
+		return err
 	}
-
-	return err
+	return nil
 }
 
 func (service *CommentService) getCommentByID(

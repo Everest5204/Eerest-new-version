@@ -68,7 +68,7 @@ func (handler *AuthHandler) Signup(
 		return
 	}
 
-	token, err := handler.generateToken(user.ID.Hex())
+	token, err := handler.generateToken(user.ID.Hex(), user.SessionVersion)
 	if err != nil {
 		writeAuthError(
 			w,
@@ -126,7 +126,7 @@ func (handler *AuthHandler) Login(
 		return
 	}
 
-	token, err := handler.generateToken(user.ID.Hex())
+	token, err := handler.generateToken(user.ID.Hex(), user.SessionVersion)
 	if err != nil {
 		writeAuthError(
 			w,
@@ -195,7 +195,7 @@ func (handler *AuthHandler) GoogleAuth(
 		return
 	}
 
-	token, err := handler.generateToken(user.ID.Hex())
+	token, err := handler.generateToken(user.ID.Hex(), user.SessionVersion)
 	if err != nil {
 		writeAuthError(
 			w,
@@ -253,7 +253,7 @@ func (handler *AuthHandler) GoogleSignup(
 		return
 	}
 
-	token, err := handler.generateToken(user.ID.Hex())
+	token, err := handler.generateToken(user.ID.Hex(), user.SessionVersion)
 	if err != nil {
 		writeAuthError(
 			w,
@@ -474,7 +474,7 @@ func (handler *AuthHandler) Me(
 }
 
 func (handler *AuthHandler) generateToken(
-	userID string,
+	userID string, sessionVersion int64,
 ) (string, error) {
 	if strings.TrimSpace(handler.JWTSecret) == "" {
 		return "", errors.New(
@@ -485,10 +485,11 @@ func (handler *AuthHandler) generateToken(
 	now := time.Now().UTC()
 
 	claims := jwt.MapClaims{
-		"userId": userID,
-		"sub":    userID,
-		"iat":    now.Unix(),
-		"exp":    now.Add(7 * 24 * time.Hour).Unix(),
+		"userId":          userID,
+		"session_version": sessionVersion,
+		"sub":             userID,
+		"iat":             now.Unix(),
+		"exp":             now.Add(7 * 24 * time.Hour).Unix(),
 	}
 
 	token := jwt.NewWithClaims(

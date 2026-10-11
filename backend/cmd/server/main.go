@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
-    "os/signal"
-    "syscall"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"everest-backend/internal/ai"
@@ -14,15 +14,16 @@ import (
 	"everest-backend/internal/comment"
 	"everest-backend/internal/config"
 	"everest-backend/internal/database"
+	"everest-backend/internal/deactivateaccount"
 	"everest-backend/internal/deleteaccount"
-    "everest-backend/internal/middleware"
 	"everest-backend/internal/editmediapost"
 	"everest-backend/internal/edittextpost"
 	"everest-backend/internal/follow"
+	"everest-backend/internal/middleware"
 	follownotification "everest-backend/internal/notification/follow"
 
-    commentnotification "everest-backend/internal/notification/comment"
-    notification "everest-backend/internal/notification/core"
+	commentnotification "everest-backend/internal/notification/comment"
+	notification "everest-backend/internal/notification/core"
 
 	"everest-backend/internal/post"
 	"everest-backend/internal/postdelete"
@@ -33,14 +34,14 @@ import (
 
 	reactionnotification "everest-backend/internal/notification/reaction"
 
+	"everest-backend/internal/changename"
+	"everest-backend/internal/changepassword"
+	"everest-backend/internal/editprofile"
 	"everest-backend/internal/reels"
 	"everest-backend/internal/search"
 	"everest-backend/internal/textpost"
 	"everest-backend/internal/user"
 	"everest-backend/internal/verifiedbadge"
-	"everest-backend/internal/editprofile"
-	"everest-backend/internal/changename"
-	"everest-backend/internal/changepassword"
 )
 
 const (
@@ -60,70 +61,81 @@ func main() {
 		cfg.DBName,
 	)
 
-deleteAccountService, err := deleteaccount.NewService(
-    db.Database,
-    cfg,
-)
-if err != nil {
-    log.Fatal("Delete account service failed:", err)
-}
+	deleteAccountService, err := deleteaccount.NewService(
+		db.Database,
+		cfg,
+	)
+	if err != nil {
+		log.Fatal("Delete account service failed:", err)
+	}
 
-deleteAccountIndexCtx, cancelDeleteAccountIndexes := context.WithTimeout(
-    context.Background(),
-    startupTimeout,
-)
+	deleteAccountIndexCtx, cancelDeleteAccountIndexes := context.WithTimeout(
+		context.Background(),
+		startupTimeout,
+	)
 
-deleteAccountIndexErr := deleteAccountService.EnsureIndexes(
-    deleteAccountIndexCtx,
-)
-cancelDeleteAccountIndexes()
+	deleteAccountIndexErr := deleteAccountService.EnsureIndexes(
+		deleteAccountIndexCtx,
+	)
+	cancelDeleteAccountIndexes()
 
-if deleteAccountIndexErr != nil {
-    log.Fatal("Delete account indexes failed:", deleteAccountIndexErr)
-}
+	if deleteAccountIndexErr != nil {
+		log.Fatal("Delete account indexes failed:", deleteAccountIndexErr)
+	}
 
-deleteAccountHandler := deleteaccount.NewHandler(deleteAccountService)
+	deleteAccountHandler := deleteaccount.NewHandler(deleteAccountService)
 
-accountAccessMiddleware, err := middleware.NewAccountAccessMiddleware(
-    db.Database,
-    cfg.JWTSecret,
-)
-if err != nil {
-    log.Fatal("Account access middleware failed:", err)
-}
+	// Mongosky Deactivate Account v1.
+	deactivateService, err := deactivateaccount.NewService(db.Database)
+	if err != nil {
+		log.Fatal("Deactivate account service failed:", err)
+	}
+	deactivateIndexCtx, cancelDeactivateIndexes := context.WithTimeout(context.Background(), startupTimeout)
+	deactivateIndexErr := deactivateService.EnsureIndexes(deactivateIndexCtx)
+	cancelDeactivateIndexes()
+	if deactivateIndexErr != nil {
+		log.Fatal("Deactivate account indexes failed:", deactivateIndexErr)
+	}
+	deactivateHandler := deactivateaccount.NewHandler(deactivateService)
 
+	accountAccessMiddleware, err := middleware.NewAccountAccessMiddleware(
+		db.Database,
+		cfg.JWTSecret,
+	)
+	if err != nil {
+		log.Fatal("Account access middleware failed:", err)
+	}
 
-notificationService := notification.NewService(db.Database)
+	notificationService := notification.NewService(db.Database)
 
-notificationIndexCtx, cancelNotificationIndexes := context.WithTimeout(
-    context.Background(),
-    startupTimeout,
-)
+	notificationIndexCtx, cancelNotificationIndexes := context.WithTimeout(
+		context.Background(),
+		startupTimeout,
+	)
 
-notificationIndexErr := notificationService.CreateIndexes(
-    notificationIndexCtx,
-)
-cancelNotificationIndexes()
+	notificationIndexErr := notificationService.CreateIndexes(
+		notificationIndexCtx,
+	)
+	cancelNotificationIndexes()
 
-if notificationIndexErr != nil {
-    log.Fatal("Notification indexes failed:", notificationIndexErr)
-}
+	if notificationIndexErr != nil {
+		log.Fatal("Notification indexes failed:", notificationIndexErr)
+	}
 
-notificationHandler := notification.NewHandler(notificationService)
+	notificationHandler := notification.NewHandler(notificationService)
 
-notificationHub := notification.NewHub()
-defer notificationHub.Close()
+	notificationHub := notification.NewHub()
+	defer notificationHub.Close()
 
-notificationStreamHandler := notification.NewStreamHandler(
-    notificationService,
-    notificationHub,
-)
+	notificationStreamHandler := notification.NewStreamHandler(
+		notificationService,
+		notificationHub,
+	)
 
-notificationWatcher := notification.NewWatcher(
-    notificationService,
-    notificationHub,
-)
-
+	notificationWatcher := notification.NewWatcher(
+		notificationService,
+		notificationHub,
+	)
 
 	startupCtx, cancelStartup := context.WithTimeout(
 		context.Background(),
@@ -141,14 +153,13 @@ notificationWatcher := notification.NewWatcher(
 		cfg.JWTSecret,
 	)
 
-changePasswordService := changepassword.NewService(
-	db.Database,
-)
+	changePasswordService := changepassword.NewService(
+		db.Database,
+	)
 
-changePasswordHandler := changepassword.NewHandler(
-	changePasswordService,
-)
-
+	changePasswordHandler := changepassword.NewHandler(
+		changePasswordService,
+	)
 
 	userService := user.NewUserService(
 		db.Database,
@@ -158,19 +169,15 @@ changePasswordHandler := changepassword.NewHandler(
 		userService,
 	)
 
+	changeNameService :=
+		changename.NewService(
+			db.Database,
+		)
 
-
-changeNameService :=
-	changename.NewService(
-		db.Database,
-	)
-
-changeNameHandler :=
-	changename.NewHandler(
-		changeNameService,
-	)
-
-
+	changeNameHandler :=
+		changename.NewHandler(
+			changeNameService,
+		)
 
 	if err := userService.CreateIndexes(startupCtx); err != nil {
 		log.Println(
@@ -302,24 +309,19 @@ changeNameHandler :=
 		textPostEditService,
 	)
 
-	
-
-
 	reactionNotificationService := reactionnotification.NewService(
-    db.Database,
-    notificationService,
-)
+		db.Database,
+		notificationService,
+	)
 
-reactionNotificationHandler := reactionnotification.NewHandler(
-    reactionNotificationService,
-)
+	reactionNotificationHandler := reactionnotification.NewHandler(
+		reactionNotificationService,
+	)
 
-reactionService := reaction.NewReactionService(
-    db.Database,
-    reactionNotificationHandler,
-)
-
-
+	reactionService := reaction.NewReactionService(
+		db.Database,
+		reactionNotificationHandler,
+	)
 
 	reactionHandler := reaction.NewReactionHandler(
 		reactionService,
@@ -332,22 +334,19 @@ reactionService := reaction.NewReactionService(
 		)
 	}
 
-	
-commentNotificationService := commentnotification.NewService(
-    db.Database,
-    notificationService,
-)
+	commentNotificationService := commentnotification.NewService(
+		db.Database,
+		notificationService,
+	)
 
-commentNotificationHandler := commentnotification.NewHandler(
-    commentNotificationService,
-)
+	commentNotificationHandler := commentnotification.NewHandler(
+		commentNotificationService,
+	)
 
-commentService := comment.NewCommentService(
-    db.Database,
-    commentNotificationHandler,
-)
-
-
+	commentService := comment.NewCommentService(
+		db.Database,
+		commentNotificationHandler,
+	)
 
 	commentHandler := comment.NewCommentHandler(
 		commentService,
@@ -390,32 +389,29 @@ commentService := comment.NewCommentService(
 		profileMediaService,
 	)
 
-profileEditService :=
-	editprofile.NewProfileEditService(
-		db.Database,
-	)
+	profileEditService :=
+		editprofile.NewProfileEditService(
+			db.Database,
+		)
 
-profileEditHandler :=
-	editprofile.NewProfileEditHandler(
-		profileEditService,
-	)
+	profileEditHandler :=
+		editprofile.NewProfileEditHandler(
+			profileEditService,
+		)
 
-
-	
 	followNotificationService := follownotification.NewService(
-    db.Database,
-    notificationService,
-)
+		db.Database,
+		notificationService,
+	)
 
-followNotificationHandler := follownotification.NewHandler(
-    followNotificationService,
-)
+	followNotificationHandler := follownotification.NewHandler(
+		followNotificationService,
+	)
 
-profileViewService := profileview.NewService(
-    db.Database,
-    followNotificationHandler,
-)
-
+	profileViewService := profileview.NewService(
+		db.Database,
+		followNotificationHandler,
+	)
 
 	profileConnectionsService :=
 		profileconnections.NewService(
@@ -487,25 +483,25 @@ profileViewService := profileview.NewService(
 		cfg.JWTSecret,
 	)
 
-deleteaccount.RegisterRoutes(
-    mux,
-    deleteAccountHandler,
-    cfg.JWTSecret,
-)
+	deactivateaccount.RegisterRoutes(mux, deactivateHandler, cfg.JWTSecret)
+
+	deleteaccount.RegisterRoutes(
+		mux,
+		deleteAccountHandler,
+		cfg.JWTSecret,
+	)
 
 	changepassword.RegisterRoutes(
-	mux,
-	changePasswordHandler,
-	cfg.JWTSecret,
-)
+		mux,
+		changePasswordHandler,
+		cfg.JWTSecret,
+	)
 
-
-changename.RegisterRoutes(
-	mux,
-	changeNameHandler,
-	cfg.JWTSecret,
-)
-
+	changename.RegisterRoutes(
+		mux,
+		changeNameHandler,
+		cfg.JWTSecret,
+	)
 
 	verifiedbadge.RegisterRoutes(
 		mux,
@@ -525,11 +521,11 @@ changename.RegisterRoutes(
 		cfg.JWTSecret,
 	)
 
-editprofile.RegisterProfileEditRoutes(
-	mux,
-	profileEditHandler,
-	cfg.JWTSecret,
-)
+	editprofile.RegisterProfileEditRoutes(
+		mux,
+		profileEditHandler,
+		cfg.JWTSecret,
+	)
 
 	profileconnections.RegisterRoutes(
 		mux,
@@ -603,29 +599,26 @@ editprofile.RegisterProfileEditRoutes(
 		cfg.JWTSecret,
 	)
 
+	notification.RegisterRoutes(
+		mux,
+		notificationHandler,
+		cfg.JWTSecret,
+	)
 
-notification.RegisterRoutes(
-    mux,
-    notificationHandler,
-    cfg.JWTSecret,
-)
-
-notification.RegisterStreamRoute(
-    mux,
-    notificationStreamHandler,
-    cfg.JWTSecret,
-)
-
-
+	notification.RegisterStreamRoute(
+		mux,
+		notificationStreamHandler,
+		cfg.JWTSecret,
+	)
 
 	server := &http.Server{
 		Addr: ":" + cfg.Port,
 
 		Handler: securityMiddleware(
-    corsMiddleware(
-        accountAccessMiddleware(mux),
-    ),
-),
+			corsMiddleware(
+				accountAccessMiddleware(mux),
+			),
+		),
 
 		ReadTimeout:       serverReadTimeout,
 		ReadHeaderTimeout: serverReadHeaderTimeout,
@@ -633,93 +626,91 @@ notification.RegisterStreamRoute(
 		IdleTimeout:       serverIdleTimeout,
 	}
 
-signalCtx, stopSignals := signal.NotifyContext(
-    context.Background(),
-    os.Interrupt,
-    syscall.SIGTERM,
-)
-defer stopSignals()
+	signalCtx, stopSignals := signal.NotifyContext(
+		context.Background(),
+		os.Interrupt,
+		syscall.SIGTERM,
+	)
+	defer stopSignals()
 
-notificationCtx, cancelNotifications := context.WithCancel(
-    context.Background(),
-)
-defer cancelNotifications()
+	notificationCtx, cancelNotifications := context.WithCancel(
+		context.Background(),
+	)
+	defer cancelNotifications()
 
+	deletionCtx, cancelDeletions := context.WithCancel(
+		context.Background(),
+	)
+	defer cancelDeletions()
 
-deletionCtx, cancelDeletions := context.WithCancel(
-    context.Background(),
-)
-defer cancelDeletions()
+	deletionWorkerDone := make(chan struct{})
 
-deletionWorkerDone := make(chan struct{})
+	go func() {
+		defer close(deletionWorkerDone)
+		deleteAccountService.RunWorker(deletionCtx)
+	}()
 
-go func() {
-    defer close(deletionWorkerDone)
-    deleteAccountService.RunWorker(deletionCtx)
-}()
+	serverErrors := make(chan error, 2)
+	watcherDone := make(chan struct{})
 
-serverErrors := make(chan error, 2)
-watcherDone := make(chan struct{})
+	go func() {
+		defer close(watcherDone)
 
-go func() {
-    defer close(watcherDone)
+		if err := notificationWatcher.Run(notificationCtx); err != nil {
+			serverErrors <- err
+		}
+	}()
 
-    if err := notificationWatcher.Run(notificationCtx); err != nil {
-        serverErrors <- err
-    }
-}()
+	go func() {
+		serverErrors <- server.ListenAndServe()
+	}()
 
-go func() {
-    serverErrors <- server.ListenAndServe()
-}()
+	log.Println(
+		"Everest backend running on port",
+		cfg.Port,
+	)
 
-log.Println(
-    "Everest backend running on port",
-    cfg.Port,
-)
+	var runErr error
 
-var runErr error
+	select {
+	case <-signalCtx.Done():
+	case runErr = <-serverErrors:
+	}
 
-select {
-case <-signalCtx.Done():
-case runErr = <-serverErrors:
-}
+	stopSignals()
+	cancelNotifications()
+	cancelDeletions()
+	notificationHub.Close()
 
-stopSignals()
-cancelNotifications()
-cancelDeletions()
-notificationHub.Close()
+	shutdownCtx, cancelShutdown := context.WithTimeout(
+		context.Background(),
+		10*time.Second,
+	)
+	defer cancelShutdown()
 
-shutdownCtx, cancelShutdown := context.WithTimeout(
-    context.Background(),
-    10*time.Second,
-)
-defer cancelShutdown()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Println("Server shutdown warning:", err)
 
-if err := server.Shutdown(shutdownCtx); err != nil {
-    log.Println("Server shutdown warning:", err)
+		if closeErr := server.Close(); closeErr != nil {
+			log.Println("Server close warning:", closeErr)
+		}
+	}
 
-    if closeErr := server.Close(); closeErr != nil {
-        log.Println("Server close warning:", closeErr)
-    }
-}
+	select {
+	case <-watcherDone:
+	case <-shutdownCtx.Done():
+		log.Println("Notification watcher shutdown timed out")
+	}
 
-select {
-case <-watcherDone:
-case <-shutdownCtx.Done():
-    log.Println("Notification watcher shutdown timed out")
-}
+	select {
+	case <-deletionWorkerDone:
+	case <-shutdownCtx.Done():
+		log.Println("Account deletion worker shutdown timed out")
+	}
 
-select {
-case <-deletionWorkerDone:
-case <-shutdownCtx.Done():
-    log.Println("Account deletion worker shutdown timed out")
-}
-
-
-if runErr != nil && runErr != http.ErrServerClosed {
-    log.Fatal("Server stopped:", runErr)
-}
+	if runErr != nil && runErr != http.ErrServerClosed {
+		log.Fatal("Server stopped:", runErr)
+	}
 }
 
 func registerHealthRoute(
@@ -778,14 +769,14 @@ func corsMiddleware(
 	next http.Handler,
 ) http.Handler {
 	allowedOrigins := map[string]bool{
-		"http://localhost:5173": true,
-		"http://localhost:5174": true,
-		"http://localhost:3000": true,
-		"http://127.0.0.1:5173": true,
-		"http://127.0.0.1:5174": true,
-		"http://127.0.0.1:3000": true,
-		"https://mongosky.com": true,
-		"https://www.mongosky.com": true,
+		"http://localhost:5173":                  true,
+		"http://localhost:5174":                  true,
+		"http://localhost:3000":                  true,
+		"http://127.0.0.1:5173":                  true,
+		"http://127.0.0.1:5174":                  true,
+		"http://127.0.0.1:3000":                  true,
+		"https://mongosky.com":                   true,
+		"https://www.mongosky.com":               true,
 		"https://mongosky-frontend.onrender.com": true,
 	}
 

@@ -246,6 +246,10 @@ func (service *AuthService) Login(
 		return nil, errors.New("invalid password")
 	}
 
+	if err := service.reactivateVerifiedAccount(ctx, &user, ""); err != nil {
+		return nil, err
+	}
+
 	activeUser, err := service.findActiveAuthUser(
 		ctx,
 		user.ID,
@@ -634,7 +638,7 @@ func (service *AuthService) ForgotPassword(
 	}
 
 	if result.MatchedCount != 1 {
-		if _, err := service.findActiveAuthUser(
+		if _, err := service.findResettableAuthUser(
 			ctx,
 			account.ID,
 		); err != nil {
@@ -932,7 +936,8 @@ func (service *AuthService) findActiveAuthUser(
 	err := service.Collection.FindOne(
 		ctx,
 		bson.M{
-			"_id": userID,
+			"_id":         userID,
+			"deactivated": bson.M{"$ne": true},
 			"deletion_requested": bson.M{
 				"$ne": true,
 			},
@@ -1003,6 +1008,10 @@ func (service *AuthService) finishGoogleSignIn(
 		if result.MatchedCount != 1 {
 			return nil, ErrAuthAccountUnavailable
 		}
+	}
+
+	if err := service.reactivateVerifiedAccount(ctx, candidate, identity.Subject); err != nil {
+		return nil, err
 	}
 
 	activeUser, err := service.findActiveAuthUser(

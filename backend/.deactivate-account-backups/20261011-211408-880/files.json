@@ -1,0 +1,110 @@
+﻿[
+    {
+        "path":  "cmd/server/main.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/accountstate/accountState.go",
+        "existed":  false
+    },
+    {
+        "path":  "internal/auth/authHandler.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/auth/authModel.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/auth/authReactivation.go",
+        "existed":  false
+    },
+    {
+        "path":  "internal/auth/authService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/comment/commentService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/deactivateaccount/deactivateAccountHandler.go",
+        "existed":  false
+    },
+    {
+        "path":  "internal/deactivateaccount/deactivateAccountIntegration_test.go",
+        "existed":  false
+    },
+    {
+        "path":  "internal/deactivateaccount/deactivateAccountModel.go",
+        "existed":  false
+    },
+    {
+        "path":  "internal/deactivateaccount/deactivateAccountService.go",
+        "existed":  false
+    },
+    {
+        "path":  "internal/deactivateaccount/deactivateAccountService_test.go",
+        "existed":  false
+    },
+    {
+        "path":  "internal/deactivateaccount/deactivateAccountStore.go",
+        "existed":  false
+    },
+    {
+        "path":  "internal/follow/followService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/middleware/accountAccessDeactivation_test.go",
+        "existed":  false
+    },
+    {
+        "path":  "internal/middleware/accountAccessMiddleware.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/middleware/authMiddleware.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/notification/core/notificationService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/notification/core/notificationStream.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/post/postService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/profileconnections/profileConnectionsService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/profileview/profileViewService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/reaction/reactionService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/reels/reelsService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/search/searchService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/textpost/textPostService.go",
+        "existed":  true
+    },
+    {
+        "path":  "internal/user/userService.go",
+        "existed":  true
+    }
+]

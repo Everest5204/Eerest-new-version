@@ -3,6 +3,7 @@ package profileview
 import (
 	"context"
 	"errors"
+	"everest-backend/internal/accountstate"
 	"strings"
 	"time"
 
@@ -151,9 +152,9 @@ func (service *Service) GetProfile(
 
 	err = service.usersCollection.FindOne(
 		databaseCtx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": targetID,
-		},
+		}),
 		options.FindOne().SetProjection(
 			bson.M{
 				"_id":               1,
@@ -614,9 +615,9 @@ func (service *Service) ensureUserExists(
 ) error {
 	err := service.usersCollection.FindOne(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": userID,
-		},
+		}),
 		options.FindOne().SetProjection(
 			bson.M{
 				"_id": 1,
@@ -644,9 +645,9 @@ func (service *Service) getFollowersCount(
 
 	err := service.usersCollection.FindOne(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": userID,
-		},
+		}),
 		options.FindOne().SetProjection(
 			bson.M{
 				"followers_count": 1,

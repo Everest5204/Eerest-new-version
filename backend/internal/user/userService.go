@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"everest-backend/internal/accountstate"
 	"strings"
 	"time"
 
@@ -87,9 +88,9 @@ func (service *UserService) GetUserByID(
 
 	err = service.Collection.FindOne(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"_id": objectID,
-		},
+		}),
 		options.FindOne().SetProjection(
 			bson.M{
 				"password": 0,
@@ -133,9 +134,9 @@ func (service *UserService) GetUserByEmailOrPhone(
 
 	err := service.Collection.FindOne(
 		ctx,
-		bson.M{
+		accountstate.ActiveFilter(bson.M{
 			"email_or_phone": emailOrPhone,
-		},
+		}),
 		options.FindOne().SetProjection(
 			bson.M{
 				"password": 0,

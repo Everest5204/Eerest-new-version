@@ -11,6 +11,7 @@ import (
 type contextKey string
 
 const UserIDKey contextKey = "userId"
+const SessionVersionKey contextKey = "sessionVersion"
 
 func AuthMiddleware(jwtSecret string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

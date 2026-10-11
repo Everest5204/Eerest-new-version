@@ -22,7 +22,8 @@ const (
 )
 
 type accountAccessTokenClaims struct {
-	UserID string `json:"userId"`
+	UserID         string `json:"userId"`
+	SessionVersion int64  `json:"session_version"`
 	jwt.RegisteredClaims
 }
 
@@ -68,6 +69,13 @@ func NewAccountAccessMiddleware(
 				return
 			}
 
+			// Credential endpoints validate identity themselves. A saved, revoked
+			// Authorization header must never prevent an intentional new login.
+			switch r.URL.Path {
+			case "/api/auth/login", "/api/auth/google", "/api/auth/google/signup", "/api/auth/signup", "/api/auth/forgot-password", "/api/auth/verify-reset-code", "/api/auth/reset-password":
+				next.ServeHTTP(w, r)
+				return
+			}
 			authorization := r.Header.Values("Authorization")
 
 			// Public endpoints keep their existing authentication rules.
@@ -77,7 +85,7 @@ func NewAccountAccessMiddleware(
 				return
 			}
 
-			userID, valid := parseAccountAccessUserID(
+			userID, version, valid := parseAccountAccessSession(
 				authorization,
 				jwtKey,
 			)
@@ -96,7 +104,9 @@ func NewAccountAccessMiddleware(
 			)
 
 			var account struct {
-				DeletionRequested bool `bson:"deletion_requested"`
+				DeletionRequested bool  `bson:"deletion_requested"`
+				Deactivated       bool  `bson:"deactivated"`
+				SessionVersion    int64 `bson:"session_version"`
 			}
 
 			err := users.FindOne(
@@ -107,6 +117,8 @@ func NewAccountAccessMiddleware(
 				options.FindOne().SetProjection(bson.D{
 					{Key: "_id", Value: 0},
 					{Key: "deletion_requested", Value: 1},
+					{Key: "deactivated", Value: 1},
+					{Key: "session_version", Value: 1},
 				}),
 			).Decode(&account)
 
@@ -131,11 +143,12 @@ func NewAccountAccessMiddleware(
 				return
 			}
 
+			isDeactivation := r.URL.Path == "/api/auth/deactivate-account"
 			isDeletionRetry :=
 				r.Method == http.MethodDelete &&
 					r.URL.Path == "/api/auth/delete-account"
 
-			if account.DeletionRequested && !isDeletionRetry {
+			if account.DeletionRequested && !isDeletionRetry && !isDeactivation {
 				// A 403 response preserves the session while the
 				// deletion dialog checks progress with its receipt.
 				writeAccountAccessError(
@@ -146,6 +159,13 @@ func NewAccountAccessMiddleware(
 				return
 			}
 
+			if !isDeactivation && (account.Deactivated || account.SessionVersion != version) {
+				writeAccountAccessError(w, http.StatusUnauthorized, "Your session is no longer valid. Please sign in again.")
+				return
+			}
+			// The deactivation handler checks the version and verified password;
+			// the same operation can be retried after its first response was lost.
+			r = r.WithContext(context.WithValue(r.Context(), SessionVersionKey, version))
 			// The deletion handler still verifies the password
 			// and confirmation when a request is retried.
 			next.ServeHTTP(w, r)
@@ -153,23 +173,23 @@ func NewAccountAccessMiddleware(
 	}, nil
 }
 
-func parseAccountAccessUserID(
+func parseAccountAccessSession(
 	authorization []string,
 	jwtKey []byte,
-) (bson.ObjectID, bool) {
+) (bson.ObjectID, int64, bool) {
 	if len(authorization) != 1 {
-		return bson.NilObjectID, false
+		return bson.NilObjectID, 0, false
 	}
 
 	if len(authorization[0]) > accountAccessMaxAuthorizationBytes {
-		return bson.NilObjectID, false
+		return bson.NilObjectID, 0, false
 	}
 
 	parts := strings.Fields(authorization[0])
 
 	if len(parts) != 2 ||
 		!strings.EqualFold(parts[0], "Bearer") {
-		return bson.NilObjectID, false
+		return bson.NilObjectID, 0, false
 	}
 
 	claims := &accountAccessTokenClaims{}
@@ -188,15 +208,18 @@ func parseAccountAccessUserID(
 		jwt.WithLeeway(5*time.Second),
 	)
 	if err != nil || token == nil || !token.Valid {
-		return bson.NilObjectID, false
+		return bson.NilObjectID, 0, false
 	}
 
 	userID, err := bson.ObjectIDFromHex(claims.UserID)
 	if err != nil || userID == bson.NilObjectID {
-		return bson.NilObjectID, false
+		return bson.NilObjectID, 0, false
 	}
 
-	return userID, true
+	if claims.SessionVersion < 0 {
+		return bson.NilObjectID, 0, false
+	}
+	return userID, claims.SessionVersion, true
 }
 
 func writeAccountAccessError(
@@ -223,4 +246,10 @@ func writeAccountAccessError(
 	_ = json.NewEncoder(w).Encode(map[string]string{
 		"error": message,
 	})
+}
+
+// Retained for existing callers and account-deletion tests.
+func parseAccountAccessUserID(authorization []string, key []byte) (bson.ObjectID, bool) {
+	id, _, ok := parseAccountAccessSession(authorization, key)
+	return id, ok
 }
