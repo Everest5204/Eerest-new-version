@@ -37,6 +37,7 @@ import (
 	"everest-backend/internal/changename"
 	"everest-backend/internal/changepassword"
 	"everest-backend/internal/editprofile"
+	"everest-backend/internal/personaldetails"
 	"everest-backend/internal/reels"
 	"everest-backend/internal/search"
 	"everest-backend/internal/textpost"
@@ -484,6 +485,8 @@ func main() {
 	)
 
 	deactivateaccount.RegisterRoutes(mux, deactivateHandler, cfg.JWTSecret)
+	// Mongosky Personal Details integration v1
+	personaldetails.RegisterRoutes(mux, personaldetails.NewHandler(personaldetails.NewService(personaldetails.NewMongoStore(db.Database))), cfg.JWTSecret)
 
 	deleteaccount.RegisterRoutes(
 		mux,
