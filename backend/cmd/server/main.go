@@ -39,6 +39,7 @@ import (
 	"everest-backend/internal/editprofile"
 	"everest-backend/internal/personaldetails"
 	"everest-backend/internal/reels"
+	"everest-backend/internal/reportpost"
 	"everest-backend/internal/search"
 	"everest-backend/internal/textpost"
 	"everest-backend/internal/user"
@@ -473,7 +474,16 @@ func main() {
 		)
 	}
 
+	// Mongosky Post Report integration v1
+	postReportStore := reportpost.NewMongoStore(db.Database)
+	postReportIndexCtx, cancelPostReportIndexes := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := postReportStore.CreateIndexes(postReportIndexCtx); err != nil {
+		log.Println("Post report intake unavailable; index setup failed:", err)
+	}
+	cancelPostReportIndexes()
+
 	mux := http.NewServeMux()
+	reportpost.RegisterRoutes(mux, reportpost.NewHandler(reportpost.NewService(postReportStore)), cfg.JWTSecret)
 
 	registerHealthRoute(mux)
 
