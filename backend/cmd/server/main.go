@@ -38,6 +38,7 @@ import (
 	"everest-backend/internal/changepassword"
 	"everest-backend/internal/editprofile"
 	"everest-backend/internal/personaldetails"
+	"everest-backend/internal/pinpost"
 	"everest-backend/internal/reels"
 	"everest-backend/internal/reportpost"
 	"everest-backend/internal/search"
@@ -482,7 +483,16 @@ func main() {
 	}
 	cancelPostReportIndexes()
 
+	// Mongosky Pin Post integration v1
+	postPinStore := pinpost.NewMongoStore(db.Database)
+	postPinIndexCtx, cancelPostPinIndexes := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := postPinStore.CreateIndexes(postPinIndexCtx); err != nil {
+		log.Println("Post pin setup failed:", err)
+	}
+	cancelPostPinIndexes()
+
 	mux := http.NewServeMux()
+	pinpost.RegisterRoutes(mux, pinpost.NewHandler(pinpost.NewService(postPinStore)), cfg.JWTSecret)
 	reportpost.RegisterRoutes(mux, reportpost.NewHandler(reportpost.NewService(postReportStore)), cfg.JWTSecret)
 
 	registerHealthRoute(mux)
