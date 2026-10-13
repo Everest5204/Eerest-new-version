@@ -20,6 +20,7 @@ import (
 	"everest-backend/internal/edittextpost"
 	"everest-backend/internal/follow"
 	"everest-backend/internal/middleware"
+	"everest-backend/internal/myactivity"
 	follownotification "everest-backend/internal/notification/follow"
 
 	commentnotification "everest-backend/internal/notification/comment"
@@ -87,6 +88,17 @@ func main() {
 	}
 
 	deleteAccountHandler := deleteaccount.NewHandler(deleteAccountService)
+
+	// Mongosky My Activity v1: indexed owner-scoped reads and live invalidations.
+	activityService := myactivity.NewService(db.Database, cfg.JWTSecret)
+	activityIndexCtx, cancelActivityIndexes := context.WithTimeout(context.Background(), startupTimeout)
+	activityIndexErr := activityService.EnsureIndexes(activityIndexCtx)
+	cancelActivityIndexes()
+	if activityIndexErr != nil {
+		log.Fatal("My Activity indexes failed:", activityIndexErr)
+	}
+	activityHub := notification.NewHub()
+	defer activityHub.Close()
 
 	// Mongosky Deactivate Account v1.
 	deactivateService, err := deactivateaccount.NewService(db.Database)
@@ -494,6 +506,7 @@ func main() {
 	mux := http.NewServeMux()
 	pinpost.RegisterRoutes(mux, pinpost.NewHandler(pinpost.NewService(postPinStore)), cfg.JWTSecret)
 	reportpost.RegisterRoutes(mux, reportpost.NewHandler(reportpost.NewService(postReportStore)), cfg.JWTSecret)
+	myactivity.RegisterRoutes(mux, myactivity.NewHandler(activityService, activityHub), cfg.JWTSecret)
 
 	registerHealthRoute(mux)
 
@@ -639,7 +652,7 @@ func main() {
 
 		Handler: securityMiddleware(
 			corsMiddleware(
-				accountAccessMiddleware(mux),
+				accountAccessMiddleware(myactivity.TrackChanges(mux, activityHub, cfg.JWTSecret)),
 			),
 		),
 
