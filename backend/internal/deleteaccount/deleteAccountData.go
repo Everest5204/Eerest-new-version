@@ -110,6 +110,8 @@ func (service *Service) deleteAccountData(
 				},
 			},
 		},
+		// Saved references and revision tombstones belong to the deleting account.
+		{collection: "saved_posts", filter: owned},
 		{
 			collection: "verified_badges",
 			filter:     owned,

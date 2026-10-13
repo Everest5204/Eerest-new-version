@@ -42,6 +42,7 @@ import (
 	"everest-backend/internal/pinpost"
 	"everest-backend/internal/reels"
 	"everest-backend/internal/reportpost"
+	"everest-backend/internal/saveditems"
 	"everest-backend/internal/search"
 	"everest-backend/internal/textpost"
 	"everest-backend/internal/user"
@@ -99,6 +100,18 @@ func main() {
 	}
 	activityHub := notification.NewHub()
 	defer activityHub.Close()
+
+	// Mongosky Saved Items v1: account-bound bookmarks and cross-session updates.
+	savedStore := saveditems.NewMongoStore(db.Database)
+	savedIndexCtx, cancelSavedIndexes := context.WithTimeout(context.Background(), startupTimeout)
+	savedIndexErr := savedStore.EnsureIndexes(savedIndexCtx)
+	cancelSavedIndexes()
+	if savedIndexErr != nil {
+		log.Fatal("Saved Items indexes failed:", savedIndexErr)
+	}
+	savedHub := notification.NewHub()
+	defer savedHub.Close()
+	savedHandler := saveditems.NewHandler(saveditems.NewService(savedStore, cfg.JWTSecret), savedHub)
 
 	// Mongosky Deactivate Account v1.
 	deactivateService, err := deactivateaccount.NewService(db.Database)
@@ -506,6 +519,7 @@ func main() {
 	mux := http.NewServeMux()
 	pinpost.RegisterRoutes(mux, pinpost.NewHandler(pinpost.NewService(postPinStore)), cfg.JWTSecret)
 	reportpost.RegisterRoutes(mux, reportpost.NewHandler(reportpost.NewService(postReportStore)), cfg.JWTSecret)
+	saveditems.RegisterRoutes(mux, savedHandler, cfg.JWTSecret)
 	myactivity.RegisterRoutes(mux, myactivity.NewHandler(activityService, activityHub), cfg.JWTSecret)
 
 	registerHealthRoute(mux)
@@ -673,6 +687,8 @@ func main() {
 		context.Background(),
 	)
 	defer cancelNotifications()
+	savedWatcherDone := make(chan struct{})
+	go func() { defer close(savedWatcherDone); savedStore.Watch(notificationCtx, savedHub) }()
 
 	deletionCtx, cancelDeletions := context.WithCancel(
 		context.Background(),
@@ -717,6 +733,7 @@ func main() {
 	cancelNotifications()
 	cancelDeletions()
 	notificationHub.Close()
+	savedHub.Close()
 
 	shutdownCtx, cancelShutdown := context.WithTimeout(
 		context.Background(),
@@ -730,6 +747,12 @@ func main() {
 		if closeErr := server.Close(); closeErr != nil {
 			log.Println("Server close warning:", closeErr)
 		}
+	}
+
+	select {
+	case <-savedWatcherDone:
+	case <-shutdownCtx.Done():
+		log.Println("Saved Items watcher shutdown timed out")
 	}
 
 	select {
