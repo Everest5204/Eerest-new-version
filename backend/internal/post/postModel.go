@@ -18,10 +18,12 @@ const (
 )
 
 type MediaItem struct {
-	URL   string `bson:"url" json:"url"`
-	ID    string `bson:"id" json:"id"`
-	Type  string `bson:"type" json:"type"`
-	Order int    `bson:"order" json:"order"`
+	URL    string `bson:"url" json:"url"`
+	ID     string `bson:"id" json:"id"`
+	Type   string `bson:"type" json:"type"`
+	Order  int    `bson:"order" json:"order"`
+	Width  int    `bson:"width,omitempty" json:"width,omitempty"`
+	Height int    `bson:"height,omitempty" json:"height,omitempty"`
 }
 
 type Post struct {

@@ -13,6 +13,9 @@ func RegisterPostRoutes(
 ) {
 	authMiddleware := middleware.AuthMiddleware(jwtSecret)
 
+	mux.Handle("/api/posts/home", authMiddleware(http.HandlerFunc(handler.GetHomeFeed)))
+	mux.Handle("/api/posts/home/events", authMiddleware(http.HandlerFunc(handler.Service.StreamHomeFeed)))
+
 	mux.Handle(
 		"/api/posts/media",
 		authMiddleware(

@@ -31,6 +31,7 @@ type PostService struct {
 	usersCollection   *mongo.Collection
 	followsCollection *mongo.Collection
 	cloudinary        *profilemedia.CloudinaryService
+	home              *HomeFeedHub
 }
 
 type feedFollowDocument struct {
@@ -53,6 +54,7 @@ func NewPostService(
 		usersCollection:   db.Collection("users"),
 		followsCollection: db.Collection("user_follows"),
 		cloudinary:        cloudinaryService,
+		home:              newHomeFeedHub(),
 	}, nil
 }
 
@@ -212,10 +214,12 @@ func (service *PostService) CreateMediaPost(
 		mediaItems = append(
 			mediaItems,
 			MediaItem{
-				URL:   uploadResult.SecureURL,
-				ID:    uploadResult.PublicID,
-				Type:  mediaType,
-				Order: index,
+				URL:    uploadResult.SecureURL,
+				ID:     uploadResult.PublicID,
+				Type:   mediaType,
+				Order:  index,
+				Width:  uploadResult.Width,
+				Height: uploadResult.Height,
 			},
 		)
 	}

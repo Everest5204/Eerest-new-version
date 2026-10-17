@@ -687,6 +687,7 @@ func main() {
 		context.Background(),
 	)
 	defer cancelNotifications()
+	go postService.WatchHomeFeed(notificationCtx)
 	savedWatcherDone := make(chan struct{})
 	go func() { defer close(savedWatcherDone); savedStore.Watch(notificationCtx, savedHub) }()
 

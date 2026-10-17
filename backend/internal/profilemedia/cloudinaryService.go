@@ -34,12 +34,16 @@ type CloudinaryUploadResult struct {
 	SecureURL    string
 	PublicID     string
 	ResourceType string
+	Width        int
+	Height       int
 }
 
 type cloudinaryUploadResponse struct {
 	SecureURL string `json:"secure_url"`
 	URL       string `json:"url"`
 	PublicID  string `json:"public_id"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
 	Error     struct {
 		Message string `json:"message"`
 	} `json:"error"`
@@ -173,6 +177,8 @@ func (service *CloudinaryService) UploadMedia(
 		SecureURL:    mediaURL,
 		PublicID:     result.PublicID,
 		ResourceType: resourceType,
+		Width:        result.Width,
+		Height:       result.Height,
 	}, nil
 }
 

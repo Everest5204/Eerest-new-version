@@ -621,8 +621,7 @@ func detectEditMediaType(
 	)
 
 	if separatorIndex :=
-		strings.Index(contentType, ";");
-		separatorIndex >= 0 {
+		strings.Index(contentType, ";"); separatorIndex >= 0 {
 		contentType = contentType[:separatorIndex]
 	}
 
@@ -698,9 +697,7 @@ func (service *PostEditService) uploadNewMedia(
 		})
 	}
 
-	for worker := 0;
-		worker < workerCount;
-		worker++ {
+	for worker := 0; worker < workerCount; worker++ {
 		waitGroup.Add(1)
 
 		go func() {
@@ -739,8 +736,10 @@ func (service *PostEditService) uploadNewMedia(
 						ID: strings.TrimSpace(
 							uploadResult.PublicID,
 						),
-						Type:  mediaType,
-						Order: fileIndex,
+						Type:   mediaType,
+						Order:  fileIndex,
+						Width:  uploadResult.Width,
+						Height: uploadResult.Height,
 					}
 
 				if closeError != nil {
@@ -829,8 +828,7 @@ func (service *PostEditService) cleanupMediaAsync(
 		uniqueKey := mediaType + ":" + publicID
 
 		if _, exists :=
-			seenMedia[uniqueKey];
-			exists {
+			seenMedia[uniqueKey]; exists {
 			continue
 		}
 
@@ -853,9 +851,7 @@ func (service *PostEditService) cleanupMediaAsync(
 		for _, mediaItem := range items {
 			var cleanupError error
 
-			for attempt := 1;
-				attempt <= editCleanupMaxAttempts;
-				attempt++ {
+			for attempt := 1; attempt <= editCleanupMaxAttempts; attempt++ {
 				cleanupCtx, cancel :=
 					context.WithTimeout(
 						context.Background(),
@@ -900,8 +896,7 @@ func getEditMediaKey(
 	mediaItem post.MediaItem,
 ) string {
 	if publicID :=
-		strings.TrimSpace(mediaItem.ID);
-		publicID != "" {
+		strings.TrimSpace(mediaItem.ID); publicID != "" {
 		return publicID
 	}
 
