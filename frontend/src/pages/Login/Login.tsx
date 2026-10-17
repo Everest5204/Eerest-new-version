@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { sharedLinkAuthURL, sharedLinkReturn } from "../../features/shared-links/sharedLinkDestination";
 import {
   GoogleLogin,
   type CredentialResponse,
@@ -15,6 +16,7 @@ import "./Login.css";
 
 const Login = () => {
   const navigate = useNavigate();
+  const returnTo = sharedLinkReturn(useLocation());
 
   const googleButtonWidth = Math.max(
     200,
@@ -41,7 +43,7 @@ const Login = () => {
   };
 
   const goToSignupPage = () => {
-    navigate("/signup", { replace: true });
+    navigate(sharedLinkAuthURL("/signup", returnTo), { replace: true });
   };
 
   const saveTokenAndEnterApp = (token?: string) => {
@@ -52,7 +54,7 @@ const Login = () => {
     }
 
     sessionStorage.setItem("token", token);
-    navigate("/", { replace: true });
+    navigate(returnTo ?? "/", { replace: true });
   };
 
   const handleGoogleSuccess = async (
@@ -90,7 +92,7 @@ const Login = () => {
         );
       }
 
-      navigate("/signup", {
+      navigate(sharedLinkAuthURL("/signup", returnTo), {
         replace: true,
         state: {
           googleSignup: true,

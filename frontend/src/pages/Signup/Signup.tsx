@@ -21,6 +21,8 @@ import {
   signupUser,
 } from "../../services/authService";
 
+import { sharedLinkAuthURL, sharedLinkReturn } from "../../features/shared-links/sharedLinkDestination";
+
 import "./Signup.css";
 
 type SignupMethod = "manual" | "google";
@@ -51,6 +53,7 @@ const MONTHS = [
 const Signup = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const returnTo = sharedLinkReturn(location);
 
   const [step, setStep] = useState<1 | 2>(1);
   const stepRef = useRef<1 | 2>(1);
@@ -232,7 +235,7 @@ const Signup = () => {
   };
 
   const goToLoginPage = () => {
-    navigate("/login", { replace: true });
+    navigate(sharedLinkAuthURL("/login", returnTo), { replace: true });
   };
 
   const hasSequentialPattern = (
@@ -353,7 +356,7 @@ const Signup = () => {
           authResponse.token
         );
 
-        navigate("/", { replace: true });
+        navigate(returnTo ?? "/", { replace: true });
         return;
       }
 
@@ -544,7 +547,7 @@ const Signup = () => {
         response.token
       );
 
-      navigate("/signup-success", {
+      navigate(returnTo ?? "/signup-success", {
         replace: true,
       });
     } catch (error: unknown) {

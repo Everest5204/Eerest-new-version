@@ -1,0 +1,12 @@
+.shared-post-page { width: min(100%, 680px); min-height: 100dvh; margin: 0 auto; padding: 0 12px 32px; color: #111827; background: #fff; }
+.shared-post-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding: 12px 4px; border-bottom: 1px solid #e5e7eb; }
+.shared-post-header a { color: #2563eb; text-decoration: none; }
+.shared-post-header .shared-post-brand { font-size: 23px; font-weight: 800; color: #e60023; }
+.shared-link-status { box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 55dvh; padding: 24px; color: #111827; background: #fff; text-align: center; }
+.shared-link-status h1 { font-size: 22px; margin: 0; }
+.shared-link-status p { max-width: 420px; margin: 0; overflow-wrap: anywhere; }
+.shared-link-status button { min-height: 44px; padding: 10px 18px; border: 0; border-radius: 10px; background: #e60023; color: #fff; font: inherit; cursor: pointer; }
+.shared-link-spinner { width: 30px; height: 30px; border: 3px solid #e5e7eb; border-top-color: #e60023; border-radius: 50%; animation: shared-link-spin .8s linear infinite; }
+@keyframes shared-link-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .shared-link-spinner { animation-duration: 2s; } }
+@media (max-width: 480px) { .shared-post-page { padding-inline: 0; } .shared-post-header { padding-inline: 16px; } }

@@ -13,6 +13,12 @@ func RegisterPostRoutes(
 ) {
 	authMiddleware := middleware.AuthMiddleware(jwtSecret)
 
+	// Copied links use one post ID. Existing literal feed/me/user routes remain more specific.
+	mux.Handle(
+		"/api/posts/{postID}",
+		authMiddleware(http.HandlerFunc(handler.GetSharedPost)),
+	)
+
 	mux.Handle("/api/posts/home", authMiddleware(http.HandlerFunc(handler.GetHomeFeed)))
 	mux.Handle("/api/posts/home/events", authMiddleware(http.HandlerFunc(handler.Service.StreamHomeFeed)))
 

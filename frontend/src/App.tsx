@@ -8,6 +8,9 @@ import CreateMediaPost from "./components/Post/CreateMediaPost";
 import CreateTextPost from "./components/textpost/CreateTextPost";
 import { ProfileViewPage } from "./profileView";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import SharedLinkGate from "./features/shared-links/SharedLinkGate";
+import SharedPostPage from "./features/shared-links/SharedPostPage";
+import SharedLinkSessionBridge from "./features/shared-links/SharedLinkSessionBridge";
 import { AboutPage } from "./pages/About";
 import AI from "./pages/AI/AI";
 import { CommunityGuidelinesPage } from "./pages/CommunityGuidelines";
@@ -46,6 +49,7 @@ function App() {
   return (
     <BrowserRouter>
       <PostEditProvider>
+        <SharedLinkSessionBridge />
         <Routes>
           <Route
             path="/signup"
@@ -98,6 +102,11 @@ function App() {
           element={<CoFounderPage />}
          />
 
+          <Route element={<SharedLinkGate />}>
+            <Route path="/post/:postID" element={<SharedPostPage />} />
+            <Route path="/profile/:userID" element={<ProfileViewPage />} />
+          </Route>
+
           <Route element={<ProtectedRoute />}>
             <Route
               path="/"
@@ -132,11 +141,6 @@ function App() {
             <Route
               path="/profile"
               element={<Profile />}
-            />
-
-            <Route
-              path="/profile/:userID"
-              element={<ProfileViewPage />}
             />
 
             <Route
