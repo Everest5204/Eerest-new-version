@@ -532,8 +532,11 @@ func main() {
 	)
 
 	deactivateaccount.RegisterRoutes(mux, deactivateHandler, cfg.JWTSecret)
-	// Mongosky Personal Details integration v1
-	personaldetails.RegisterRoutes(mux, personaldetails.NewHandler(personaldetails.NewService(personaldetails.NewMongoStore(db.Database))), cfg.JWTSecret)
+	// Mongosky Personal Details integration v2
+	personalDetailsStore := personaldetails.NewMongoStore(db.Database)
+	personalDetailsHub := notification.NewHub()
+	defer personalDetailsHub.Close()
+	personaldetails.RegisterRoutes(mux, personaldetails.NewLiveHandler(personaldetails.NewService(personalDetailsStore), personalDetailsHub), cfg.JWTSecret)
 
 	deleteaccount.RegisterRoutes(
 		mux,
@@ -688,6 +691,11 @@ func main() {
 	)
 	defer cancelNotifications()
 	go postService.WatchHomeFeed(notificationCtx)
+	personalDetailsWatcherDone := make(chan struct{})
+	go func() {
+		defer close(personalDetailsWatcherDone)
+		personalDetailsStore.Watch(notificationCtx, personalDetailsHub)
+	}()
 	savedWatcherDone := make(chan struct{})
 	go func() { defer close(savedWatcherDone); savedStore.Watch(notificationCtx, savedHub) }()
 
@@ -735,6 +743,7 @@ func main() {
 	cancelDeletions()
 	notificationHub.Close()
 	savedHub.Close()
+	personalDetailsHub.Close()
 
 	shutdownCtx, cancelShutdown := context.WithTimeout(
 		context.Background(),
@@ -748,6 +757,12 @@ func main() {
 		if closeErr := server.Close(); closeErr != nil {
 			log.Println("Server close warning:", closeErr)
 		}
+	}
+
+	select {
+	case <-personalDetailsWatcherDone:
+	case <-shutdownCtx.Done():
+		log.Println("Personal Details watcher shutdown timed out")
 	}
 
 	select {
